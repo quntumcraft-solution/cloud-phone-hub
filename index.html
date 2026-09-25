@@ -150,7 +150,7 @@ function favToggle(){
 function settingsAction(){
  if(index===0){theme=theme==="dark"?"light":"dark";localStorage.setItem("cloudHubTheme",theme)}
  else if(index===1){font=font==="normal"?"large":font==="large"?"small":"normal";localStorage.setItem("cloudHubFont",font)}
- else if(index===2){zoom=zoom>=1.15?.9:zoom>=1?.1.15:1;localStorage.setItem("cloudHubZoom",String(zoom))}
+ else if(index===2){zoom=zoom>=1.15 ? 0.9 : (zoom>=1 ? 1.15 : 1);localStorage.setItem("cloudHubZoom",String(zoom))}
  else if(index===3){fav=[];localStorage.setItem("cloudHubFav","[]")}
  else if(index===4){recent=[];localStorage.setItem("cloudHubRecent","[]")}
  else if(index===5){alert("Cloud Phone Web Hub V4\\n100+ websites\\nKeypad optimized\\nMade for compact screens")}
