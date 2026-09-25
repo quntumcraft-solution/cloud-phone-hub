@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cloud Phone Web Hub</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;font-family:Arial,sans-serif;background:#fff;color:#111;overflow:hidden}
+body{font-size:14px}
+#app{height:100%;display:flex;flex-direction:column}
+header{height:30px;flex:0 0 30px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold}
+#screen{flex:1;overflow:auto;padding:5px}
+.item{border-bottom:1px solid #ddd;padding:5px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item.selected{background:#111;color:#fff}
+.num{display:inline-block;width:28px}
+.cat{font-weight:bold;background:#eee;padding:4px;margin:2px 0}
+footer{height:28px;flex:0 0 28px;border-top:1px solid #aaa;display:flex;justify-content:space-between;align-items:center;padding:0 6px;font-size:12px}
+#status{position:absolute;left:0;right:0;bottom:28px;background:#fff;border-top:1px solid #aaa;padding:5px;display:none}
+button{font:inherit}
+a{color:inherit;text-decoration:none}
+</style>
+</head>
+<body>
+<div id="app">
+<header id="title">WEB HUB</header>
+<div id="screen"></div>
+<div id="status"></div>
+<footer><span>Menu</span><span>OK / Back</span></footer>
+</div>
+
+<script>
+const sites = [
+["Search","DuckDuckGo","https://duckduckgo.com/"],
+["Search","DuckDuckGo Lite","https://lite.duckduckgo.com/"],
+["Search","Google","https://www.google.com/"],
+["Search","Bing","https://www.bing.com/"],
+["Search","Yahoo","https://www.yahoo.com/"],
+["Info","Wikipedia","https://en.wikipedia.org/"],
+["Info","Wikipedia Mobile","https://en.m.wikipedia.org/"],
+["Info","Wiktionary","https://en.wiktionary.org/"],
+["Info","Wikiquote","https://en.wikiquote.org/"],
+["Info","Wikibooks","https://en.wikibooks.org/"],
+["Info","Wikinews","https://en.wikinews.org/"],
+["Info","Wikivoyage","https://en.wikivoyage.org/"],
+["Info","Wikisource","https://en.wikisource.org/"],
+["Info","Internet Archive","https://archive.org/"],
+["Info","Project Gutenberg","https://www.gutenberg.org/"],
+["Weather","WTTR","https://wttr.in/"],
+["Weather","WTTR Pune","https://wttr.in/Pune"],
+["Weather","Weather.com","https://weather.com/"],
+["Weather","AccuWeather","https://www.accuweather.com/"],
+["Weather","TimeAndDate","https://www.timeanddate.com/"],
+["News","Google News","https://news.google.com/"],
+["News","BBC","https://www.bbc.com/"],
+["News","Reuters","https://www.reuters.com/"],
+["News","The Guardian","https://www.theguardian.com/"],
+["News","CNN","https://www.cnn.com/"],
+["News","NDTV","https://www.ndtv.com/"],
+["News","India Today","https://www.indiatoday.in/"],
+["News","Hindustan Times","https://www.hindustantimes.com/"],
+["News","The Hindu","https://www.thehindu.com/"],
+["News","Indian Express","https://indianexpress.com/"],
+["Video","YouTube Mobile","https://m.youtube.com/"],
+["Video","YouTube","https://www.youtube.com/"],
+["Video","Dailymotion","https://www.dailymotion.com/"],
+["Video","Vimeo","https://vimeo.com/"],
+["Video","Twitch","https://www.twitch.tv/"],
+["Video","Archive Movies","https://archive.org/details/movies"],
+["Video","TED","https://www.ted.com/"],
+["Video","IMDb","https://www.imdb.com/"],
+["Video","Rotten Tomatoes","https://www.rottentomatoes.com/"],
+["Video","Letterboxd","https://letterboxd.com/"],
+["Music","Spotify","https://open.spotify.com/"],
+["Music","SoundCloud","https://soundcloud.com/"],
+["Music","Bandcamp","https://bandcamp.com/"],
+["Music","Mixcloud","https://www.mixcloud.com/"],
+["Music","Last.fm","https://www.last.fm/"],
+["Music","Genius","https://genius.com/"],
+["Music","Musixmatch","https://www.musixmatch.com/"],
+["Music","Free Music Archive","https://freemusicarchive.org/"],
+["Social","WhatsApp Web","https://web.whatsapp.com/"],
+["Social","Facebook","https://www.facebook.com/"],
+["Social","Facebook Mobile","https://m.facebook.com/"],
+["Social","Instagram","https://www.instagram.com/"],
+["Social","Reddit","https://www.reddit.com/"],
+["Social","X","https://x.com/"],
+["Social","Tumblr","https://www.tumblr.com/"],
+["Social","Pinterest","https://www.pinterest.com/"],
+["Social","LinkedIn","https://www.linkedin.com/"],
+["Social","Telegram Web","https://web.telegram.org/"],
+["Email","Gmail","https://mail.google.com/"],
+["Email","Outlook","https://outlook.live.com/"],
+["Email","Yahoo Mail","https://mail.yahoo.com/"],
+["Email","Proton Mail","https://mail.proton.me/"],
+["Email","Zoho Mail","https://mail.zoho.com/"],
+["Work","Google Drive","https://drive.google.com/"],
+["Work","Google Docs","https://docs.google.com/"],
+["Work","Google Calendar","https://calendar.google.com/"],
+["Work","Google Keep","https://keep.google.com/"],
+["Work","OneDrive","https://onedrive.live.com/"],
+["AI","ChatGPT","https://chatgpt.com/"],
+["AI","Gemini","https://gemini.google.com/"],
+["AI","Copilot","https://copilot.microsoft.com/"],
+["AI","Claude","https://claude.ai/"],
+["AI","Perplexity","https://www.perplexity.ai/"],
+["AI","Poe","https://poe.com/"],
+["AI","Hugging Face","https://huggingface.co/"],
+["Maps","Google Maps","https://maps.google.com/"],
+["Maps","OpenStreetMap","https://www.openstreetmap.org/"],
+["Maps","MapQuest","https://www.mapquest.com/"],
+["Travel","Rome2Rio","https://www.rome2rio.com/"],
+["Travel","Booking.com","https://www.booking.com/"],
+["Education","Khan Academy","https://www.khanacademy.org/"],
+["Education","Wikiversity","https://en.wikiversity.org/"],
+["Education","Britannica","https://www.britannica.com/"],
+["Education","Stanford Encyclopedia","https://plato.stanford.edu/"],
+["Education","MIT OpenCourseWare","https://ocw.mit.edu/"],
+["Education","Coursera","https://www.coursera.org/"],
+["Education","edX","https://www.edx.org/"],
+["Shopping","Amazon India","https://www.amazon.in/"],
+["Shopping","Flipkart","https://www.flipkart.com/"],
+["Shopping","Myntra","https://www.myntra.com/"],
+["Shopping","Meesho","https://www.meesho.com/"],
+["Shopping","eBay","https://www.ebay.com/"],
+["Sports","ESPN","https://www.espn.com/"],
+["Sports","Cricbuzz","https://www.cricbuzz.com/"],
+["Sports","ESPNcricinfo","https://www.espncricinfo.com/"],
+["Sports","ICC","https://www.icc-cricket.com/"],
+["Tools","Calculator.net","https://www.calculator.net/"],
+["Tools","UnitConverters","https://www.unitconverters.net/"],
+["Tools","QR Code Generator","https://www.qr-code-generator.com/"]
+];
+
+let index=0, page="menu";
+
+function render(){
+  const screen=document.getElementById("screen");
+  const title=document.getElementById("title");
+  if(page==="menu"){
+    title.textContent="WEB HUB";
+    screen.innerHTML=sites.map((s,i)=>`<div class="item ${i===index?'selected':''}" data-i="${i}">
+      <span class="num">${i+1}.</span>${s[1]}</div>`).join("");
+    const el=screen.children[index];
+    if(el) el.scrollIntoView({block:"nearest"});
+  } else {
+    title.textContent="OPENING...";
+    screen.innerHTML="<div style='padding:8px'>Opening website...</div>";
+  }
+}
+function openSelected(){
+  const s=sites[index];
+  // Top-level navigation is more compatible than iframe embedding.
+  location.href=s[2];
+}
+function move(n){
+  index=(index+n+sites.length)%sites.length;
+  render();
+}
+document.addEventListener("keydown",e=>{
+  if(page==="menu"){
+    if(e.key==="ArrowDown"||e.key==="2") move(1);
+    else if(e.key==="ArrowUp"||e.key==="8") move(-1);
+    else if(e.key==="Enter"||e.key==="ArrowRight"||e.key==="5") openSelected();
+    else if(e.key==="Home") {index=0;render();}
+    else if(/^[0-9]$/.test(e.key)){
+      let n=parseInt(e.key,10);
+      if(n===0) n=10;
+      if(n<=sites.length){index=n-1;render();}
+    }
+  }
+});
+document.addEventListener("click",e=>{
+  const item=e.target.closest(".item");
+  if(item){index=Number(item.dataset.i);render();openSelected();}
+});
+render();
+</script>
+</body>
+</html>
