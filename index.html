@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cloud Phone Web Hub V4</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#07111f;color:#f5f8ff}
+button,input{font:inherit}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:auto;background:#07111f}
+header{height:34px;flex:0 0 34px;display:flex;align-items:center;justify-content:space-between;padding:0 7px;background:#0b1d33;border-bottom:1px solid #24547e;font-size:13px;font-weight:bold}
+#brand{display:flex;align-items:center;gap:6px}
+#brandIcon{width:22px;height:22px;border-radius:6px;background:#0b8cff;display:flex;align-items:center;justify-content:center}
+#screen{flex:1;overflow:auto;padding:5px}
+.hero{padding:8px;border:1px solid #174b76;border-radius:8px;background:#0b1c30;margin-bottom:5px}
+.heroTitle{font-size:17px;font-weight:bold}.sub{font-size:9px;opacity:.75;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:5px}
+.tile{min-height:43px;border:1px solid #214866;border-radius:7px;background:#0d233b;color:#fff;padding:5px;text-align:left}
+.tile b{display:block;font-size:10px}.tile small{font-size:8px;opacity:.7}
+.row{display:flex;align-items:center;gap:5px;min-height:31px;padding:4px 5px;border-bottom:1px solid #17344f;border-radius:4px}
+.row.sel{background:#145b93;border:1px solid #2b9cff}
+.icon{width:22px;height:22px;object-fit:contain;flex:0 0 22px;background:#fff;border-radius:4px}
+.fallback{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:#244563;color:#fff;font-weight:bold;border-radius:4px;flex:0 0 22px;font-size:11px}
+.num{width:22px;flex:0 0 22px;font-size:9px;opacity:.8}
+.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.meta{margin-left:auto;font-size:8px;opacity:.7}
+.section{font-size:9px;font-weight:bold;color:#8fcaff;padding:5px 2px 3px}
+input{width:100%;height:31px;border:1px solid #28608d;border-radius:6px;background:#091a2c;color:#fff;padding:5px 7px;font-size:12px;outline:none}
+#fitbar{height:27px;display:flex;gap:3px;padding:3px 5px;background:#09182a;border-bottom:1px solid #173b59}
+#fitbar button{flex:1;border:1px solid #275579;border-radius:4px;background:#102a44;color:#dceeff;font-size:9px}
+#fitbar button.sel{background:#1468a6}
+footer{height:29px;flex:0 0 29px;border-top:1px solid #21445f;display:flex;justify-content:space-between;align-items:center;padding:0 6px;font-size:9px;color:#b9d7ef}
+.badge{padding:2px 4px;border-radius:4px;background:#153a59}
+.light{background:#f4f7fb!important;color:#17212b!important}
+.light #app,.light #screen{background:#f4f7fb;color:#17212b}
+.light header{background:#e4edf6;color:#17212b;border-color:#b6cadc}
+.light .hero,.light .tile,.light .row{background:#fff;color:#17212b;border-color:#c7d5e2}
+.light .row.sel{background:#d5eaff;border-color:#4d94cf}
+.light input{background:#fff;color:#17212b;border-color:#9bb6cc}
+.light #fitbar{background:#e7eef5;border-color:#c2d2df}.light #fitbar button{background:#fff;color:#17212b;border-color:#9bb6cc}
+.light footer{border-color:#c2d2df;color:#425b70}
+.fontSmall .name{font-size:10px}.fontLarge .name{font-size:13px}.fontLarge .row{min-height:35px}
+</style>
+</head>
+<body>
+<div id="app">
+<header><div id="brand"><span id="brandIcon">🌐</span><span id="title">WEB HUB</span></div><span id="clock">--:--</span></header>
+<div id="fitbar"><button id="bFit" onclick="setHubZoom(1)">FIT</button><button onclick="setHubZoom(.9)">90%</button><button onclick="setHubZoom(1)">100%</button><button onclick="setHubZoom(1.15)">115%</button></div>
+<div id="screen"></div>
+<footer><span id="leftKey">LSK Menu</span><span id="rightKey">OK Open · # Back</span></footer>
+</div>
+<script>
+const sites=[["Search", "DuckDuckGo", "https://duckduckgo.com/", "duckduckgo"], ["Search", "DuckDuckGo Lite", "https://lite.duckduckgo.com/", ""], ["Search", "Google", "https://www.google.com/", "google"], ["Search", "Bing", "https://www.bing.com/", "bing"], ["Search", "Yahoo", "https://www.yahoo.com/", "yahoo"], ["Info", "Wikipedia", "https://en.wikipedia.org/", "wikipedia"], ["Info", "Wikipedia Mobile", "https://en.m.wikipedia.org/", ""], ["Info", "Wiktionary", "https://en.wiktionary.org/", "wiktionary"], ["Info", "Wikiquote", "https://en.wikiquote.org/", "wikiquote"], ["Info", "Wikibooks", "https://en.wikibooks.org/", "wikibooks"], ["Info", "Wikinews", "https://en.wikinews.org/", "wikinews"], ["Info", "Wikivoyage", "https://en.wikivoyage.org/", "wikivoyage"], ["Info", "Wikisource", "https://en.wikisource.org/", "wikisource"], ["Info", "Internet Archive", "https://archive.org/", "internetarchive"], ["Info", "Project Gutenberg", "https://www.gutenberg.org/", "gutenberg"], ["Weather", "WTTR", "https://wttr.in/", ""], ["Weather", "WTTR Pune", "https://wttr.in/Pune", ""], ["Weather", "Weather.com", "https://weather.com/", "weather"], ["Weather", "AccuWeather", "https://www.accuweather.com/", "accuweather"], ["Weather", "TimeAndDate", "https://www.timeanddate.com/", "timeanddate"], ["News", "Google News", "https://news.google.com/", "googlenews"], ["News", "BBC", "https://www.bbc.com/", "bbc"], ["News", "Reuters", "https://www.reuters.com/", "reuters"], ["News", "The Guardian", "https://www.theguardian.com/", "theguardian"], ["News", "CNN", "https://www.cnn.com/", "cnn"], ["News", "NDTV", "https://www.ndtv.com/", "ndtv"], ["News", "India Today", "https://www.indiatoday.in/", "indiatoday"], ["News", "Hindustan Times", "https://www.hindustantimes.com/", "hindustantimes"], ["News", "The Hindu", "https://www.thehindu.com/", "thehindu"], ["News", "Indian Express", "https://indianexpress.com/", "indianexpress"], ["Video", "YouTube Mobile", "https://m.youtube.com/", "youtube"], ["Video", "YouTube", "https://www.youtube.com/", "youtube"], ["Video", "Dailymotion", "https://www.dailymotion.com/", "dailymotion"], ["Video", "Vimeo", "https://vimeo.com/", "vimeo"], ["Video", "Twitch", "https://www.twitch.tv/", "twitch"], ["Video", "Archive Movies", "https://archive.org/details/movies", ""], ["Video", "TED", "https://www.ted.com/", "ted"], ["Video", "IMDb", "https://www.imdb.com/", "imdb"], ["Video", "Rotten Tomatoes", "https://www.rottentomatoes.com/", "rottentomatoes"], ["Video", "Letterboxd", "https://letterboxd.com/", "letterboxd"], ["Music", "Spotify", "https://open.spotify.com/", "spotify"], ["Music", "SoundCloud", "https://soundcloud.com/", "soundcloud"], ["Music", "Bandcamp", "https://bandcamp.com/", "bandcamp"], ["Music", "Mixcloud", "https://www.mixcloud.com/", "mixcloud"], ["Music", "Last.fm", "https://www.last.fm/", "lastfm"], ["Music", "Genius", "https://genius.com/", "genius"], ["Music", "Musixmatch", "https://www.musixmatch.com/", "musixmatch"], ["Music", "Free Music Archive", "https://freemusicarchive.org/", "freemusicarchive"], ["Social", "WhatsApp Web", "https://web.whatsapp.com/", "whatsapp"], ["Social", "Facebook", "https://www.facebook.com/", "facebook"], ["Social", "Facebook Mobile", "https://m.facebook.com/", ""], ["Social", "Instagram", "https://www.instagram.com/", "instagram"], ["Social", "Reddit", "https://www.reddit.com/", "reddit"], ["Social", "X", "https://x.com/", "x"], ["Social", "Tumblr", "https://www.tumblr.com/", "tumblr"], ["Social", "Pinterest", "https://www.pinterest.com/", "pinterest"], ["Social", "LinkedIn", "https://www.linkedin.com/", "linkedin"], ["Social", "Telegram Web", "https://web.telegram.org/", "telegram"], ["Email", "Gmail", "https://mail.google.com/", "gmail"], ["Email", "Outlook", "https://outlook.live.com/", "microsoftoutlook"], ["Email", "Yahoo Mail", "https://mail.yahoo.com/", "yahoo"], ["Email", "Proton Mail", "https://mail.proton.me/", "protonmail"], ["Email", "Zoho Mail", "https://mail.zoho.com/", "zoho"], ["Work", "Google Drive", "https://drive.google.com/", "googledrive"], ["Work", "Google Docs", "https://docs.google.com/", "googledocs"], ["Work", "Google Calendar", "https://calendar.google.com/", "googlecalendar"], ["Work", "Google Keep", "https://keep.google.com/", "googlekeep"], ["Work", "OneDrive", "https://onedrive.live.com/", "onedrive"], ["AI", "ChatGPT", "https://chatgpt.com/", "openai"], ["AI", "Gemini", "https://gemini.google.com/", "googlegemini"], ["AI", "Copilot", "https://copilot.microsoft.com/", "microsoftcopilot"], ["AI", "Claude", "https://claude.ai/", "claude"], ["AI", "Perplexity", "https://www.perplexity.ai/", "perplexity"], ["AI", "Poe", "https://poe.com/", "poe"], ["AI", "Hugging Face", "https://huggingface.co/", "huggingface"], ["Maps", "Google Maps", "https://maps.google.com/", "googlemaps"], ["Maps", "OpenStreetMap", "https://www.openstreetmap.org/", "openstreetmap"], ["Maps", "MapQuest", "https://www.mapquest.com/", "mapquest"], ["Travel", "Rome2Rio", "https://www.rome2rio.com/", "rome2rio"], ["Travel", "Booking.com", "https://www.booking.com/", "bookingcom"], ["Education", "Khan Academy", "https://www.khanacademy.org/", "khanacademy"], ["Education", "Wikiversity", "https://en.wikiversity.org/", "wikiversity"], ["Education", "Britannica", "https://www.britannica.com/", "britannica"], ["Education", "Stanford Encyclopedia", "https://plato.stanford.edu/", "stanford"], ["Education", "MIT OpenCourseWare", "https://ocw.mit.edu/", "mit"], ["Education", "Coursera", "https://www.coursera.org/", "coursera"], ["Education", "edX", "https://www.edx.org/", "edx"], ["Shopping", "Amazon India", "https://www.amazon.in/", "amazon"], ["Shopping", "Flipkart", "https://www.flipkart.com/", "flipkart"], ["Shopping", "Myntra", "https://www.myntra.com/", "myntra"], ["Shopping", "Meesho", "https://www.meesho.com/", "meesho"], ["Shopping", "eBay", "https://www.ebay.com/", "ebay"], ["Sports", "ESPN", "https://www.espn.com/", "espn"], ["Sports", "Cricbuzz", "https://www.cricbuzz.com/", "cricbuzz"], ["Sports", "ESPNcricinfo", "https://www.espncricinfo.com/", "espncricinfo"], ["Sports", "ICC", "https://www.icc-cricket.com/", "icc"], ["Tools", "Calculator.net", "https://www.calculator.net/", ""], ["Tools", "UnitConverters", "https://www.unitconverters.net/", ""], ["Tools", "QR Code Generator", "https://www.qr-code-generator.com/", ""], ["Tools", "Google Translate", "https://translate.google.com/", "googletranslate"]];
+const cats=["All","Favorites","Search","Info","Weather","News","Video","Music","Social","Email","Work","AI","Maps","Travel","Education","Shopping","Sports","Tools"];
+const catIcons=["▦","★","⌕","ℹ","☁","▤","▶","♫","●","✉","▣","✦","⌖","✈","📚","🛒","⚽","⚙"];
+let mode="home",cat=0,index=0,query="";
+let fav=JSON.parse(localStorage.getItem("cloudHubFav")||"[]");
+let recent=JSON.parse(localStorage.getItem("cloudHubRecent")||"[]");
+let theme=localStorage.getItem("cloudHubTheme")||"dark";
+let font=localStorage.getItem("cloudHubFont")||"normal";
+let zoom=parseFloat(localStorage.getItem("cloudHubZoom")||"1");
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function ico(slug,name){
+ if(!slug)return '<span class="fallback">'+esc(name[0]||"?")+'</span>';
+ return '<img class="icon" src="https://cdn.simpleicons.org/'+encodeURIComponent(slug)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="fallback" style="display:none">'+esc(name[0]||"?")+'</span>';
+}
+function list(){
+ let a=sites;
+ if(cat===1)a=sites.filter((_,i)=>fav.includes(i));
+ else if(cat>1 && cat!==2)a=sites.filter(s=>s[0]===cats[cat]);
+ if(query)a=a.filter(s=>(s[1]+" "+s[0]).toLowerCase().includes(query.toLowerCase()));
+ return a;
+}
+function recentSites(){
+ return recent.map(i=>sites[i]).filter(Boolean);
+}
+function render(){
+ const sc=document.getElementById("screen"), t=document.getElementById("title");
+ document.body.className=(theme==="light"?"light ":"")+(font==="small"?"fontSmall":font==="large"?"fontLarge":"");
+ document.getElementById("clock").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+ if(mode==="home"){
+   t.textContent="WEB HUB";
+   const quick=[2,31,48,50,70,75].filter(i=>sites[i]);
+   sc.innerHTML='<div class="hero"><div class="heroTitle">🌐 Cloud Phone Web Hub</div><div class="sub">100+ Websites • Keypad Optimized • Smart & Simple</div></div>'+
+   '<div class="grid">'+
+   '<button class="tile" onclick="goSearch()"><b>🔎 Search</b><small>Find websites</small></button>'+
+   '<button class="tile" onclick="openMode(\'fav\')"><b>⭐ Favorites</b><small>'+fav.length+' saved</small></button>'+
+   '<button class="tile" onclick="openMode(\'recent\')"><b>🕘 Recent</b><small>'+recent.length+' used</small></button></div>'+
+   '<div class="section">QUICK ACCESS</div>'+
+   quick.map((si,i)=>'<div class="row" onclick="openDirect('+si+')">'+ico(sites[si][3],sites[si][1])+'<span class="num">'+(i+1)+'.</span><span class="name">'+esc(sites[si][1])+'</span></div>').join('')+
+   '<div class="section">CATEGORIES</div>'+
+   cats.slice(0).map((c,i)=>'<div class="row '+(i===index?'sel':'')+'" data-i="'+i+'"><span class="fallback">'+catIcons[i]+'</span><span class="num">'+(i+1)+'.</span><span class="name">'+esc(c)+(i===1?' ★':'')+'</span><span class="meta">›</span></div>').join('');
+   document.getElementById("leftKey").textContent="LSK Menu";
+ }else if(mode==="search"){
+   t.textContent="SEARCH";
+   sc.innerHTML='<input id="q" placeholder="Type website name..." value="'+esc(query)+'"><div class="section">RESULTS</div>'+
+   (list().length?list().map((s,i)=>siteRow(s,i)).join(""):'<div class="hero">No matching websites.</div>');
+   const q=document.getElementById("q"); q.focus(); q.setSelectionRange(q.value.length,q.value.length);
+ }else if(mode==="settings"){
+   t.textContent="SETTINGS";
+   const items=[["Theme",theme==="dark"?"Dark":"Light"],["Font Size",font[0].toUpperCase()+font.slice(1)],["Hub Zoom",Math.round(zoom*100)+"%"],["Clear Favorites",fav.length+" saved"],["Clear History",recent.length+" saved"],["About Web Hub","Version 4.0"]];
+   sc.innerHTML=items.map((x,i)=>'<div class="row '+(i===index?'sel':'')+'" data-i="'+i+'"><span class="fallback">'+["◐","Aa","⛶","★","⌫","ℹ"][i]+'</span><span class="name">'+x[0]+'</span><span class="meta">'+x[1]+' ›</span></div>').join("");
+ }else{
+   let a=list();
+   if(mode==="fav")t.textContent="FAVORITES";
+   else if(mode==="recent")t.textContent="RECENT";
+   else t.textContent=cats[cat]||"WEBSITES";
+   sc.innerHTML=a.length?a.map((s,i)=>siteRow(s,i)).join(""):'<div class="hero">No websites here.</div>';
+ }
+ const sel=sc.querySelector(".sel"); if(sel)sel.scrollIntoView({block:"nearest"});
+}
+function siteRow(s,i){return '<div class="row '+(i===index?'sel':'')+'" data-i="'+i+'">'+ico(s[3],s[1])+'<span class="num">'+(i+1)+'.</span><span class="name">'+esc(s[1])+'</span><span class="meta">'+(fav.includes(sites.indexOf(s))?'★':'')+'</span></div>';}
+function setHubZoom(z){zoom=z;localStorage.setItem("cloudHubZoom",String(z));document.getElementById("screen").style.zoom=z;render();}
+function move(n){
+ let len=mode==="home"?cats.length:mode==="settings"?6:list().length;
+ if(!len)return; index=(index+n+len)%len; render();
+}
+function openMode(m){mode=m==="fav"?"fav":m==="recent"?"recent":"list";cat=m==="fav"?1:0;index=0;render();}
+function goSearch(){mode="search";index=0;query="";render();}
+function openDirect(i){if(sites[i])openSite(sites[i]);}
+function openSite(s){
+ const si=sites.indexOf(s);
+ if(si>=0){recent=[si,...recent.filter(x=>x!==si)].slice(0,20);localStorage.setItem("cloudHubRecent",JSON.stringify(recent));}
+ sessionStorage.setItem("cloudHubReturn",location.href);
+ location.href=s[2];
+}
+function select(){
+ if(mode==="home"){
+   if(index===0){mode="list";cat=0;index=0}
+   else if(index===1){mode="fav";cat=1;index=0}
+   else if(index===2){mode="search";query="";index=0}
+   else {mode="list";cat=index;index=0}
+   render(); return;
+ }
+ if(mode==="settings"){settingsAction();return}
+ const a=list(); if(a[index])openSite(a[index]);
+}
+function back(){
+ if(mode==="home")return;
+ mode="home";cat=0;index=0;query="";render();
+}
+function favToggle(){
+ const a=list(),s=a[index];if(!s)return;
+ const r=sites.indexOf(s),p=fav.indexOf(r);
+ if(p<0)fav.push(r);else fav.splice(p,1);
+ localStorage.setItem("cloudHubFav",JSON.stringify(fav));render();
+}
+function settingsAction(){
+ if(index===0){theme=theme==="dark"?"light":"dark";localStorage.setItem("cloudHubTheme",theme)}
+ else if(index===1){font=font==="normal"?"large":font==="large"?"small":"normal";localStorage.setItem("cloudHubFont",font)}
+ else if(index===2){zoom=zoom>=1.15?.9:zoom>=1?.1.15:1;localStorage.setItem("cloudHubZoom",String(zoom))}
+ else if(index===3){fav=[];localStorage.setItem("cloudHubFav","[]")}
+ else if(index===4){recent=[];localStorage.setItem("cloudHubRecent","[]")}
+ else if(index===5){alert("Cloud Phone Web Hub V4\\n100+ websites\\nKeypad optimized\\nMade for compact screens")}
+ render();
+}
+document.addEventListener("keydown",e=>{
+ if(mode==="search" && document.activeElement?.id==="q"){
+   if(e.key==="Escape"||e.key==="ArrowLeft"||e.key==="#"){back();return}
+   if(e.key==="Enter"){document.activeElement.blur();index=0;render();return}
+   query=document.getElementById("q").value;setTimeout(render,0);return;
+ }
+ if(e.key==="ArrowDown"||e.key==="2")move(1);
+ else if(e.key==="ArrowUp"||e.key==="8")move(-1);
+ else if(e.key==="Enter"||e.key==="ArrowRight"||e.key==="5")select();
+ else if(e.key==="ArrowLeft"||e.key==="Escape"||e.key==="#")back();
+ else if(e.key==="*")favToggle();
+ else if(e.key==="0")goSearch();
+ else if(e.key==="9"){mode="settings";index=0;render();}
+});
+document.addEventListener("click",e=>{
+ const r=e.target.closest(".row"); if(!r)return;
+ index=Number(r.dataset.i||0);
+ if(mode==="home"){if(index===0){mode="list";cat=0;index=0}else if(index===1){mode="fav";cat=1;index=0}else if(index===2){mode="search";query="";index=0}else{mode="list";cat=index;index=0}render();}
+ else if(mode==="settings")settingsAction();
+ else {const a=list();if(a[index])openSite(a[index]);}
+});
+setHubZoom(zoom); render();
+</script>
+</body>
+</html>
