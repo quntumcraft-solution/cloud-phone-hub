@@ -1,37 +1,377 @@
-<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cloud Phone Web Hub</title>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>RUTIK YOUTUBE REMOTE</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,sans-serif;background:#fff;color:#111;overflow:hidden}
-#app{height:100%;display:flex;flex-direction:column}header{height:30px;flex:0 0 30px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold}
-#screen{flex:1;overflow:auto;padding:3px}.row{display:flex;align-items:center;gap:5px;min-height:28px;padding:3px;border-bottom:1px solid #ddd}
-.sel{background:#111;color:#fff}.icon{width:20px;height:20px;object-fit:contain;flex:0 0 20px}.fallback{width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:#ddd;color:#111;font-weight:bold;border-radius:3px;flex:0 0 20px}
-.num{width:24px;flex:0 0 24px}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cat{font-weight:bold;background:#eee;padding:4px;margin:2px 0}
-footer{height:28px;flex:0 0 28px;border-top:1px solid #aaa;display:flex;justify-content:space-between;align-items:center;padding:0 5px;font-size:10px}
-input{width:100%;height:28px;border:1px solid #999;padding:3px;font-size:13px}
-#fitbar{height:25px;display:flex;gap:3px;padding:2px;border-bottom:1px solid #aaa;background:#eee}
-#fitbar button{font-size:10px;padding:2px 5px}
-</style></head><body><div id="app"><header id="title">WEB HUB</header><div id="fitbar"><button onclick="setFit(1)">FIT</button><button onclick="setFit(1.0)">100%</button><button onclick="setFit(1.25)">125%</button></div><div id="screen"></div>
-<footer><span>LSK Menu</span><span>OK Open · RSK Back</span></footer></div>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #070b14;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  font-size: 10px;
+}
+
+header {
+  height: 18px;
+  padding: 4px 2px;
+  text-align: center;
+  color: #44e0c0;
+  background: #101a2b;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.video-box {
+  width: 100%;
+  height: 80px;
+  margin-top: 3px;
+  background: black;
+  border: 1px solid #354b66;
+  overflow: hidden;
+}
+
+#player {
+  width: 200px;
+  height: 200px;
+  transform: scale(0.6);
+  transform-origin: top left;
+}
+
+.url-box {
+  display: flex;
+  gap: 3px;
+  height: 23px;
+  margin: 4px 3px;
+}
+
+#videoUrl {
+  min-width: 0;
+  flex: 1;
+  padding: 3px;
+  background: #14243a;
+  border: 1px solid #354b66;
+  color: white;
+  font-size: 8px;
+}
+
+button {
+  color: white;
+  background: #18283d;
+  border: 1px solid #354b66;
+  border-radius: 3px;
+  font-size: 8px;
+}
+
+button:focus, input:focus {
+  outline: 2px solid #43ddc0;
+}
+
+#load {
+  width: 28px;
+  background: #087d70;
+}
+
+.controls {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+}
+
+.controls button {
+  flex: 1;
+  height: 32px;
+  padding: 2px 0;
+}
+
+#play {
+  background: #087d70;
+}
+
+.info {
+  margin: 5px 3px;
+  padding: 4px;
+  background: #14243a;
+  text-align: center;
+}
+
+#time {
+  font-size: 9px;
+  color: #44e0c0;
+}
+
+#status {
+  margin-top: 3px;
+  font-size: 7px;
+  color: #a9bbd0;
+}
+
+footer {
+  position: absolute;
+  bottom: 2px;
+  width: 100%;
+  text-align: center;
+  color: #8298b2;
+  font-size: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<header>RUTIK YOUTUBE REMOTE</header>
+
+<div class="video-box">
+  <div id="player"></div>
+</div>
+
+<div class="url-box">
+  <input id="videoUrl" type="text" placeholder="YouTube Video URL">
+  <button id="load" type="button">GO</button>
+</div>
+
+<div class="controls">
+  <button id="back30" type="button">2<br>-30s</button>
+  <button id="back10" type="button">4<br>-10s</button>
+  <button id="play" type="button">5<br>PLAY</button>
+  <button id="forward10" type="button">6<br>+10s</button>
+  <button id="forward30" type="button">8<br>+30s</button>
+</div>
+
+<div class="info">
+  <div id="time">00:00 / 00:00</div>
+  <div id="status">Loading YouTube Player...</div>
+</div>
+
+<footer>2 4 5 6 8 KEYPAD CONTROL</footer>
+
 <script>
-const sites=[["Search", "DuckDuckGo", "https://duckduckgo.com/", "duckduckgo"], ["Search", "DuckDuckGo Lite", "https://lite.duckduckgo.com/", ""], ["Search", "Google", "https://www.google.com/", "google"], ["Search", "Bing", "https://www.bing.com/", "bing"], ["Search", "Yahoo", "https://www.yahoo.com/", "yahoo"], ["Info", "Wikipedia", "https://en.wikipedia.org/", "wikipedia"], ["Info", "Wikipedia Mobile", "https://en.m.wikipedia.org/", ""], ["Info", "Wiktionary", "https://en.wiktionary.org/", "wiktionary"], ["Info", "Wikiquote", "https://en.wikiquote.org/", "wikiquote"], ["Info", "Wikibooks", "https://en.wikibooks.org/", "wikibooks"], ["Info", "Wikinews", "https://en.wikinews.org/", "wikinews"], ["Info", "Wikivoyage", "https://en.wikivoyage.org/", "wikivoyage"], ["Info", "Wikisource", "https://en.wikisource.org/", "wikisource"], ["Info", "Internet Archive", "https://archive.org/", "internetarchive"], ["Info", "Project Gutenberg", "https://www.gutenberg.org/", "gutenberg"], ["Weather", "WTTR", "https://wttr.in/", ""], ["Weather", "WTTR Pune", "https://wttr.in/Pune", ""], ["Weather", "Weather.com", "https://weather.com/", "weather"], ["Weather", "AccuWeather", "https://www.accuweather.com/", "accuweather"], ["Weather", "TimeAndDate", "https://www.timeanddate.com/", "timeanddate"], ["News", "Google News", "https://news.google.com/", "googlenews"], ["News", "BBC", "https://www.bbc.com/", "bbc"], ["News", "Reuters", "https://www.reuters.com/", "reuters"], ["News", "The Guardian", "https://www.theguardian.com/", "theguardian"], ["News", "CNN", "https://www.cnn.com/", "cnn"], ["News", "NDTV", "https://www.ndtv.com/", "ndtv"], ["News", "India Today", "https://www.indiatoday.in/", "indiatoday"], ["News", "Hindustan Times", "https://www.hindustantimes.com/", "hindustantimes"], ["News", "The Hindu", "https://www.thehindu.com/", "thehindu"], ["News", "Indian Express", "https://indianexpress.com/", "indianexpress"], ["Video", "YouTube Mobile", "https://m.youtube.com/", "youtube"], ["Video", "YouTube", "https://www.youtube.com/", "youtube"], ["Video", "Dailymotion", "https://www.dailymotion.com/", "dailymotion"], ["Video", "Vimeo", "https://vimeo.com/", "vimeo"], ["Video", "Twitch", "https://www.twitch.tv/", "twitch"], ["Video", "Archive Movies", "https://archive.org/details/movies", ""], ["Video", "TED", "https://www.ted.com/", "ted"], ["Video", "IMDb", "https://www.imdb.com/", "imdb"], ["Video", "Rotten Tomatoes", "https://www.rottentomatoes.com/", "rottentomatoes"], ["Video", "Letterboxd", "https://letterboxd.com/", "letterboxd"], ["Music", "Spotify", "https://open.spotify.com/", "spotify"], ["Music", "SoundCloud", "https://soundcloud.com/", "soundcloud"], ["Music", "Bandcamp", "https://bandcamp.com/", "bandcamp"], ["Music", "Mixcloud", "https://www.mixcloud.com/", "mixcloud"], ["Music", "Last.fm", "https://www.last.fm/", "lastfm"], ["Music", "Genius", "https://genius.com/", "genius"], ["Music", "Musixmatch", "https://www.musixmatch.com/", "musixmatch"], ["Music", "Free Music Archive", "https://freemusicarchive.org/", "freemusicarchive"], ["Social", "WhatsApp Web", "https://web.whatsapp.com/", "whatsapp"], ["Social", "Facebook", "https://www.facebook.com/", "facebook"], ["Social", "Facebook Mobile", "https://m.facebook.com/", ""], ["Social", "Instagram", "https://www.instagram.com/", "instagram"], ["Social", "Reddit", "https://www.reddit.com/", "reddit"], ["Social", "X", "https://x.com/", "x"], ["Social", "Tumblr", "https://www.tumblr.com/", "tumblr"], ["Social", "Pinterest", "https://www.pinterest.com/", "pinterest"], ["Social", "LinkedIn", "https://www.linkedin.com/", "linkedin"], ["Social", "Telegram Web", "https://web.telegram.org/", "telegram"], ["Email", "Gmail", "https://mail.google.com/", "gmail"], ["Email", "Outlook", "https://outlook.live.com/", "microsoftoutlook"], ["Email", "Yahoo Mail", "https://mail.yahoo.com/", "yahoo"], ["Email", "Proton Mail", "https://mail.proton.me/", "protonmail"], ["Email", "Zoho Mail", "https://mail.zoho.com/", "zoho"], ["Work", "Google Drive", "https://drive.google.com/", "googledrive"], ["Work", "Google Docs", "https://docs.google.com/", "googledocs"], ["Work", "Google Calendar", "https://calendar.google.com/", "googlecalendar"], ["Work", "Google Keep", "https://keep.google.com/", "googlekeep"], ["Work", "OneDrive", "https://onedrive.live.com/", "onedrive"], ["AI", "ChatGPT", "https://chatgpt.com/", "openai"], ["AI", "Gemini", "https://gemini.google.com/", "googlegemini"], ["AI", "Copilot", "https://copilot.microsoft.com/", "microsoftcopilot"], ["AI", "Claude", "https://claude.ai/", "claude"], ["AI", "Perplexity", "https://www.perplexity.ai/", "perplexity"], ["AI", "Poe", "https://poe.com/", "poe"], ["AI", "Hugging Face", "https://huggingface.co/", "huggingface"], ["Maps", "Google Maps", "https://maps.google.com/", "googlemaps"], ["Maps", "OpenStreetMap", "https://www.openstreetmap.org/", "openstreetmap"], ["Maps", "MapQuest", "https://www.mapquest.com/", "mapquest"], ["Travel", "Rome2Rio", "https://www.rome2rio.com/", "rome2rio"], ["Travel", "Booking.com", "https://www.booking.com/", "bookingcom"], ["Education", "Khan Academy", "https://www.khanacademy.org/", "khanacademy"], ["Education", "Wikiversity", "https://en.wikiversity.org/", "wikiversity"], ["Education", "Britannica", "https://www.britannica.com/", "britannica"], ["Education", "Stanford Encyclopedia", "https://plato.stanford.edu/", "stanford"], ["Education", "MIT OpenCourseWare", "https://ocw.mit.edu/", "mit"], ["Education", "Coursera", "https://www.coursera.org/", "coursera"], ["Education", "edX", "https://www.edx.org/", "edx"], ["Shopping", "Amazon India", "https://www.amazon.in/", "amazon"], ["Shopping", "Flipkart", "https://www.flipkart.com/", "flipkart"], ["Shopping", "Myntra", "https://www.myntra.com/", "myntra"], ["Shopping", "Meesho", "https://www.meesho.com/", "meesho"], ["Shopping", "eBay", "https://www.ebay.com/", "ebay"], ["Sports", "ESPN", "https://www.espn.com/", "espn"], ["Sports", "Cricbuzz", "https://www.cricbuzz.com/", "cricbuzz"], ["Sports", "ESPNcricinfo", "https://www.espncricinfo.com/", "espncricinfo"], ["Sports", "ICC", "https://www.icc-cricket.com/", "icc"], ["Tools", "Calculator.net", "https://www.calculator.net/", ""], ["Tools", "UnitConverters", "https://www.unitconverters.net/", ""], ["Tools", "QR Code Generator", "https://www.qr-code-generator.com/", ""], ["Tools", "Google Translate", "https://translate.google.com/", "googletranslate"]],cats=["All", "Favorites", "Search", "Info", "Weather", "News", "Video", "Music", "Social", "Email", "Work", "AI", "Maps", "Travel", "Education", "Shopping", "Sports", "Tools"];let mode="home",cat=0,index=0,query="";
-let fav=JSON.parse(localStorage.getItem("cloudHubFav")||"[]");
-function ico(slug,name){if(!slug)return '<span class="fallback">'+name[0]+'</span>';return '<img class="icon" src="https://cdn.simpleicons.org/'+slug+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="fallback" style="display:none">'+name[0]+'</span>';}
-function arr(){let a=sites;if(cat===1)a=sites.filter((_,i)=>fav.includes(i));else if(cat>1)a=sites.filter(s=>s[0]===cats[cat]);if(query)a=a.filter(s=>(s[1]+" "+s[0]).toLowerCase().includes(query.toLowerCase()));return a;}
-function render(){let sc=document.getElementById("screen"),t=document.getElementById("title");
-if(mode==="home"){t.textContent="WEB HUB";sc.innerHTML='<div class="cat">CATEGORIES</div>'+cats.map((c,i)=>'<div class="row '+(i===index?'sel':'')+'"><span class="num">'+(i+1)+'.</span><span class="name">'+c+(i===1?' ★':'')+'</span></div>').join('');}
-else if(mode==="search"){t.textContent="SEARCH";sc.innerHTML='<input id="q" placeholder="Search website" value="'+query.replace(/"/g,'&quot;')+'"><div class="cat">RESULTS</div>'+arr().map((s,i)=>'<div class="row '+(i===index?'sel':'')+'">'+ico(s[3],s[1])+'<span class="num">'+(i+1)+'.</span><span class="name">'+s[1]+'</span></div>').join('');let q=document.getElementById("q");q.focus();q.setSelectionRange(q.value.length,q.value.length);}
-else{t.textContent=cats[cat];let a=arr();sc.innerHTML=a.length?a.map((s,i)=>'<div class="row '+(i===index?'sel':'')+'">'+ico(s[3],s[1])+'<span class="num">'+(i+1)+'.</span><span class="name">'+s[1]+'</span></div>').join(''):'<div style="padding:8px">No websites.</div>';}
-let e=sc.querySelector(".sel");if(e)e.scrollIntoView({block:"nearest"});}
-function move(n){let a=mode==="home"?cats:arr();if(!a.length)return;index=(index+n+a.length)%a.length;render();}
-function setFit(z){document.getElementById("screen").style.zoom=String(z);localStorage.setItem("cloudHubZoom",String(z));}
-function openSite(){let s=arr()[index];if(s){sessionStorage.setItem("cloudHubReturn",location.href);location.href=s[2];}}
-function back(){if(mode==="home")return;mode="home";cat=0;index=0;query="";render();}
-function favToggle(){let s=arr()[index];if(!s)return;let r=sites.indexOf(s),p=fav.indexOf(r);if(p<0)fav.push(r);else fav.splice(p,1);localStorage.setItem("cloudHubFav",JSON.stringify(fav));render();}
-document.addEventListener("keydown",e=>{if(mode==="search"&&document.activeElement?.id==="q"){if(e.key==="Escape"||e.key==="ArrowLeft"){back();return}if(e.key==="Enter"){document.activeElement.blur();index=0;render();return}query=document.getElementById("q").value;setTimeout(render,0);return}
-if(e.key==="ArrowDown"||e.key==="2")move(1);else if(e.key==="ArrowUp"||e.key==="8")move(-1);
-else if(e.key==="Enter"||e.key==="ArrowRight"||e.key==="5"){if(mode==="home"){if(index===0){mode="list";cat=0}else if(index===1){mode="list";cat=1}else{mode="list";cat=index}index=0;render()}else openSite();}
-else if(e.key==="ArrowLeft"||e.key==="Escape"||e.key==="#")back();else if(e.key==="*")favToggle();else if(e.key==="0"){mode="search";index=0;render();}});
-document.addEventListener("click",e=>{let r=e.target.closest(".row");if(!r)return;let rows=[...document.querySelectorAll(".row")];index=rows.indexOf(r);if(mode==="home"){if(index===0){mode="list";cat=0}else if(index===1){mode="list";cat=1}else{mode="list";cat=index}index=0;render();}else openSite();});
-setFit(parseFloat(localStorage.getItem("cloudHubZoom")||"1"));render();
-</script></body></html>
+var player = null;
+var ready = false;
+var timer = null;
+
+function status(text) {
+  document.getElementById("status").textContent = text;
+}
+
+function getVideoId(url) {
+  url = url.trim();
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
+    return url;
+  }
+
+  try {
+    var u = new URL(url);
+
+    if (u.hostname.indexOf("youtu.be") !== -1) {
+      return u.pathname.split("/")[1];
+    }
+
+    if (u.searchParams.get("v")) {
+      return u.searchParams.get("v");
+    }
+
+    var parts = u.pathname.split("/");
+    var i = parts.findIndex(function(x) {
+      return ["embed", "shorts", "live"].indexOf(x) !== -1;
+    });
+
+    if (i >= 0) return parts[i + 1];
+
+  } catch(e) {}
+
+  return null;
+}
+
+function onYouTubeIframeAPIReady() {
+
+  player = new YT.Player("player", {
+    width: "200",
+    height: "200",
+
+    playerVars: {
+      playsinline: 1,
+      controls: 1,
+      rel: 0
+    },
+
+    events: {
+
+      onReady: function() {
+        ready = true;
+        status("Player Ready");
+
+        timer = setInterval(updateTime, 1000);
+      },
+
+      onStateChange: function(event) {
+
+        if (event.data === 1) {
+          document.getElementById("play").innerHTML = "5<br>PAUSE";
+          status("Playing");
+        }
+
+        if (event.data === 2) {
+          document.getElementById("play").innerHTML = "5<br>PLAY";
+          status("Paused");
+        }
+
+        if (event.data === 0) {
+          document.getElementById("play").innerHTML = "5<br>PLAY";
+          status("Video Ended");
+        }
+      },
+
+      onError: function(event) {
+        status("YouTube Error: " + event.data);
+      }
+    }
+  });
+}
+
+function loadVideo() {
+
+  if (!ready) {
+    status("Player Loading...");
+    return;
+  }
+
+  var id = getVideoId(
+    document.getElementById("videoUrl").value
+  );
+
+  if (!id) {
+    status("Invalid Video URL");
+    return;
+  }
+
+  player.loadVideoById(id);
+  status("Loading Video...");
+}
+
+function seek(seconds) {
+
+  if (!ready) return;
+
+  try {
+    var current = player.getCurrentTime();
+    var duration = player.getDuration();
+
+    var target = Math.max(
+      0,
+      Math.min(duration, current + seconds)
+    );
+
+    player.seekTo(target, true);
+
+  } catch(e) {
+    status("Seek Failed");
+  }
+}
+
+function togglePlay() {
+
+  if (!ready) return;
+
+  var state = player.getPlayerState();
+
+  if (state === 1) {
+    player.pauseVideo();
+  } else {
+    player.playVideo();
+  }
+}
+
+function updateTime() {
+
+  if (!ready) return;
+
+  try {
+    var current = player.getCurrentTime();
+    var duration = player.getDuration();
+
+    function fmt(t) {
+      t = Math.floor(t || 0);
+
+      return String(Math.floor(t / 60)).padStart(2, "0")
+        + ":" +
+        String(t % 60).padStart(2, "0");
+    }
+
+    document.getElementById("time").textContent =
+      fmt(current) + " / " + fmt(duration);
+
+  } catch(e) {}
+}
+
+document.getElementById("load").onclick = loadVideo;
+
+document.getElementById("back30").onclick = function() {
+  seek(-30);
+};
+
+document.getElementById("back10").onclick = function() {
+  seek(-10);
+};
+
+document.getElementById("play").onclick = togglePlay;
+
+document.getElementById("forward10").onclick = function() {
+  seek(10);
+};
+
+document.getElementById("forward30").onclick = function() {
+  seek(30);
+};
+
+document.addEventListener("keydown", function(e) {
+
+  var input = document.getElementById("videoUrl");
+
+  if (document.activeElement === input) return;
+
+  switch(e.key) {
+
+    case "2":
+      e.preventDefault();
+      seek(-30);
+      break;
+
+    case "4":
+      e.preventDefault();
+      seek(-10);
+      break;
+
+    case "5":
+      e.preventDefault();
+      togglePlay();
+      break;
+
+    case "6":
+      e.preventDefault();
+      seek(10);
+      break;
+
+    case "8":
+      e.preventDefault();
+      seek(30);
+      break;
+  }
+});
+</script>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+</body>
+</html>
