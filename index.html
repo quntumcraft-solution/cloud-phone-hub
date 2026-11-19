@@ -1,266 +1,838 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html><html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RUTIK APP STORE</title><style>
-*{box-sizing:border-box}
-body{margin:0;background:#111;color:white;font-family:Arial}
-#phone{width:240px;height:320px;margin:auto;background:#101827;position:relative;overflow:hidden}
-#status{height:20px;background:#080e18;display:flex;justify-content:space-between;padding:3px 7px;font-size:11px}
-header{height:34px;background:#0757b8;text-align:center;padding:7px}
-header h2{margin:0;font-size:16px}
-#screen{height:236px;overflow:hidden;padding:7px}
-.page{display:none;height:100%}
-.page.active{display:block}
-.welcome{text-align:center;margin-bottom:10px}
-.welcome h3{margin:3px;color:#48baff}
-.welcome p{margin:3px;font-size:11px;color:#ccc}
-.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.app{height:65px;border:1px solid #334c70;background:#1b2c46;color:white;border-radius:6px}
-.app span{display:block;font-size:25px}
-.app small{font-size:10px}
-button:focus{outline:2px solid #40c4ff;background:#0757b8}
-.hint{text-align:center;font-size:10px;color:#aaa;margin-top:12px}
-#calcDisplay{height:38px;background:black;color:#00ff9d;font-size:22px;text-align:right;padding:7px;margin-bottom:6px;overflow:hidden}
-.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.calc-grid button{height:32px;border:0;border-radius:4px;background:#263b59;color:white;font-size:15px}
-.calc-grid .wide{grid-column:span 4;height:25px;background:#a52b35}
-#todo h3,#calendar h3{text-align:center;margin:2px 0 10px;color:#48baff}
-.todo-input{display:flex;gap:4px}
-#taskInput{width:145px;min-width:0;padding:7px 4px;font-size:12px}
-#addTask{width:55px;border:0;background:#087b50;color:white}
-#taskList{padding-left:22px;margin-top:10px;max-height:130px;overflow:auto;font-size:12px}
-#taskList li{padding:6px 3px;border-bottom:1px solid #35445b}
-.small-hint{text-align:center;color:#aaa;font-size:10px}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
-.calendar-grid div{font-size:11px;padding:5px 0;background:#1b2c46;border-radius:3px}
-.calendar-grid .day-name{background:#0757b8;font-weight:bold}
-.calendar-grid .today{background:#087b50;outline:1px solid white}
-.calendar-controls{display:flex;justify-content:space-between;margin-top:9px}
-.calendar-controls button,#newGame{border:0;background:#0757b8;color:white;padding:6px;font-size:10px}
-#selectedDate{text-align:center;font-size:11px;color:#48baff}
-.game-top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
-#gameBoard{width:190px;height:190px;margin:auto;background:#39485a;padding:5px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:5px;border-radius:5px}
-.tile{background:#d6d0c4;color:#222;display:flex;justify-content:center;align-items:center;font-weight:bold;font-size:17px;border-radius:4px}
-.tile.empty{background:#667487}
-.game-help{text-align:center;font-size:10px;margin:5px 0}
-#newGame{display:block;margin:4px auto}
-footer{position:absolute;bottom:0;height:30px;width:100%;background:#080e18;display:flex;justify-content:space-between;align-items:center;padding:0 9px;font-size:11px}
-</style></head><body>
-<div id="phone"><div id="status">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>RUTIK APP STORE</title><style>
+*{
+box-sizing:border-box;
+}
+
+html,body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#101827;
+color:white;
+font-family:Arial,sans-serif;
+}
+
+#phone{
+width:100vw;
+height:100vh;
+height:100dvh;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+#status{
+height:20px;
+min-height:20px;
+background:#080e18;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0 7px;
+font-size:11px;
+}
+
+header{
+height:32px;
+min-height:32px;
+background:#0757b8;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+header h2{
+font-size:15px;
+margin:0;
+}
+
+#screen{
+flex:1;
+min-height:0;
+overflow:auto;
+padding:7px;
+}
+
+.page{
+display:none;
+min-height:100%;
+}
+
+.page.active{
+display:block;
+}
+
+.welcome{
+text-align:center;
+margin:3px 0 10px;
+}
+
+.welcome h3{
+margin:3px;
+font-size:17px;
+color:#48baff;
+}
+
+.welcome p{
+font-size:11px;
+margin:3px;
+}
+
+.app-grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:7px;
+}
+
+.app{
+height:65px;
+width:100%;
+min-width:0;
+background:#1b2c46;
+border:1px solid #42638b;
+border-radius:5px;
+color:white;
+}
+
+.app span{
+display:block;
+font-size:23px;
+}
+
+.app small{
+font-size:11px;
+}
+
+button:focus,input:focus{
+outline:2px solid #40c4ff;
+background:#0757b8;
+}
+
+.hint{
+font-size:10px;
+text-align:center;
+color:#aaa;
+margin-top:12px;
+}
+
+/* CALCULATOR */
+
+#calcDisplay{
+width:100%;
+height:38px;
+background:black;
+color:#00ff9d;
+text-align:right;
+font-size:21px;
+padding:7px;
+margin-bottom:6px;
+overflow:hidden;
+}
+
+.calc-grid{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:4px;
+}
+
+.calc-grid button{
+height:34px;
+min-width:0;
+background:#263b59;
+color:white;
+border:0;
+border-radius:4px;
+font-size:15px;
+}
+
+.calc-grid .wide{
+grid-column:span 4;
+background:#a52b35;
+}
+
+/* TODO */
+
+#todo h3,#calendar h3{
+text-align:center;
+font-size:15px;
+color:#48baff;
+}
+
+.todo-input{
+display:flex;
+gap:4px;
+width:100%;
+}
+
+#taskInput{
+flex:1;
+min-width:0;
+width:0;
+padding:7px 4px;
+font-size:12px;
+}
+
+#addTask{
+width:55px;
+min-width:55px;
+border:0;
+background:#087b50;
+color:white;
+}
+
+#taskList{
+padding-left:20px;
+font-size:12px;
+max-height:140px;
+overflow:auto;
+}
+
+#taskList li{
+padding:7px 2px;
+border-bottom:1px solid #35445b;
+}
+
+.small-hint{
+font-size:10px;
+text-align:center;
+color:#aaa;
+}
+
+/* CALENDAR */
+
+.calendar-grid{
+display:grid;
+grid-template-columns:repeat(7,minmax(0,1fr));
+gap:3px;
+text-align:center;
+}
+
+.calendar-grid div{
+font-size:11px;
+padding:6px 0;
+background:#1b2c46;
+border-radius:3px;
+}
+
+.calendar-grid .day-name{
+background:#0757b8;
+font-weight:bold;
+}
+
+.calendar-grid .today{
+background:#087b50;
+}
+
+.calendar-controls{
+display:flex;
+justify-content:space-between;
+margin-top:9px;
+}
+
+.calendar-controls button,#newGame{
+background:#0757b8;
+color:white;
+border:0;
+padding:7px;
+font-size:10px;
+}
+
+#selectedDate{
+font-size:11px;
+text-align:center;
+color:#48baff;
+}
+
+/* GAME */
+
+.game-top{
+display:flex;
+justify-content:space-between;
+font-size:13px;
+margin-bottom:6px;
+}
+
+#gameBoard{
+width:min(190px,90%);
+aspect-ratio:1/1;
+margin:auto;
+background:#39485a;
+padding:5px;
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+grid-template-rows:repeat(4,minmax(0,1fr));
+gap:5px;
+}
+
+.tile{
+background:#d6d0c4;
+color:#222;
+display:flex;
+justify-content:center;
+align-items:center;
+font-weight:bold;
+font-size:clamp(12px,6vw,17px);
+border-radius:4px;
+}
+
+.tile.empty{
+background:#667487;
+}
+
+.game-help{
+font-size:10px;
+text-align:center;
+}
+
+#newGame{
+display:block;
+margin:5px auto;
+}
+
+footer{
+height:29px;
+min-height:29px;
+background:#080e18;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 8px;
+font-size:11px;
+}
+
+/* SMALL SCREENS */
+
+@media(max-height:280px){
+#status{height:16px;min-height:16px}
+header{height:25px;min-height:25px}
+footer{height:22px;min-height:22px}
+.app{height:48px}
+#screen{padding:4px}
+}
+</style></head><body><div id="phone"><div id="status">
 <span>RUTIK STORE</span>
 <span id="clock">00:00</span>
-</div><header><h2 id="pageTitle">APP STORE</h2></header><main id="screen"><div id="home" class="page active">
-<div class="welcome"><h3>Welcome!</h3><p>Your Mini App Store</p></div>
-<div class="app-grid">
-<button class="app" data-app="calculator"><span>🧮</span><small>Calculator</small></button>
-<button class="app" data-app="todo"><span>📝</span><small>To-Do</small></button>
-<button class="app" data-app="calendar"><span>📅</span><small>Calendar</small></button>
-<button class="app" data-app="game"><span>🎮</span><small>2048 Game</small></button>
-</div>
-<p class="hint">Select an app and press OK</p>
-</div><div id="calculator" class="page">
-<div id="calcDisplay">0</div>
-<div class="calc-grid">
-<button data-calc="7">7</button><button data-calc="8">8</button><button data-calc="9">9</button><button data-calc="/">÷</button>
-<button data-calc="4">4</button><button data-calc="5">5</button><button data-calc="6">6</button><button data-calc="*">×</button>
-<button data-calc="1">1</button><button data-calc="2">2</button><button data-calc="3">3</button><button data-calc="-">−</button>
-<button data-calc="0">0</button><button data-calc=".">.</button><button data-calc="=">=</button><button data-calc="+">+</button>
+</div><header>
+<h2 id="pageTitle">APP STORE</h2>
+</header><main id="screen"><div id="home" class="page active"><div class="welcome">
+<h3>RUTIK STORE</h3>
+<p>Welcome to Mini App Store</p>
+</div><div class="app-grid"><button class="app" data-app="calculator">
+<span>🧮</span>
+<small>Calculator</small>
+</button><button class="app" data-app="todo">
+<span>📝</span>
+<small>To-Do List</small>
+</button><button class="app" data-app="calendar">
+<span>📅</span>
+<small>Calendar</small>
+</button><button class="app" data-app="game">
+<span>🎮</span>
+<small>2048 Game</small>
+</button></div><p class="hint">Arrow Keys + OK to open</p></div><div id="calculator" class="page"><div id="calcDisplay">0</div><div class="calc-grid">
+<button data-calc="7">7</button>
+<button data-calc="8">8</button>
+<button data-calc="9">9</button>
+<button data-calc="/">÷</button><button data-calc="4">4</button>
+<button data-calc="5">5</button>
+<button data-calc="6">6</button>
+<button data-calc="*">×</button>
+
+<button data-calc="1">1</button>
+<button data-calc="2">2</button>
+<button data-calc="3">3</button>
+<button data-calc="-">−</button>
+
+<button data-calc="0">0</button>
+<button data-calc=".">.</button>
+<button data-calc="=">=</button>
+<button data-calc="+">+</button>
+
 <button data-calc="C" class="wide">CLEAR</button>
-</div>
-</div><div id="todo" class="page">
-<h3>My Tasks</h3>
-<div class="todo-input">
-<input id="taskInput" type="text" placeholder="Enter task">
+
+</div></div><div id="todo" class="page"><h3>MY TASKS</h3><div class="todo-input">
+<input id="taskInput" placeholder="Enter task">
 <button id="addTask">ADD</button>
-</div>
-<ul id="taskList"></ul>
-<p class="small-hint">Select task to delete</p>
-</div><div id="calendar" class="page">
-<h3 id="monthTitle"></h3>
-<div class="calendar-grid" id="calendarGrid"></div>
-<div class="calendar-controls">
+</div><ul id="taskList"></ul><p class="small-hint">Select a task to delete</p></div><div id="calendar" class="page"><h3 id="monthTitle"></h3><div class="calendar-grid" id="calendarGrid"></div><div class="calendar-controls">
 <button id="prevMonth">◀ PREV</button>
 <button id="nextMonth">NEXT ▶</button>
-</div>
-<p id="selectedDate"></p>
-</div><div id="game" class="page">
-<div class="game-top"><span>2048</span><span>Score: <b id="score">0</b></span></div>
-<div id="gameBoard"></div>
-<p class="game-help">Use Arrow Keys to play</p>
-<button id="newGame">NEW GAME</button>
+</div><p id="selectedDate"></p></div><div id="game" class="page"><div class="game-top">
+<span>2048 GAME</span>
+<span>Score: <b id="score">0</b></span>
+</div><div id="gameBoard"></div><p class="game-help">Use Arrow Keys</p><button id="newGame">NEW GAME</button>
+
 </div></main><footer>
-<span id="leftKey">MENU</span>
+<span>MENU</span>
 <span id="centerKey">SELECT</span>
 <span id="rightKey">BACK</span>
-</footer>
-</div><script>
-const pages=document.querySelectorAll(".page");
-const title=document.getElementById("pageTitle");
-let currentPage="home",selectedIndex=0;
+</footer></div><script>
+
+/* NAVIGATION */
+
+let currentPage="home";
+let selectedIndex=0;
 
 function openPage(name){
-pages.forEach(p=>p.classList.remove("active"));
-document.getElementById(name).classList.add("active");
-currentPage=name;selectedIndex=0;
-const names={home:"APP STORE",calculator:"CALCULATOR",todo:"TO-DO LIST",calendar:"CALENDAR",game:"2048 GAME"};
-title.textContent=names[name];
-document.getElementById("leftKey").textContent=name==="home"?"MENU":"OPTIONS";
-document.getElementById("centerKey").textContent=name==="home"?"OPEN":"SELECT";
-if(name==="home")focusHome();
-}
-function goBack(){if(currentPage!=="home")openPage("home")}
-function focusHome(){document.querySelectorAll(".app")[selectedIndex].focus()}
 
-document.querySelectorAll(".app").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.app)));
+document.querySelectorAll(".page").forEach(p=>{
+p.classList.remove("active");
+});
+
+document.getElementById(name).classList.add("active");
+
+currentPage=name;
+selectedIndex=0;
+
+let titles={
+home:"APP STORE",
+calculator:"CALCULATOR",
+todo:"TO-DO LIST",
+calendar:"CALENDAR",
+game:"2048 GAME"
+};
+
+document.getElementById("pageTitle").textContent=titles[name];
+
+if(name==="home"){
+focusHome();
+}
+
+}
+
+function goBack(){
+if(currentPage!=="home"){
+openPage("home");
+}
+}
+
+function focusHome(){
+let apps=document.querySelectorAll(".app");
+if(apps[selectedIndex])apps[selectedIndex].focus();
+}
+
+document.querySelectorAll(".app").forEach(btn=>{
+btn.addEventListener("click",()=>{
+openPage(btn.dataset.app);
+});
+});
+
+/* CLOCK */
 
 function updateClock(){
-let d=new Date();
-document.getElementById("clock").textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
-}
-updateClock();setInterval(updateClock,10000);
 
-// CALCULATOR
+let d=new Date();
+
+document.getElementById("clock").textContent=
+String(d.getHours()).padStart(2,"0")+":"+
+String(d.getMinutes()).padStart(2,"0");
+
+}
+
+updateClock();
+setInterval(updateClock,10000);
+
+/* CALCULATOR */
+
 let calcValue="";
+
 function calculate(v){
+
 let display=document.getElementById("calcDisplay");
-if(v==="C"){calcValue="";display.textContent="0";return}
-if(v==="="){
-try{
-if(!/^[0-9+\-*/.() ]+$/.test(calcValue))throw Error();
-let result=Function('"use strict";return ('+calcValue+')')();
-if(!Number.isFinite(result))throw Error();
-calcValue=String(Number(result.toFixed(8)));display.textContent=calcValue;
-}catch(e){display.textContent="Error";calcValue=""}
+
+if(v==="C"){
+calcValue="";
+display.textContent="0";
 return;
 }
-if(calcValue.length<25)calcValue+=v;
-display.textContent=calcValue||"0";
-}
-document.querySelectorAll("[data-calc]").forEach(b=>b.addEventListener("click",()=>calculate(b.dataset.calc)));
 
-// TO DO
-let tasks=[];
-try{tasks=JSON.parse(localStorage.getItem("rutik_tasks"))||[]}catch(e){tasks=[]}
-function saveTasks(){localStorage.setItem("rutik_tasks",JSON.stringify(tasks))}
-function renderTasks(){
-let list=document.getElementById("taskList");list.innerHTML="";
-tasks.forEach((task,i)=>{
-let li=document.createElement("li");li.textContent=task;li.dataset.index=i;list.appendChild(li);
+if(v==="="){
+
+try{
+
+if(!/^[0-9+\-*/.() ]+$/.test(calcValue))throw Error();
+
+let result=Function('"use strict";return ('+calcValue+')')();
+
+if(!Number.isFinite(result))throw Error();
+
+calcValue=String(Number(result.toFixed(8)));
+
+display.textContent=calcValue;
+
+}catch(e){
+
+display.textContent="Error";
+calcValue="";
+
+}
+
+return;
+}
+
+if(calcValue.length<25){
+calcValue+=v;
+}
+
+display.textContent=calcValue||"0";
+
+}
+
+document.querySelectorAll("[data-calc]").forEach(btn=>{
+btn.addEventListener("click",()=>{
+calculate(btn.dataset.calc);
 });
+});
+
+/* TODO */
+
+let tasks=[];
+
+try{
+tasks=JSON.parse(localStorage.getItem("rutik_tasks"))||[];
+}catch(e){
+tasks=[];
 }
+
+function saveTasks(){
+try{
+localStorage.setItem("rutik_tasks",JSON.stringify(tasks));
+}catch(e){}
+}
+
+function renderTasks(){
+
+let list=document.getElementById("taskList");
+list.innerHTML="";
+
+tasks.forEach((task,index)=>{
+
+let li=document.createElement("li");
+li.textContent=task;
+li.dataset.index=index;
+
+list.appendChild(li);
+
+});
+
+}
+
 function addTask(){
-let input=document.getElementById("taskInput"),v=input.value.trim();
-if(!v)return;
-tasks.push(v);saveTasks();renderTasks();input.value="";
-}
-document.getElementById("addTask").onclick=addTask;
-document.getElementById("taskList").onclick=e=>{
-let li=e.target.closest("li");if(!li)return;
-tasks.splice(Number(li.dataset.index),1);saveTasks();renderTasks();
-};
+
+let input=document.getElementById("taskInput");
+let value=input.value.trim();
+
+if(!value)return;
+
+tasks.push(value);
+
+saveTasks();
 renderTasks();
 
-// CALENDAR
+input.value="";
+
+}
+
+document.getElementById("addTask").onclick=addTask;
+
+document.getElementById("taskList").onclick=e=>{
+
+let li=e.target.closest("li");
+
+if(!li)return;
+
+tasks.splice(Number(li.dataset.index),1);
+
+saveTasks();
+renderTasks();
+
+};
+
+renderTasks();
+
+/* CALENDAR */
+
 let calendarDate=new Date();
+
 function renderCalendar(){
-let y=calendarDate.getFullYear(),m=calendarDate.getMonth();
-let months=["January","February","March","April","May","June","July","August","September","October","November","December"];
-document.getElementById("monthTitle").textContent=months[m]+" "+y;
-let grid=document.getElementById("calendarGrid");grid.innerHTML="";
-["S","M","T","W","T","F","S"].forEach(d=>{
-let el=document.createElement("div");el.className="day-name";el.textContent=d;grid.appendChild(el);
-});
-let first=new Date(y,m,1).getDay(),total=new Date(y,m+1,0).getDate();
-for(let i=0;i<first;i++)grid.appendChild(document.createElement("div"));
-for(let day=1;day<=total;day++){
-let el=document.createElement("div");el.textContent=day;
-let today=new Date();
-if(day===today.getDate()&&m===today.getMonth()&&y===today.getFullYear())el.classList.add("today");
+
+let year=calendarDate.getFullYear();
+let month=calendarDate.getMonth();
+
+let months=[
+"January","February","March","April",
+"May","June","July","August",
+"September","October","November","December"
+];
+
+document.getElementById("monthTitle").textContent=
+months[month]+" "+year;
+
+let grid=document.getElementById("calendarGrid");
+
+grid.innerHTML="";
+
+["S","M","T","W","T","F","S"].forEach(day=>{
+
+let el=document.createElement("div");
+el.className="day-name";
+el.textContent=day;
+
 grid.appendChild(el);
+
+});
+
+let first=new Date(year,month,1).getDay();
+let total=new Date(year,month+1,0).getDate();
+
+for(let i=0;i<first;i++){
+grid.appendChild(document.createElement("div"));
 }
-document.getElementById("selectedDate").textContent="Today: "+new Date().toLocaleDateString();
+
+for(let day=1;day<=total;day++){
+
+let el=document.createElement("div");
+el.textContent=day;
+
+let today=new Date();
+
+if(
+day===today.getDate() &&
+month===today.getMonth() &&
+year===today.getFullYear()
+){
+el.classList.add("today");
 }
-document.getElementById("prevMonth").onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()-1);renderCalendar()};
-document.getElementById("nextMonth").onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()+1);renderCalendar()};
+
+grid.appendChild(el);
+
+}
+
+document.getElementById("selectedDate").textContent=
+"Today: "+new Date().toLocaleDateString();
+
+}
+
+document.getElementById("prevMonth").onclick=()=>{
+calendarDate.setMonth(calendarDate.getMonth()-1);
+renderCalendar();
+};
+
+document.getElementById("nextMonth").onclick=()=>{
+calendarDate.setMonth(calendarDate.getMonth()+1);
+renderCalendar();
+};
+
 renderCalendar();
 
-// 2048 GAME
-let board=[],score=0;
-function newGame(){board=Array(16).fill(0);score=0;addTile();addTile();renderGame()}
-function addTile(){
-let empty=[];board.forEach((v,i)=>{if(v===0)empty.push(i)});
-if(!empty.length)return;
-let i=empty[Math.floor(Math.random()*empty.length)];board[i]=Math.random()<0.9?2:4;
-}
-function renderGame(){
-let el=document.getElementById("gameBoard");el.innerHTML="";
-board.forEach(v=>{
-let tile=document.createElement("div");tile.className=v?"tile":"tile empty";tile.textContent=v||"";el.appendChild(tile);
-});
-document.getElementById("score").textContent=score;
-}
-function move(dir){
-let old=board.join(",");
-for(let line=0;line<4;line++){
-let indexes=[];
-for(let i=0;i<4;i++){
-if(dir==="left")indexes.push(line*4+i);
-if(dir==="right")indexes.push(line*4+3-i);
-if(dir==="up")indexes.push(i*4+line);
-if(dir==="down")indexes.push((3-i)*4+line);
-}
-let vals=indexes.map(i=>board[i]).filter(v=>v);
-for(let i=0;i<vals.length-1;i++){
-if(vals[i]===vals[i+1]){vals[i]*=2;score+=vals[i];vals.splice(i+1,1)}
-}
-while(vals.length<4)vals.push(0);
-indexes.forEach((idx,i)=>board[idx]=vals[i]);
-}
-if(old!==board.join(","))addTile();
+/* 2048 GAME */
+
+let board=[];
+let score=0;
+
+function newGame(){
+
+board=Array(16).fill(0);
+score=0;
+
+addTile();
+addTile();
+
 renderGame();
-if(!board.includes(0)&&!canMove())setTimeout(()=>alert("Game Over! Score: "+score),100);
+
 }
+
+function addTile(){
+
+let empty=[];
+
+board.forEach((v,i)=>{
+if(v===0)empty.push(i);
+});
+
+if(!empty.length)return;
+
+let i=empty[Math.floor(Math.random()*empty.length)];
+
+board[i]=Math.random()<0.9?2:4;
+
+}
+
+function renderGame(){
+
+let el=document.getElementById("gameBoard");
+
+el.innerHTML="";
+
+board.forEach(v=>{
+
+let tile=document.createElement("div");
+
+tile.className=v?"tile":"tile empty";
+tile.textContent=v||"";
+
+el.appendChild(tile);
+
+});
+
+document.getElementById("score").textContent=score;
+
+}
+
+function move(direction){
+
+let old=board.join(",");
+
+for(let line=0;line<4;line++){
+
+let indexes=[];
+
+for(let i=0;i<4;i++){
+
+if(direction==="left")indexes.push(line*4+i);
+if(direction==="right")indexes.push(line*4+3-i);
+if(direction==="up")indexes.push(i*4+line);
+if(direction==="down")indexes.push((3-i)*4+line);
+
+}
+
+let values=indexes.map(i=>board[i]).filter(v=>v!==0);
+
+for(let i=0;i<values.length-1;i++){
+
+if(values[i]===values[i+1]){
+
+values[i]*=2;
+score+=values[i];
+
+values.splice(i+1,1);
+
+}
+
+}
+
+while(values.length<4)values.push(0);
+
+indexes.forEach((index,i)=>{
+board[index]=values[i];
+});
+
+}
+
+if(old!==board.join(",")){
+addTile();
+}
+
+renderGame();
+
+if(!board.includes(0)&&!canMove()){
+setTimeout(()=>alert("GAME OVER! Score: "+score),100);
+}
+
+}
+
 function canMove(){
+
 for(let i=0;i<16;i++){
+
 if(i%4<3&&board[i]===board[i+1])return true;
 if(i<12&&board[i]===board[i+4])return true;
+
 }
+
 return false;
+
 }
+
 document.getElementById("newGame").onclick=newGame;
+
 newGame();
 
-// KEYPAD
-document.addEventListener("keydown",e=>{
+/* KEYPAD */
+
+document.addEventListener("keydown",function(e){
+
 let key=e.key;
-if(key==="Escape"||key==="Backspace"){e.preventDefault();goBack();return}
+
+if(key==="Escape"||key==="Backspace"){
+
+e.preventDefault();
+goBack();
+return;
+
+}
+
 if(currentPage==="home"){
+
 let apps=document.querySelectorAll(".app");
+
 if(key==="ArrowRight")selectedIndex=Math.min(3,selectedIndex+1);
 if(key==="ArrowLeft")selectedIndex=Math.max(0,selectedIndex-1);
 if(key==="ArrowDown")selectedIndex=Math.min(3,selectedIndex+2);
 if(key==="ArrowUp")selectedIndex=Math.max(0,selectedIndex-2);
-if(key.startsWith("Arrow")){e.preventDefault();focusHome()}
-if(key==="Enter")apps[selectedIndex].click();
-return;
+
+if(key.startsWith("Arrow")){
+e.preventDefault();
+focusHome();
 }
+
+if(key==="Enter"){
+apps[selectedIndex].click();
+}
+
+return;
+
+}
+
 if(currentPage==="game"){
-let dirs={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right"};
-if(dirs[key]){e.preventDefault();move(dirs[key])}
-return;
+
+let directions={
+ArrowUp:"up",
+ArrowDown:"down",
+ArrowLeft:"left",
+ArrowRight:"right"
+};
+
+if(directions[key]){
+e.preventDefault();
+move(directions[key]);
 }
+
+return;
+
+}
+
 if(currentPage==="calculator"){
+
 if(/^[0-9.+\-*/]$/.test(key))calculate(key);
 if(key==="Enter")calculate("=");
 if(key==="Delete")calculate("C");
+
 }
-if(currentPage==="todo"&&key==="Enter"&&document.activeElement.id==="taskInput")addTask();
+
+if(currentPage==="todo"&&key==="Enter"&&document.activeElement.id==="taskInput"){
+addTask();
+}
+
 });
+
+/* SOFT KEYS */
+
 document.getElementById("rightKey").onclick=goBack;
+
 document.getElementById("centerKey").onclick=()=>{
-if(currentPage==="home")document.querySelectorAll(".app")[selectedIndex].click();
+
+if(currentPage==="home"){
+document.querySelectorAll(".app")[selectedIndex].click();
+}
+
 };
+
 openPage("home");
+
 </script></body>
 </html>
