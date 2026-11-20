@@ -1,149 +1,76 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK FILE ACCESS TEST</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud Phone Test</title>
 <style>
-body{
- background:#07111f;
- color:white;
- font-family:Arial;
- padding:12px;
- font-size:14px;
+body {
+  background: #101827;
+  color: white;
+  font-family: Arial;
+  padding: 10px;
+  font-size: 14px;
 }
-h2{color:#35e5c4}
-.box{
- background:#14243a;
- border:1px solid #456078;
- padding:12px;
- margin:10px 0;
- border-radius:6px;
+h3 { color: #00e0a0; }
+button, input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 14px;
 }
-button{
- width:100%;
- padding:12px;
- margin:5px 0;
- background:#087e70;
- color:white;
- border:0;
- font-weight:bold;
-}
-#log{
- white-space:pre-wrap;
- overflow-wrap:anywhere;
- font-size:12px;
- color:#ffd36b;
+#result {
+  background: #263449;
+  padding: 10px;
+  line-height: 2;
+  overflow-wrap: anywhere;
 }
 </style>
 </head>
+<body><h3>CLOUD PHONE TEST</h3>
+<div id="result">Testing...</div><h3>1. FILE SELECT TEST</h3>
+<input type="file" id="file"><div id="filename">No file selected</div><h3>2. DOWNLOAD TEST</h3>
+<button id="download">DOWNLOAD TEST FILE</button><script>
+async function test() {
+  let r = document.getElementById("result");
 
-<body>
+  if (!navigator.hasFeature) {
+    r.innerHTML = "Cloud Phone API: NOT FOUND";
+    return;
+  }
 
-<h2>RUTIK FILE ACCESS TEST</h2>
+  try {
+    let upload = await navigator.hasFeature("FileUpload");
+    let download = await navigator.hasFeature("FileDownload");
 
-<div class="box">
-<b>1. FILE PICKER TEST</b>
-<input type="file" id="file" style="margin-top:12px">
-<p id="fileResult">Waiting for file selection...</p>
-</div>
-
-<div class="box">
-<b>2. DOWNLOAD TEST</b>
-<button onclick="testDownload()">DOWNLOAD TEST FILE</button>
-<p id="downloadResult">Not tested</p>
-</div>
-
-<div class="box">
-<b>3. BROWSER SUPPORT</b>
-<div id="support"></div>
-</div>
-
-<div class="box">
-<b>4. TEST LOG</b>
-<div id="log"></div>
-</div>
-
-<script>
-const log=document.getElementById("log");
-
-function addLog(message){
- log.textContent+=message+"\n";
+    r.innerHTML =
+      "FileUpload: " + upload +
+      "<br>FileDownload: " + download;
+  } catch(e) {
+    r.innerHTML = "Error: " + e.message;
+  }
 }
 
-function check(name,value){
- document.getElementById("support").innerHTML+=
- "<p>"+name+": <b>"+(value?"YES":"NO")+"</b></p>";
-}
+document.getElementById("file").onchange = function() {
+  document.getElementById("filename").innerText =
+    this.files.length ? this.files[0].name : "No file";
+};
 
-addLog("RUTIK FILE TEST STARTED");
-
-check("File API",!!window.File);
-check("FileReader",!!window.FileReader);
-check("Blob",!!window.Blob);
-check("URL.createObjectURL",!!(window.URL && URL.createObjectURL));
-check("File System Access API",!!window.showOpenFilePicker);
-check("Download attribute","download" in document.createElement("a"));
-check("Clipboard API",!!navigator.clipboard);
-
-document.getElementById("file").addEventListener("change",function(){
-
- const f=this.files && this.files[0];
-
- if(!f){
-  document.getElementById("fileResult").textContent=
-  "No file selected";
-  addLog("FILE PICKER: No file returned");
-  return;
- }
-
- document.getElementById("fileResult").textContent=
- f.name+" | "+f.size+" bytes";
-
- addLog("FILE PICKER SUCCESS: "+f.name);
-
-});
-
-function testDownload(){
-
- try{
-
-  const blob=new Blob(
-   ["RUTIK FILE ACCESS TEST SUCCESS"],
-   {type:"text/plain"}
+document.getElementById("download").onclick = function() {
+  let blob = new Blob(
+    ["RUTIK FAST SHARE DOWNLOAD TEST"],
+    {type:"text/plain"}
   );
 
-  const url=URL.createObjectURL(blob);
-
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="RUTIK-TEST.txt";
-
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "RUTIK-TEST.txt";
   document.body.appendChild(a);
   a.click();
   a.remove();
 
-  document.getElementById("downloadResult").textContent=
-  "Download request sent. Check if file was saved.";
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+};
 
-  addLog("DOWNLOAD REQUEST SENT");
-
-  setTimeout(function(){
-   URL.revokeObjectURL(url);
-  },10000);
-
- }catch(e){
-
-  document.getElementById("downloadResult").textContent=
-  "ERROR: "+e.message;
-
-  addLog("DOWNLOAD ERROR: "+e.message);
-
- }
-
-}
-</script>
-
-</body>
+test();
+</script></body>
 </html>
