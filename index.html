@@ -1,84 +1,391 @@
-<!doctype html>
-<html lang="mr">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>RUTIK KAIOS UNIVERSE</title>
+<title>RUTIK FAST SHARE</title>
+
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
 <style>
-:root{--bg:#08111f;--panel:#142238;--ink:#f4f7ff;--muted:#aab8cc;--accent:#21d4a3;--focus:#ffd166}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif;overflow:hidden}
-#app{height:100dvh;min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:auto}
-header{padding:9px 10px 7px;background:#101d31;border-bottom:1px solid #263a55}
-.brand{font-weight:800;font-size:16px;letter-spacing:.4px}.sub{font-size:10px;color:var(--muted);margin-top:3px}
-#screen{flex:1;overflow:auto;padding:9px;scrollbar-width:thin}
-h2{font-size:15px;margin:2px 0 8px}.hint{color:var(--muted);font-size:11px;line-height:1.4;margin:5px 0 9px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-button,.tile{border:1px solid #304662;background:var(--panel);color:var(--ink);border-radius:9px;padding:10px 7px;text-align:left;font-size:13px;min-height:45px}
-button:focus,.tile:focus{outline:2px solid var(--focus);outline-offset:1px}
-.tile b{display:block;font-size:13px}.tile small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
-button.primary{background:#087e67;border-color:#21d4a3}
-input,textarea,select{width:100%;background:#0b1728;color:var(--ink);border:1px solid #405775;border-radius:7px;padding:9px;font:14px Arial;margin:4px 0 8px}
-textarea{min-height:105px;resize:none}a{color:#6ce8c3} .row{display:flex;gap:6px}.row>*{flex:1}
-.card{background:#122139;border:1px solid #293e5c;border-radius:8px;padding:9px;margin:7px 0}
-.item{padding:9px;border-bottom:1px solid #293e5c}
-footer{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;background:#101d31;color:var(--muted);font-size:10px}
-#toast{color:var(--accent);font-size:11px;min-height:14px}
-.cell{background:#213b59;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:17px;min-height:39px}
-@media(max-height:360px){header{padding:5px 8px}.brand{font-size:14px}#screen{padding:6px}.grid{gap:5px}button,.tile{min-height:38px;padding:7px 5px}footer{height:25px}}
+*{box-sizing:border-box}
+body{
+ margin:0;background:#07111f;color:#fff;
+ font-family:Arial,sans-serif;font-size:12px;
+}
+header{
+ background:#101f34;padding:10px 7px;
+ border-bottom:2px solid #16d6b4;
+ text-align:center;
+}
+header h2{margin:0;color:#35e5c4;font-size:16px}
+header small{color:#9db6ca}
+main{padding:7px;max-width:500px;margin:auto}
+.card{
+ background:#12243a;border:1px solid #294761;
+ border-radius:7px;padding:9px;margin-bottom:8px;
+}
+.title{color:#42e5c5;font-weight:bold;margin-bottom:8px}
+button{
+ background:#087e70;color:white;border:0;
+ border-radius:4px;padding:9px;font-weight:bold;
+}
+input{
+ width:100%;padding:9px;background:#081727;
+ color:white;border:1px solid #3b5872;
+ border-radius:4px;margin:5px 0;
+}
+button:focus,input:focus{outline:2px solid #42e5c5}
+.full{width:100%;margin-top:5px}
+.secondary{background:#304a63}
+#status{color:#ffd36b;line-height:1.5}
+#myCode{
+ color:#43e8c6;font-size:19px;
+ font-weight:bold;text-align:center;
+ overflow-wrap:anywhere;padding:8px;
+}
+.progress{
+ height:9px;background:#07111f;
+ border-radius:8px;overflow:hidden;margin-top:8px;
+}
+#bar{height:100%;width:0%;background:#27dcb9}
+#percent{text-align:center;color:#43e8c6;margin-top:5px}
+#fileName{overflow-wrap:anywhere;color:#b6cadd}
+.note{font-size:10px;color:#8fa9c1;line-height:1.5}
+footer{text-align:center;color:#6e8ba5;font-size:9px;padding:8px}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
-<div id="app">
-<header><div class="brand">🌐 RUTIK KAIOS UNIVERSE</div><div class="sub">itel Super Guru 4G • Keypad Edition</div></header>
-<main id="screen"></main>
-<footer><span>↑↓←→ निवडा • OK उघडा</span><span>RSK: Back</span></footer>
+
+<header>
+<h2>⚡ RUTIK FAST SHARE</h2>
+<small>Fast • Private • Wireless File Transfer</small>
+</header>
+
+<main>
+
+<div class="card">
+ <div class="title">● CONNECTION STATUS</div>
+ <div id="status">Connecting to network...</div>
 </div>
+
+<div class="card">
+ <div class="title">① YOUR DEVICE CODE</div>
+ <div id="myCode">Connecting...</div>
+ <button class="full" onclick="copyCode()">COPY MY CODE</button>
+ <div class="note">हा कोड दुसऱ्या मोबाईलमध्ये टाका.</div>
+</div>
+
+<div class="card">
+ <div class="title">② CONNECT TO OTHER DEVICE</div>
+ <input id="remoteCode" placeholder="Enter other device code">
+ <button class="full" onclick="connectDevice()">CONNECT</button>
+</div>
+
+<div class="card">
+ <div class="title">③ SEND FILE</div>
+ <input type="file" id="fileInput">
+ <div id="fileName">No file selected</div>
+ <button class="full" onclick="sendFile()">SEND FILE</button>
+</div>
+
+<div class="card">
+ <div class="title">④ RECEIVE FILE</div>
+ <div id="receivedName">Waiting for file...</div>
+ <a id="downloadLink" class="hidden" download>
+ <button class="full">DOWNLOAD RECEIVED FILE</button>
+ </a>
+</div>
+
+<div class="card">
+ <div class="title">TRANSFER PROGRESS</div>
+ <div class="progress"><div id="bar"></div></div>
+ <div id="percent">0%</div>
+</div>
+
+<div class="card">
+ <button class="full secondary" onclick="location.reload()">RESTART CONNECTION</button>
+</div>
+
+</main>
+
+<footer>
+RUTIK FAST SHARE • DIRECT DEVICE TRANSFER
+</footer>
+
 <script>
-const screen=document.getElementById('screen');let page='home',stack=[],focusIndex=0,game=null;
-const apps=[
-['WhatsApp','मेसेजिंग • Web','https://web.whatsapp.com/','external'],
-['YouTube','व्हिडिओ','https://m.youtube.com/','external'],
-['Google','Search / Internet','https://www.google.com/','external'],
-['Wikipedia','ज्ञानकोश','https://www.wikipedia.org/','external'],
-['Google Maps','नकाशे','https://maps.google.com/','external'],
-['YouTube Music','Music streaming','https://music.youtube.com/','external'],
-['RUTIK LIVE TV','IPTV • Internet आवश्यक','https://iptv-org.github.io/iptv/countries/in.m3u','external'],
-['Telegram Web','Messaging','https://web.telegram.org/','external'],
-['Matrix Chat','Chat client','https://app.element.io/','external'],
-['RSS Reader','News feeds','https://feedly.com/','external'],
-['Calendar','दिनदर्शिका','', 'calendar'],
-['Notes','नोंदी सेव्ह करा','', 'notes'],
-['To-Do','कामांची यादी','', 'todo'],
-['Calculator','गणित','', 'calc'],
-['Quiz','सामान्य ज्ञान','', 'quiz'],
-['2048 Game','कीपॅड गेम','', '2048'],
-['Clock','वेळ आणि तारीख','', 'clock'],
-['Dictionary','शब्दार्थ शोध','https://www.google.com/search?q=meaning+of+','external']
-];
-function home(){page='home';screen.innerHTML='<h2>Apps Menu</h2><div class="hint">खालील अ‍ॅप निवडा. इंटरनेटवरील सेवांसाठी नेटवर्क आवश्यक आहे.</div><div class="grid">'+apps.map((a,i)=>`<button class="tile" data-i="${i}"><b>${icon(i)} ${a[0]}</b><small>${a[1]}</small></button>`).join('')+'</div><div class="card"><b>Device:</b> itel Super Guru 4G / Cloud Phone<br><span class="hint">एकाच HTML फाइलमधील हलका keypad launcher.</span></div>';screen.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>launch(+b.dataset.i));focusFirst()}
-function icon(i){return ['💬','▶','🔎','📚','🗺','🎵','📺','✈','🟣','📰','📅','📝','☑','🧮','❓','🎮','🕒','📖'][i]||'📱'}
-function launch(i){let a=apps[i];if(a[3]==='external'){toast('सेवा उघडत आहे…');location.href=a[2];return}stack.push(page);({calendar,notes,todo,calc,quiz, '2048':game2048, clock}[a[3]])()}
-function back(){if(page==='home')return; if(stack.length){stack.pop();home()}else home()}
-function toast(t){let el=document.getElementById('toast');if(el)el.textContent=t}
-function focusFirst(){focusIndex=0;let e=screen.querySelector('button,input,textarea');if(e)e.focus()}
-function shell(title,body){page=title.toLowerCase();screen.innerHTML=`<h2>${title}</h2>${body}<div id="toast"></div><div class="row"><button onclick="home()">⌂ Home</button><button onclick="back()">← Back</button></div>`;focusFirst()}
-function notes(){shell('Notes',`<textarea id="note" placeholder="तुमची नोंद येथे लिहा…"></textarea><div class="row"><button class="primary" onclick="localStorage.setItem('rku_note',document.getElementById('note').value);toast('नोंद सेव्ह झाली')">Save</button><button onclick="document.getElementById('note').value=''">Clear</button></div>`);document.getElementById('note').value=localStorage.getItem('rku_note')||''}
-function todo(){let list=JSON.parse(localStorage.getItem('rku_tasks')||'[]');shell('To-Do',`<input id="task" placeholder="नवीन काम लिहा"><button class="primary" onclick="addTask()">Add Task</button><div id="tasks"></div>`);renderTasks()}
-function addTask(){let v=document.getElementById('task').value.trim();if(!v)return;let a=JSON.parse(localStorage.getItem('rku_tasks')||'[]');a.push(v);localStorage.setItem('rku_tasks',JSON.stringify(a));document.getElementById('task').value='';renderTasks()}
-function renderTasks(){let a=JSON.parse(localStorage.getItem('rku_tasks')||'[]');document.getElementById('tasks').innerHTML=a.map((v,i)=>`<div class="item">${i+1}. ${esc(v)} <button onclick="delTask(${i})">Done ✓</button></div>`).join('')||'<p class="hint">कामांची यादी रिकामी आहे.</p>'}
-function delTask(i){let a=JSON.parse(localStorage.getItem('rku_tasks')||'[]');a.splice(i,1);localStorage.setItem('rku_tasks',JSON.stringify(a));renderTasks()}
-function calendar(){let d=new Date();shell('Calendar',`<div class="card"><h2>${d.toLocaleDateString('mr-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</h2><p>${d.toLocaleTimeString()}</p></div><input type="date" id="date"><div id="dateout" class="hint">तारीख निवडा.</div>`);document.getElementById('date').onchange=e=>document.getElementById('dateout').textContent=e.target.value}
-function clock(){shell('Clock',`<div class="card"><h2 id="time"></h2><div id="dateout"></div></div>`);function tick(){let d=new Date();document.getElementById('time').textContent=d.toLocaleTimeString();document.getElementById('dateout').textContent=d.toLocaleDateString()}tick();setInterval(()=>{if(page==='clock')tick()},1000)}
-function calc(){shell('Calculator',`<input id="expr" placeholder="उदा. 25*(4+2)" inputmode="decimal"><button class="primary" onclick="calculate()">= Calculate</button><div class="card" id="result">उत्तर येथे दिसेल</div><div class="grid">${['7','8','9','/','4','5','6','*','1','2','3','-','0','.','(',')','+','C'].map(x=>`<button onclick="keyCalc('${x}')">${x}</button>`).join('')}</div>`)}
-function keyCalc(x){let e=document.getElementById('expr');if(x==='C')e.value='';else e.value+=x}
-function calculate(){let s=document.getElementById('expr').value;if(!/^[0-9+\-*/(). %]+$/.test(s)){toast('अवैध गणित');return}try{let n=Function('"use strict";return ('+s+')')();document.getElementById('result').textContent=Number.isFinite(n)?n:'अवैध उत्तर'}catch(e){document.getElementById('result').textContent='चूक'}}
-const questions=[['भारताची राजधानी कोणती?',['मुंबई','नवी दिल्ली','पुणे'],1],['2 + 2 किती?',['3','4','5'],1],['संगणकाचा मेंदू कोणता?',['CPU','Mouse','Monitor'],0],['पाण्याचे रासायनिक सूत्र?',['CO2','H2O','O2'],1]];
-function quiz(){let q=0,score=0;shell('Quiz',`<div id="qbox"></div><div id="score" class="hint"></div>`);showQ();function showQ(){let x=questions[q];document.getElementById('qbox').innerHTML=`<div class="card">${q+1}/${questions.length}. ${x[0]}</div>`+x[1].map((v,i)=>`<button style="width:100%;margin:3px 0" onclick="answer(${i})">${i+1}. ${v}</button>`).join('');window.answer=i=>{if(i===x[2])score++;q++;if(q===questions.length){document.getElementById('qbox').innerHTML='<h2>Quiz पूर्ण!</h2>';document.getElementById('score').textContent='Score: '+score+'/'+questions.length}else showQ()}}}
-function game2048(){let board=Array(16).fill(0);function add(){let z=board.map((v,i)=>v?null:i).filter(v=>v!==null);if(z.length)board[z[Math.floor(Math.random()*z.length)]]=Math.random()<.9?2:4}add();add();shell('2048 Game',`<div class="hint">Arrow keys वापरा. समान संख्या एकत्र करा.</div><div id="board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px"></div><button onclick="resetGame()">Restart</button>`);page='2048';window.draw2048=()=>document.getElementById('board').innerHTML=board.map(v=>`<div class="cell">${v||''}</div>`).join('');window.move2048=dir=>{let lines=[];for(let n=0;n<4;n++){let ids=dir==='left'?[0,1,2,3].map(c=>n*4+c):dir==='right'?[3,2,1,0].map(c=>n*4+c):dir==='up'?[0,1,2,3].map(r=>r*4+n):[3,2,1,0].map(r=>r*4+n);lines.push(ids)}lines.forEach(ids=>{let vals=ids.map(i=>board[i]).filter(Boolean);for(let k=0;k<vals.length-1;k++)if(vals[k]===vals[k+1]){vals[k]*=2;vals.splice(k+1,1)}while(vals.length<4)vals.push(0);ids.forEach((id,k)=>board[id]=vals[k])});add();draw2048()};window.resetGame=()=>{board=Array(16).fill(0);add();add();draw2048()};draw2048()}
-function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-document.addEventListener('keydown',e=>{if(page==='2048'){if(e.key.startsWith('Arrow')){e.preventDefault();move2048(({ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'})[e.key])}return}if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();back();return}if(['ArrowDown','ArrowUp'].includes(e.key)){let els=[...screen.querySelectorAll('button,input,textarea')].filter(x=>!x.disabled);if(!els.length)return;e.preventDefault();let i=els.indexOf(document.activeElement);i=(i+(e.key==='ArrowDown'?1:-1)+els.length)%els.length;els[i].focus()}});
-document.addEventListener('back',e=>{e.preventDefault();back()});
-window.addEventListener('error',e=>{screen.innerHTML='<h2>App Error</h2><div class="card">'+esc(e.message||'JavaScript error')+'</div><button onclick="location.reload()">Reload</button>';});
-home();
+const statusBox=document.getElementById("status");
+const codeBox=document.getElementById("myCode");
+const remoteInput=document.getElementById("remoteCode");
+const fileInput=document.getElementById("fileInput");
+const fileName=document.getElementById("fileName");
+const receivedName=document.getElementById("receivedName");
+const bar=document.getElementById("bar");
+const percent=document.getElementById("percent");
+const downloadLink=document.getElementById("downloadLink");
+
+let peer=null;
+let connection=null;
+let myCode="";
+let incomingFile=null;
+let incomingParts=[];
+let receivedBytes=0;
+let waitingAck=null;
+
+function status(text){
+ statusBox.textContent=text;
+}
+
+function progress(value){
+ value=Math.max(0,Math.min(100,value));
+ bar.style.width=value+"%";
+ percent.textContent=Math.floor(value)+"%";
+}
+
+function makeCode(){
+ return "RFS-"+Math.random().toString(36)
+ .substring(2,8).toUpperCase();
+}
+
+function startPeer(){
+ if(typeof Peer==="undefined"){
+  status("PeerJS library could not load. Check internet.");
+  return;
+ }
+
+ myCode=makeCode();
+ peer=new Peer(myCode);
+
+ peer.on("open",id=>{
+  myCode=id;
+  codeBox.textContent=id;
+  status("Ready. Share your code with the other device.");
+ });
+
+ peer.on("connection",conn=>{
+  if(connection && connection.open){
+   conn.close();
+   return;
+  }
+  connection=conn;
+  setupConnection();
+ });
+
+ peer.on("error",err=>{
+  status("Connection error: "+err.type);
+  if(err.type==="unavailable-id"){
+   status("Code conflict. Reload and try again.");
+  }
+ });
+
+ peer.on("disconnected",()=>{
+  status("Network disconnected. Reload the page.");
+ });
+}
+
+function connectDevice(){
+ if(!peer || !peer.open){
+  status("Please wait for your device code.");
+  return;
+ }
+
+ const code=remoteInput.value.trim().toUpperCase();
+
+ if(!code || code===myCode){
+  status("Enter a valid different device code.");
+  return;
+ }
+
+ status("Connecting to "+code+" ...");
+
+ connection=peer.connect(code,{
+  reliable:true
+ });
+
+ setupConnection();
+}
+
+function setupConnection(){
+ if(!connection)return;
+
+ connection.on("open",()=>{
+  status("Connected successfully! You can send files.");
+ });
+
+ connection.on("data",data=>{
+  handleData(data);
+ });
+
+ connection.on("close",()=>{
+  status("Other device disconnected.");
+  connection=null;
+ });
+
+ connection.on("error",()=>{
+  status("Transfer connection error.");
+ });
+}
+
+fileInput.addEventListener("change",()=>{
+ const file=fileInput.files[0];
+ fileName.textContent=file?
+ file.name+" ("+formatSize(file.size)+")":
+ "No file selected";
+});
+
+function sendFile(){
+ if(!connection || !connection.open){
+  status("Connect to another device first.");
+  return;
+ }
+
+ const file=fileInput.files[0];
+
+ if(!file){
+  status("Please select a file first.");
+  return;
+ }
+
+ if(waitingAck){
+  status("A transfer is already running.");
+  return;
+ }
+
+ const chunkSize=16*1024;
+
+ status("Preparing file transfer...");
+ progress(0);
+
+ connection.send({
+  type:"start",
+  name:file.name,
+  size:file.size,
+  mime:file.type || "application/octet-stream",
+  chunkSize:chunkSize
+ });
+
+ let offset=0;
+
+ function sendNext(){
+  if(offset>=file.size){
+   connection.send({type:"complete"});
+   status("File sent successfully!");
+   progress(100);
+   waitingAck=null;
+   return;
+  }
+
+  const chunk=file.slice(offset,offset+chunkSize);
+
+  chunk.arrayBuffer().then(buffer=>{
+   connection.send({
+    type:"chunk",
+    data:buffer,
+    size:buffer.byteLength
+   });
+
+   waitingAck=()=>{
+    offset+=buffer.byteLength;
+    progress((offset/file.size)*100);
+    sendNext();
+   };
+  }).catch(()=>{
+   waitingAck=null;
+   status("Could not read file.");
+  });
+ }
+
+ sendNext();
+}
+
+function handleData(data){
+
+ if(!data || !data.type)return;
+
+ if(data.type==="start"){
+  incomingFile={
+   name:data.name,
+   size:data.size,
+   mime:data.mime
+  };
+
+  incomingParts=[];
+  receivedBytes=0;
+
+  receivedName.textContent=
+   "Receiving: "+data.name+" ("+
+   formatSize(data.size)+")";
+
+  downloadLink.classList.add("hidden");
+  progress(0);
+  status("Receiving file...");
+ }
+
+ else if(data.type==="chunk"){
+  if(!incomingFile)return;
+
+  incomingParts.push(data.data);
+  receivedBytes+=data.size;
+
+  progress((receivedBytes/incomingFile.size)*100);
+
+  connection.send({type:"ack"});
+ }
+
+ else if(data.type==="ack"){
+  if(waitingAck){
+   const callback=waitingAck;
+   waitingAck=null;
+   callback();
+  }
+ }
+
+ else if(data.type==="complete"){
+  if(!incomingFile)return;
+
+  const blob=new Blob(incomingParts,{
+   type:incomingFile.mime
+  });
+
+  const url=URL.createObjectURL(blob);
+
+  downloadLink.href=url;
+  downloadLink.download=incomingFile.name;
+  downloadLink.classList.remove("hidden");
+
+  receivedName.textContent=
+   "Received: "+incomingFile.name;
+
+  status("File received! Press Download.");
+  progress(100);
+
+  incomingParts=[];
+  incomingFile=null;
+ }
+}
+
+function copyCode(){
+ if(!myCode)return;
+
+ if(navigator.clipboard){
+  navigator.clipboard.writeText(myCode)
+  .then(()=>status("Code copied!"))
+  .catch(()=>status("Please copy the code manually."));
+ }else{
+  status("Your code: "+myCode);
+ }
+}
+
+function formatSize(bytes){
+ if(bytes<1024)return bytes+" B";
+ if(bytes<1048576)return (bytes/1024).toFixed(1)+" KB";
+ return (bytes/1048576).toFixed(2)+" MB";
+}
+
+startPeer();
 </script>
-</body></html>
+
+</body>
+</html>
