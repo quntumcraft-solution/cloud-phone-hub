@@ -2,389 +2,724 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <title>RUTIK FAST SHARE</title>
 
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#07111f;color:#fff;
- font-family:Arial,sans-serif;font-size:12px;
+*{
+ box-sizing:border-box;
 }
+
+html,body{
+ margin:0;
+ padding:0;
+ width:100%;
+ min-height:100%;
+ background:#07111f;
+ color:#fff;
+ font-family:Arial,sans-serif;
+ font-size:12px;
+}
+
 header{
- background:#101f34;padding:10px 7px;
- border-bottom:2px solid #16d6b4;
+ background:#101f34;
+ padding:9px 5px;
  text-align:center;
+ border-bottom:2px solid #16d6b4;
 }
-header h2{margin:0;color:#35e5c4;font-size:16px}
-header small{color:#9db6ca}
-main{padding:7px;max-width:500px;margin:auto}
+
+header h2{
+ margin:0;
+ color:#35e5c4;
+ font-size:16px;
+}
+
+header small{
+ color:#9db6ca;
+ font-size:9px;
+}
+
+main{
+ padding:6px;
+ max-width:500px;
+ margin:auto;
+}
+
 .card{
- background:#12243a;border:1px solid #294761;
- border-radius:7px;padding:9px;margin-bottom:8px;
+ background:#12243a;
+ border:1px solid #294761;
+ border-radius:6px;
+ padding:8px;
+ margin-bottom:7px;
 }
-.title{color:#42e5c5;font-weight:bold;margin-bottom:8px}
+
+.title{
+ color:#42e5c5;
+ font-weight:bold;
+ font-size:11px;
+ margin-bottom:7px;
+}
+
 button{
- background:#087e70;color:white;border:0;
- border-radius:4px;padding:9px;font-weight:bold;
+ background:#087e70;
+ color:white;
+ border:0;
+ border-radius:4px;
+ padding:9px;
+ font-weight:bold;
+ font-size:11px;
+ cursor:pointer;
 }
+
+button:disabled{
+ background:#455363;
+ color:#aaa;
+}
+
 input{
- width:100%;padding:9px;background:#081727;
- color:white;border:1px solid #3b5872;
- border-radius:4px;margin:5px 0;
+ width:100%;
+ padding:9px;
+ background:#081727;
+ color:white;
+ border:1px solid #3b5872;
+ border-radius:4px;
+ margin:4px 0;
+ font-size:12px;
 }
-button:focus,input:focus{outline:2px solid #42e5c5}
-.full{width:100%;margin-top:5px}
-.secondary{background:#304a63}
-#status{color:#ffd36b;line-height:1.5}
+
+.full{
+ width:100%;
+ margin-top:5px;
+}
+
+.secondary{
+ background:#304a63;
+}
+
+#status{
+ color:#ffd36b;
+ line-height:1.5;
+ overflow-wrap:anywhere;
+}
+
 #myCode{
- color:#43e8c6;font-size:19px;
- font-weight:bold;text-align:center;
- overflow-wrap:anywhere;padding:8px;
+ color:#43e8c6;
+ font-size:23px;
+ font-weight:bold;
+ text-align:center;
+ padding:8px;
+ letter-spacing:3px;
 }
+
+#fileName,#receivedName{
+ color:#b6cadd;
+ font-size:10px;
+ overflow-wrap:anywhere;
+ line-height:1.5;
+}
+
 .progress{
- height:9px;background:#07111f;
- border-radius:8px;overflow:hidden;margin-top:8px;
+ height:9px;
+ background:#07111f;
+ border-radius:8px;
+ overflow:hidden;
+ margin-top:8px;
 }
-#bar{height:100%;width:0%;background:#27dcb9}
-#percent{text-align:center;color:#43e8c6;margin-top:5px}
-#fileName{overflow-wrap:anywhere;color:#b6cadd}
-.note{font-size:10px;color:#8fa9c1;line-height:1.5}
-footer{text-align:center;color:#6e8ba5;font-size:9px;padding:8px}
-.hidden{display:none}
+
+#bar{
+ height:100%;
+ width:0%;
+ background:#27dcb9;
+}
+
+#percent{
+ text-align:center;
+ color:#43e8c6;
+ margin-top:5px;
+}
+
+.note{
+ font-size:9px;
+ color:#8fa9c1;
+ line-height:1.5;
+}
+
+footer{
+ text-align:center;
+ color:#6e8ba5;
+ font-size:9px;
+ padding:8px;
+}
+
+.hidden{
+ display:none;
+}
+
+a{
+ text-decoration:none;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>⚡ RUTIK FAST SHARE</h2>
-<small>Fast • Private • Wireless File Transfer</small>
+ <h2>⚡ RUTIK FAST SHARE</h2>
+ <small>FAST • SIMPLE • FILE TRANSFER</small>
 </header>
 
 <main>
 
 <div class="card">
  <div class="title">● CONNECTION STATUS</div>
- <div id="status">Connecting to network...</div>
+ <div id="status">Starting...</div>
 </div>
 
 <div class="card">
  <div class="title">① YOUR DEVICE CODE</div>
- <div id="myCode">Connecting...</div>
- <button class="full" onclick="copyCode()">COPY MY CODE</button>
- <div class="note">हा कोड दुसऱ्या मोबाईलमध्ये टाका.</div>
+
+ <div id="myCode">------</div>
+
+ <button class="full" id="copyBtn" onclick="copyCode()" disabled>
+ COPY MY CODE
+ </button>
+
+ <div class="note">
+ Share this six digit code with the other device.
+ </div>
 </div>
 
 <div class="card">
- <div class="title">② CONNECT TO OTHER DEVICE</div>
- <input id="remoteCode" placeholder="Enter other device code">
- <button class="full" onclick="connectDevice()">CONNECT</button>
+ <div class="title">② CONNECT DEVICE</div>
+
+ <input
+  id="remoteCode"
+  type="tel"
+  inputmode="numeric"
+  maxlength="6"
+  placeholder="Enter 6 digit code"
+ >
+
+ <button class="full" id="connectBtn" onclick="connectDevice()" disabled>
+ CONNECT
+ </button>
 </div>
 
 <div class="card">
  <div class="title">③ SEND FILE</div>
+
  <input type="file" id="fileInput">
+
  <div id="fileName">No file selected</div>
- <button class="full" onclick="sendFile()">SEND FILE</button>
+
+ <button class="full" id="sendBtn" onclick="sendFile()" disabled>
+ SEND FILE
+ </button>
 </div>
 
 <div class="card">
  <div class="title">④ RECEIVE FILE</div>
+
  <div id="receivedName">Waiting for file...</div>
- <a id="downloadLink" class="hidden" download>
- <button class="full">DOWNLOAD RECEIVED FILE</button>
+
+ <a id="downloadLink" class="hidden">
+  <button class="full">DOWNLOAD FILE</button>
  </a>
 </div>
 
 <div class="card">
  <div class="title">TRANSFER PROGRESS</div>
- <div class="progress"><div id="bar"></div></div>
+
+ <div class="progress">
+  <div id="bar"></div>
+ </div>
+
  <div id="percent">0%</div>
 </div>
 
 <div class="card">
- <button class="full secondary" onclick="location.reload()">RESTART CONNECTION</button>
+ <button class="full secondary" onclick="location.reload()">
+ RESTART CONNECTION
+ </button>
+</div>
+
+<div class="note">
+ Keep both devices connected to the internet.
+ Do not close the browser during transfer.
 </div>
 
 </main>
 
 <footer>
-RUTIK FAST SHARE • DIRECT DEVICE TRANSFER
+ RUTIK FAST SHARE V2
 </footer>
 
 <script>
-const statusBox=document.getElementById("status");
-const codeBox=document.getElementById("myCode");
-const remoteInput=document.getElementById("remoteCode");
-const fileInput=document.getElementById("fileInput");
-const fileName=document.getElementById("fileName");
-const receivedName=document.getElementById("receivedName");
-const bar=document.getElementById("bar");
-const percent=document.getElementById("percent");
-const downloadLink=document.getElementById("downloadLink");
 
-let peer=null;
-let connection=null;
-let myCode="";
-let incomingFile=null;
-let incomingParts=[];
-let receivedBytes=0;
-let waitingAck=null;
+const statusBox = document.getElementById("status");
+const codeBox = document.getElementById("myCode");
+const remoteInput = document.getElementById("remoteCode");
 
-function status(text){
- statusBox.textContent=text;
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
+
+const receivedName = document.getElementById("receivedName");
+const downloadLink = document.getElementById("downloadLink");
+
+const bar = document.getElementById("bar");
+const percent = document.getElementById("percent");
+
+const copyBtn = document.getElementById("copyBtn");
+const connectBtn = document.getElementById("connectBtn");
+const sendBtn = document.getElementById("sendBtn");
+
+let peer = null;
+let connection = null;
+let myCode = "";
+
+let incomingFile = null;
+let incomingParts = [];
+let receivedBytes = 0;
+
+let sending = false;
+let currentFile = null;
+let sendOffset = 0;
+let chunkSize = 16 * 1024;
+
+let downloadURL = null;
+
+function setStatus(message){
+ statusBox.textContent = message;
 }
 
-function progress(value){
- value=Math.max(0,Math.min(100,value));
- bar.style.width=value+"%";
- percent.textContent=Math.floor(value)+"%";
+function setProgress(value){
+ value = Math.max(0, Math.min(100, value));
+ bar.style.width = value + "%";
+ percent.textContent = Math.floor(value) + "%";
 }
 
 function makeCode(){
- return "RFS-"+Math.random().toString(36)
- .substring(2,8).toUpperCase();
+ return String(
+  Math.floor(100000 + Math.random() * 900000)
+ );
 }
 
 function startPeer(){
- if(typeof Peer==="undefined"){
-  status("PeerJS library could not load. Check internet.");
+
+ if(typeof Peer === "undefined"){
+  setStatus("ERROR: PeerJS library not loaded.");
   return;
  }
 
- myCode=makeCode();
- peer=new Peer(myCode);
+ setStatus("Connecting to PeerJS server...");
 
- peer.on("open",id=>{
-  myCode=id;
-  codeBox.textContent=id;
-  status("Ready. Share your code with the other device.");
+ createPeer();
+}
+
+function createPeer(){
+
+ myCode = makeCode();
+
+ codeBox.textContent = "------";
+
+ peer = new Peer(myCode,{
+  debug:1
  });
 
- peer.on("connection",conn=>{
+ peer.on("open",function(id){
+
+  myCode = id;
+
+  codeBox.textContent = id;
+
+  copyBtn.disabled = false;
+  connectBtn.disabled = false;
+
+  setStatus("READY! Share your code.");
+
+ });
+
+ peer.on("connection",function(conn){
+
   if(connection && connection.open){
    conn.close();
    return;
   }
-  connection=conn;
+
+  connection = conn;
+
   setupConnection();
+
  });
 
- peer.on("error",err=>{
-  status("Connection error: "+err.type);
-  if(err.type==="unavailable-id"){
-   status("Code conflict. Reload and try again.");
+ peer.on("error",function(err){
+
+  if(err.type === "unavailable-id"){
+
+   setStatus("Code already used. Generating another code...");
+
+   try{
+    peer.destroy();
+   }catch(e){}
+
+   setTimeout(createPeer,500);
+
+   return;
   }
+
+  setStatus("ERROR: " + err.type);
+
  });
 
- peer.on("disconnected",()=>{
-  status("Network disconnected. Reload the page.");
+ peer.on("disconnected",function(){
+
+  setStatus("Disconnected from server. Reload page.");
+
  });
+
+ peer.on("close",function(){
+
+  setStatus("Peer connection closed.");
+
+ });
+
+ setTimeout(function(){
+
+  if(peer && !peer.open){
+   setStatus("Connection timeout. Check internet or browser.");
+  }
+
+ },20000);
+
 }
 
 function connectDevice(){
+
  if(!peer || !peer.open){
-  status("Please wait for your device code.");
+  setStatus("Wait until your code appears.");
   return;
  }
 
- const code=remoteInput.value.trim().toUpperCase();
+ const code = remoteInput.value.trim();
 
- if(!code || code===myCode){
-  status("Enter a valid different device code.");
+ if(!/^[0-9]{6}$/.test(code)){
+  setStatus("Enter a valid 6 digit code.");
   return;
  }
 
- status("Connecting to "+code+" ...");
+ if(code === myCode){
+  setStatus("You cannot connect to your own device.");
+  return;
+ }
 
- connection=peer.connect(code,{
+ if(connection && connection.open){
+  setStatus("Already connected.");
+  return;
+ }
+
+ setStatus("Connecting to device...");
+
+ connection = peer.connect(code,{
   reliable:true
  });
 
  setupConnection();
+
 }
 
 function setupConnection(){
- if(!connection)return;
 
- connection.on("open",()=>{
-  status("Connected successfully! You can send files.");
+ if(!connection) return;
+
+ connection.on("open",function(){
+
+  setStatus("CONNECTED! Ready to transfer files.");
+
+  sendBtn.disabled = false;
+
  });
 
- connection.on("data",data=>{
+ connection.on("data",function(data){
+
   handleData(data);
+
  });
 
- connection.on("close",()=>{
-  status("Other device disconnected.");
-  connection=null;
+ connection.on("close",function(){
+
+  setStatus("Other device disconnected.");
+
+  connection = null;
+  sendBtn.disabled = true;
+
  });
 
- connection.on("error",()=>{
-  status("Transfer connection error.");
+ connection.on("error",function(){
+
+  setStatus("Connection error during transfer.");
+
  });
+
 }
 
-fileInput.addEventListener("change",()=>{
- const file=fileInput.files[0];
- fileName.textContent=file?
- file.name+" ("+formatSize(file.size)+")":
- "No file selected";
+fileInput.addEventListener("change",function(){
+
+ const file = fileInput.files[0];
+
+ if(file){
+
+  fileName.textContent =
+   file.name + " (" + formatSize(file.size) + ")";
+
+ }else{
+
+  fileName.textContent = "No file selected";
+
+ }
+
 });
 
 function sendFile(){
+
  if(!connection || !connection.open){
-  status("Connect to another device first.");
+  setStatus("Connect another device first.");
   return;
  }
 
- const file=fileInput.files[0];
+ const file = fileInput.files[0];
 
  if(!file){
-  status("Please select a file first.");
+  setStatus("Select a file first.");
   return;
  }
 
- if(waitingAck){
-  status("A transfer is already running.");
+ if(sending){
+  setStatus("Transfer already running.");
   return;
  }
 
- const chunkSize=16*1024;
+ currentFile = file;
+ sendOffset = 0;
+ sending = true;
 
- status("Preparing file transfer...");
- progress(0);
+ setProgress(0);
+
+ downloadLink.classList.add("hidden");
+
+ setStatus("Preparing file...");
 
  connection.send({
   type:"start",
   name:file.name,
   size:file.size,
-  mime:file.type || "application/octet-stream",
-  chunkSize:chunkSize
+  mime:file.type || "application/octet-stream"
  });
 
- let offset=0;
+}
 
- function sendNext(){
-  if(offset>=file.size){
-   connection.send({type:"complete"});
-   status("File sent successfully!");
-   progress(100);
-   waitingAck=null;
+function sendNextChunk(){
+
+ if(!sending || !currentFile) return;
+
+ if(sendOffset >= currentFile.size){
+
+  connection.send({
+   type:"complete"
+  });
+
+  sending = false;
+
+  setProgress(100);
+  setStatus("File sent successfully!");
+
+  currentFile = null;
+
+  return;
+ }
+
+ const start = sendOffset;
+ const end = Math.min(start + chunkSize,currentFile.size);
+
+ currentFile.slice(start,end).arrayBuffer().then(function(buffer){
+
+  if(!connection || !connection.open){
+   sending = false;
+   setStatus("Connection lost.");
    return;
   }
 
-  const chunk=file.slice(offset,offset+chunkSize);
-
-  chunk.arrayBuffer().then(buffer=>{
-   connection.send({
-    type:"chunk",
-    data:buffer,
-    size:buffer.byteLength
-   });
-
-   waitingAck=()=>{
-    offset+=buffer.byteLength;
-    progress((offset/file.size)*100);
-    sendNext();
-   };
-  }).catch(()=>{
-   waitingAck=null;
-   status("Could not read file.");
+  connection.send({
+   type:"chunk",
+   data:buffer,
+   size:buffer.byteLength
   });
- }
 
- sendNext();
+ }).catch(function(){
+
+  sending = false;
+  setStatus("Unable to read file.");
+
+ });
+
 }
 
 function handleData(data){
 
- if(!data || !data.type)return;
+ if(!data || !data.type) return;
 
- if(data.type==="start"){
-  incomingFile={
+ if(data.type === "start"){
+
+  incomingFile = {
    name:data.name,
    size:data.size,
    mime:data.mime
   };
 
-  incomingParts=[];
-  receivedBytes=0;
+  incomingParts = [];
+  receivedBytes = 0;
 
-  receivedName.textContent=
-   "Receiving: "+data.name+" ("+
-   formatSize(data.size)+")";
+  receivedName.textContent =
+   "Receiving: " + data.name;
 
   downloadLink.classList.add("hidden");
-  progress(0);
-  status("Receiving file...");
+
+  setProgress(0);
+
+  setStatus("Incoming file: " + data.name);
+
+  connection.send({
+   type:"ready"
+  });
+
  }
 
- else if(data.type==="chunk"){
-  if(!incomingFile)return;
+ else if(data.type === "ready"){
+
+  if(!sending) return;
+
+  setStatus("Sending file...");
+
+  sendNextChunk();
+
+ }
+
+ else if(data.type === "chunk"){
+
+  if(!incomingFile) return;
 
   incomingParts.push(data.data);
-  receivedBytes+=data.size;
 
-  progress((receivedBytes/incomingFile.size)*100);
+  receivedBytes += data.size;
 
-  connection.send({type:"ack"});
+  setProgress(
+   incomingFile.size ?
+   (receivedBytes / incomingFile.size) * 100 : 100
+  );
+
+  connection.send({
+   type:"ack"
+  });
+
  }
 
- else if(data.type==="ack"){
-  if(waitingAck){
-   const callback=waitingAck;
-   waitingAck=null;
-   callback();
+ else if(data.type === "ack"){
+
+  if(!sending) return;
+
+  sendOffset += chunkSize;
+
+  if(sendOffset > currentFile.size){
+   sendOffset = currentFile.size;
   }
+
+  setProgress(
+   currentFile.size ?
+   (sendOffset / currentFile.size) * 100 : 100
+  );
+
+  sendNextChunk();
+
  }
 
- else if(data.type==="complete"){
-  if(!incomingFile)return;
+ else if(data.type === "complete"){
 
-  const blob=new Blob(incomingParts,{
+  if(!incomingFile) return;
+
+  const blob = new Blob(incomingParts,{
    type:incomingFile.mime
   });
 
-  const url=URL.createObjectURL(blob);
+  if(downloadURL){
+   URL.revokeObjectURL(downloadURL);
+  }
 
-  downloadLink.href=url;
-  downloadLink.download=incomingFile.name;
+  downloadURL = URL.createObjectURL(blob);
+
+  downloadLink.href = downloadURL;
+  downloadLink.download = incomingFile.name;
+
   downloadLink.classList.remove("hidden");
 
-  receivedName.textContent=
-   "Received: "+incomingFile.name;
+  receivedName.textContent =
+   "Received: " + incomingFile.name +
+   " (" + formatSize(receivedBytes) + ")";
 
-  status("File received! Press Download.");
-  progress(100);
+  setProgress(100);
 
-  incomingParts=[];
-  incomingFile=null;
+  setStatus("File received successfully!");
+
+  incomingParts = [];
+  incomingFile = null;
+
  }
+
 }
 
 function copyCode(){
- if(!myCode)return;
 
- if(navigator.clipboard){
+ if(!myCode) return;
+
+ if(navigator.clipboard && navigator.clipboard.writeText){
+
   navigator.clipboard.writeText(myCode)
-  .then(()=>status("Code copied!"))
-  .catch(()=>status("Please copy the code manually."));
+  .then(function(){
+   setStatus("Code copied successfully!");
+  })
+  .catch(function(){
+   setStatus("Copy failed. Copy the code manually.");
+  });
+
  }else{
-  status("Your code: "+myCode);
+
+  setStatus("Your code: " + myCode);
+
  }
+
 }
 
 function formatSize(bytes){
- if(bytes<1024)return bytes+" B";
- if(bytes<1048576)return (bytes/1024).toFixed(1)+" KB";
- return (bytes/1048576).toFixed(2)+" MB";
+
+ if(bytes < 1024){
+  return bytes + " B";
+ }
+
+ if(bytes < 1048576){
+  return (bytes / 1024).toFixed(1) + " KB";
+ }
+
+ if(bytes < 1073741824){
+  return (bytes / 1048576).toFixed(2) + " MB";
+ }
+
+ return (bytes / 1073741824).toFixed(2) + " GB";
+
 }
 
 startPeer();
+
 </script>
 
 </body>
