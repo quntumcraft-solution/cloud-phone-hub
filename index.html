@@ -2,478 +2,356 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK JAVA ANALYZER V1.6</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUTIK JAR ANALYZER V1.7</title>
+
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;padding:6px;background:#101820;
- color:white;font-family:Arial;font-size:12px;
+ margin:0;
+ padding:7px;
+ background:#101820;
+ color:#fff;
+ font-family:Arial,sans-serif;
+ font-size:12px;
 }
-.header{
- background:#073b4c;border:1px solid #00e5ff;
- text-align:center;padding:9px 2px;
+h2{
+ text-align:center;
+ color:#00e5ff;
+ font-size:16px;
 }
-h2{color:#00e5ff;font-size:16px;margin:0}
 .box{
- background:#263238;padding:8px;
- margin-top:8px;border:1px solid #455a64;
+ background:#1c2b36;
+ border:1px solid #395365;
+ padding:8px;
+ margin-bottom:8px;
+ border-radius:5px;
 }
-input{width:100%;margin:10px 0;color:white}
 button{
- width:100%;padding:12px;margin:6px 0;
- background:#00bcd4;border:0;
- font-weight:bold;font-size:13px;
+ width:100%;
+ padding:10px;
+ margin-top:6px;
+ background:#00a8c7;
+ color:white;
+ border:0;
+ font-weight:bold;
 }
-#status{
- background:#17252d;border:1px solid #00bcd4;
- padding:8px;margin-top:8px;
- line-height:1.6;overflow-wrap:anywhere;
+input{width:100%;font-size:11px}
+pre{
+ white-space:pre-wrap;
+ word-break:break-all;
+ color:#b8ffca;
+ font-size:11px;
 }
-.green{color:#00ff90}
-.red{color:#ff5252}
-.yellow{color:#ffeb3b}
+.good{color:#00ff99}
+.bad{color:#ff7373}
+.small{color:#b8c9d5;font-size:10px}
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
-
 </head>
 
 <body>
 
-<div class="header">
-<h2>RUTIK JAVA ANALYZER</h2>
-VERSION 1.6
+<h2>RUTIK JAR ANALYZER</h2>
+
+<div class="box">
+<b>STEP 1 - SELECT JAR FILE</b>
+<input type="file" id="file" accept=".jar,.zip">
+<button onclick="analyze()">ANALYZE JAR</button>
+<div id="status" class="small">Waiting for file...</div>
 </div>
 
 <div class="box">
-<b>SELECT JAVA APPLICATION</b>
-<input type="file" id="file" accept=".jar,.jad">
-<div id="info">No file selected.</div>
+<b>STEP 2 - JAR INFORMATION</b>
+<pre id="info">No information yet.</pre>
 </div>
 
 <div class="box">
-
-<button onclick="checkLibrary()">CHECK LIBRARY</button>
-
-<button onclick="analyze()">READ MANIFEST</button>
-
-<button onclick="resetApp()">RESET</button>
-
-<div id="status">
-Checking system...
+<b>STEP 3 - JAVA CLASS FILES</b>
+<pre id="classes">No class files found yet.</pre>
 </div>
 
+<div class="box">
+<b>STEP 4 - MAIN MIDLET CHECK</b>
+<pre id="main">Waiting...</pre>
+</div>
+
+<div class="box">
+<b>STEP 5 - FINAL RESULT</b>
+<pre id="result">Waiting...</pre>
 </div>
 
 <script>
-
-var picker=document.getElementById("file");
-var info=document.getElementById("info");
-var statusBox=document.getElementById("status");
-
 var selectedFile=null;
 
-picker.onchange=function(){
-
- selectedFile=null;
-
- if(!picker.files || !picker.files.length){
-  info.innerHTML="No file selected.";
-  return;
- }
-
- selectedFile=picker.files[0];
-
- info.innerHTML=
- "<span class='green'>FILE SELECTED</span><br>"+
- selectedFile.name+"<br>"+
- selectedFile.size+" bytes";
-
- statusBox.innerHTML="File ready.";
-};
-
-function checkLibrary(){
-
- if(typeof fflate==="undefined"){
-
-  statusBox.innerHTML=
-  "<span class='red'>FFLATE NOT LOADED</span><br>"+
-  "Internet or CDN access failed.";
-
-  return;
- }
-
- if(typeof fflate.inflateSync!=="function"){
-
-  statusBox.innerHTML=
-  "<span class='red'>INFLATE FUNCTION NOT FOUND</span>";
-
-  return;
- }
-
- statusBox.innerHTML=
- "<span class='green'>FFLATE LIBRARY READY!</span><br>"+
- "Version: 0.8.2<br>"+
- "DEFLATE function available.";
+function status(t){
+ document.getElementById("status").innerHTML=t;
 }
 
-function readPart(file,start,end,callback){
+function readSlice(file,start,end){
+ return new Promise(function(resolve,reject){
+  var r=new FileReader();
+  r.onload=function(){resolve(new Uint8Array(r.result));};
+  r.onerror=function(){reject("File reading error");};
+  r.readAsArrayBuffer(file.slice(start,end));
+ });
+}
+
+function u16(a,p){
+ return a[p] | (a[p+1]<<8);
+}
+
+function u32(a,p){
+ return (a[p] | (a[p+1]<<8) |
+ (a[p+2]<<16) | (a[p+3]<<24))>>>0;
+}
+
+function decode(a){
+ return new TextDecoder("utf-8").decode(a);
+}
+
+function getManifestValue(text,key){
+ var lines=text.replace(/\r/g,"").split("\n");
+ var output=[];
+ var active=false;
+
+ for(var i=0;i<lines.length;i++){
+  var line=lines[i];
+
+  if(line.charAt(0)===" " && output.length){
+   output[output.length-1]+=line.substring(1);
+   continue;
+  }
+
+  if(line.indexOf(key+":")===0){
+   output.push(line.substring(key.length+1).trim());
+   active=true;
+  }else if(active){
+   break;
+  }
+ }
+ return output.length?output[0]:"Not Found";
+}
+
+async function analyze(){
+
+ var file=document.getElementById("file").files[0];
+
+ if(!file){
+  alert("Please select JAR file");
+  return;
+ }
+
+ document.getElementById("info").textContent="Reading...";
+ document.getElementById("classes").textContent="Scanning...";
+ document.getElementById("main").textContent="Checking...";
+ document.getElementById("result").textContent="Processing...";
 
  try{
 
-  var reader=new FileReader();
+  if(typeof fflate==="undefined"){
+   throw "FFLATE LIBRARY NOT LOADED";
+  }
 
-  reader.onload=function(){
-   callback(null,new Uint8Array(reader.result));
-  };
+  status("Reading ZIP directory...");
 
-  reader.onerror=function(){
-   callback("File read error",null);
-  };
+  var tailSize=Math.min(file.size,65557);
+  var tailStart=file.size-tailSize;
+  var tail=await readSlice(file,tailStart,file.size);
 
-  reader.readAsArrayBuffer(file.slice(start,end));
+  var eocd=-1;
+
+  for(var i=tail.length-22;i>=0;i--){
+   if(u32(tail,i)===0x06054b50){
+    eocd=i;
+    break;
+   }
+  }
+
+  if(eocd<0) throw "ZIP END RECORD NOT FOUND";
+
+  var total=u16(tail,eocd+10);
+  var dirSize=u32(tail,eocd+12);
+  var dirOffset=u32(tail,eocd+16);
+
+  if(total===65535 || dirOffset===4294967295){
+   throw "ZIP64 FORMAT NOT SUPPORTED";
+  }
+
+  if(dirOffset+dirSize>file.size){
+   throw "INVALID ZIP DIRECTORY";
+  }
+
+  var directory=await readSlice(
+   file,dirOffset,dirOffset+dirSize
+  );
+
+  var entries=[];
+  var pos=0;
+  var manifest=null;
+  var classFiles=[];
+
+  while(pos+46<=directory.length){
+
+   if(u32(directory,pos)!==0x02014b50){
+    break;
+   }
+
+   var flags=u16(directory,pos+8);
+   var method=u16(directory,pos+10);
+   var compSize=u32(directory,pos+20);
+   var uncompSize=u32(directory,pos+24);
+   var nameLen=u16(directory,pos+28);
+   var extraLen=u16(directory,pos+30);
+   var commentLen=u16(directory,pos+32);
+   var localOffset=u32(directory,pos+42);
+
+   var nameBytes=directory.slice(
+    pos+46,pos+46+nameLen
+   );
+
+   var name=decode(nameBytes);
+
+   var entry={
+    name:name,
+    flags:flags,
+    method:method,
+    compSize:compSize,
+    uncompSize:uncompSize,
+    localOffset:localOffset
+   };
+
+   entries.push(entry);
+
+   if(name.toUpperCase()==="META-INF/MANIFEST.MF"){
+    manifest=entry;
+   }
+
+   if(/\.class$/i.test(name)){
+    classFiles.push(name);
+   }
+
+   pos+=46+nameLen+extraLen+commentLen;
+  }
+
+  document.getElementById("info").textContent=
+   "File: "+file.name+
+   "\nSize: "+file.size+" bytes"+
+   "\nZIP Entries: "+entries.length+
+   "\nClass Files: "+classFiles.length+
+   "\nManifest: "+(manifest?"FOUND":"NOT FOUND");
+
+  var manifestText="";
+
+  if(manifest){
+
+   status("Reading Manifest...");
+
+   if(manifest.flags & 1){
+    throw "ENCRYPTED MANIFEST";
+   }
+
+   var local=await readSlice(
+    file,manifest.localOffset,manifest.localOffset+30
+   );
+
+   if(u32(local,0)!==0x04034b50){
+    throw "INVALID LOCAL FILE HEADER";
+   }
+
+   var nameLength=u16(local,26);
+   var extraLength=u16(local,28);
+
+   var dataStart=
+    manifest.localOffset+30+nameLength+extraLength;
+
+   var compressed=await readSlice(
+    file,dataStart,dataStart+manifest.compSize
+   );
+
+   var data;
+
+   if(manifest.method===0){
+    data=compressed;
+   }else if(manifest.method===8){
+    data=fflate.inflateSync(compressed);
+   }else{
+    throw "UNSUPPORTED COMPRESSION METHOD: "+manifest.method;
+   }
+
+   manifestText=decode(data);
+  }
+
+  var midletName=getManifestValue(manifestText,"MIDlet-Name");
+  var midletVersion=getManifestValue(manifestText,"MIDlet-Version");
+  var midletVendor=getManifestValue(manifestText,"MIDlet-Vendor");
+  var midlet1=getManifestValue(manifestText,"MIDlet-1");
+
+  var mainClass="Not Found";
+
+  if(midlet1!=="Not Found"){
+   var parts=midlet1.split(",");
+   if(parts.length>=3){
+    mainClass=parts[2].trim();
+   }
+  }
+
+  var mainPath=mainClass.replace(/\./g,"/")+".class";
+  var mainFound=classFiles.indexOf(mainPath)>=0;
+
+  document.getElementById("info").textContent+=
+   "\n\nMIDlet Name: "+midletName+
+   "\nVersion: "+midletVersion+
+   "\nVendor: "+midletVendor+
+   "\nMIDlet-1: "+midlet1;
+
+  var classOutput="TOTAL CLASS FILES: "+classFiles.length+"\n\n";
+
+  for(var j=0;j<classFiles.length;j++){
+   classOutput+=(j+1)+". "+classFiles[j]+"\n";
+   if(j>=99){
+    classOutput+="\n...More files not displayed.";
+    break;
+   }
+  }
+
+  document.getElementById("classes").textContent=classOutput;
+
+  document.getElementById("main").textContent=
+   "Main Class: "+mainClass+
+   "\nClass Path: "+mainPath+
+   "\nClass Found: "+(mainFound?"YES":"NO");
+
+  var finalText="JAR ANALYSIS COMPLETED\n\n";
+
+  finalText+="Manifest: "+(manifest?"PASS":"FAIL")+"\n";
+  finalText+="Class Files: "+classFiles.length+"\n";
+  finalText+="MIDlet Name: "+midletName+"\n";
+  finalText+="Main Class: "+mainClass+"\n";
+  finalText+="Main Class Present: "+(mainFound?"YES":"NO")+"\n\n";
+
+  if(manifest && classFiles.length>0 && mainFound){
+   finalText+="POTENTIAL JAVA ME MIDLET FOUND";
+  }else{
+   finalText+="INCOMPLETE OR INVALID MIDLET STRUCTURE";
+  }
+
+  finalText+="\n\nNOTE: This tool analyzes JAR files.";
+  finalText+="\nIt does not install or execute Java apps.";
+
+  document.getElementById("result").textContent=finalText;
+
+  status("ANALYSIS SUCCESSFUL");
 
  }catch(e){
 
-  callback(e.message,null);
+  status("ERROR: "+e);
 
+  document.getElementById("result").textContent=
+   "ANALYSIS FAILED\n\n"+e;
  }
 }
-
-function u16(b,p){
- return b[p]+b[p+1]*256;
-}
-
-function u32(b,p){
- return b[p]+b[p+1]*256+
- b[p+2]*65536+b[p+3]*16777216;
-}
-
-function readText(bytes){
-
- var s="";
-
- for(var i=0;i<bytes.length;i++){
-  s+=String.fromCharCode(bytes[i]);
- }
-
- return s;
-}
-
-function showError(message){
-
- statusBox.innerHTML=
- "<span class='red'>ERROR</span><br>"+message;
-
-}
-
-function analyze(){
-
- if(!selectedFile){
-  showError("Select JAR file first.");
-  return;
- }
-
- if(typeof fflate==="undefined"){
-  showError("FFLATE library not loaded. Check internet.");
-  return;
- }
-
- statusBox.innerHTML=
- "<span class='yellow'>SEARCHING ZIP DIRECTORY...</span>";
-
- findEOCD(selectedFile.size);
-
-}
-
-function findEOCD(size){
-
- var end=size;
-
- function scan(){
-
-  var start=Math.max(0,end-1024);
-
-  readPart(selectedFile,start,end,function(err,b){
-
-   if(err){
-    showError(err);
-    return;
-   }
-
-   for(var i=b.length-4;i>=0;i--){
-
-    if(
-     b[i]===0x50 &&
-     b[i+1]===0x4b &&
-     b[i+2]===0x05 &&
-     b[i+3]===0x06
-    ){
-
-     var entries=u16(b,i+10);
-     var offset=u32(b,i+16);
-
-     if(entries===65535 || offset===4294967295){
-      showError("ZIP64 format not supported.");
-      return;
-     }
-
-     readDirectory(offset,entries,0);
-     return;
-
-    }
-
-   }
-
-   if(start===0){
-    showError("ZIP End Directory not found.");
-    return;
-   }
-
-   end=start+3;
-   scan();
-
-  });
-
- }
-
- scan();
-
-}
-
-function readDirectory(offset,total,index){
-
- if(index>=total){
-  showError("MANIFEST.MF not found.");
-  return;
- }
-
- readPart(selectedFile,offset,offset+46,function(err,h){
-
-  if(err){
-   showError(err);
-   return;
-  }
-
-  if(h.length<46 ||
-     h[0]!==0x50 ||
-     h[1]!==0x4b ||
-     h[2]!==0x01 ||
-     h[3]!==0x02){
-
-   showError("Invalid ZIP directory entry.");
-   return;
-
-  }
-
-  var flags=u16(h,8);
-  var method=u16(h,10);
-  var compressed=u32(h,20);
-  var original=u32(h,24);
-
-  var nameLen=u16(h,28);
-  var extraLen=u16(h,30);
-  var commentLen=u16(h,32);
-
-  var localOffset=u32(h,42);
-
-  var nameStart=offset+46;
-  var next=nameStart+nameLen+extraLen+commentLen;
-
-  readPart(selectedFile,nameStart,nameStart+nameLen,function(e,n){
-
-   if(e){
-    showError(e);
-    return;
-   }
-
-   var filename=readText(n);
-
-   if(filename.toUpperCase()==="META-INF/MANIFEST.MF"){
-
-    if(flags & 1){
-     showError("Manifest is encrypted.");
-     return;
-    }
-
-    readManifest(
-     localOffset,
-     method,
-     compressed,
-     original
-    );
-
-    return;
-
-   }
-
-   readDirectory(next,total,index+1);
-
-  });
-
- });
-
-}
-
-function readManifest(localOffset,method,compressed,original){
-
- if(method!==8 && method!==0){
-
-  showError("Unsupported compression method: "+method);
-  return;
-
- }
-
- readPart(selectedFile,localOffset,localOffset+30,function(err,h){
-
-  if(err){
-   showError(err);
-   return;
-  }
-
-  if(h.length<30 ||
-     h[0]!==0x50 ||
-     h[1]!==0x4b ||
-     h[2]!==0x03 ||
-     h[3]!==0x04){
-
-   showError("Invalid local ZIP header.");
-   return;
-
-  }
-
-  var nameLen=u16(h,26);
-  var extraLen=u16(h,28);
-
-  var dataStart=localOffset+30+nameLen+extraLen;
-
-  statusBox.innerHTML=
-  "<span class='yellow'>READING MANIFEST...</span>";
-
-  readPart(
-   selectedFile,
-   dataStart,
-   dataStart+compressed,
-   function(e,data){
-
-    if(e){
-     showError(e);
-     return;
-    }
-
-    try{
-
-     var output;
-
-     if(method===8){
-
-      output=fflate.inflateSync(data);
-
-     }else{
-
-      output=data;
-
-     }
-
-     if(output.length!==original){
-
-      statusBox.innerHTML=
-      "<span class='yellow'>WARNING</span><br>"+
-      "Expected: "+original+" bytes<br>"+
-      "Read: "+output.length+" bytes<br><br>";
-
-     }
-
-     showManifest(readText(output));
-
-    }catch(error){
-
-     showError(
-      "DEFLATE ERROR: "+
-      (error.message || error)
-     );
-
-    }
-
-   }
-  );
-
- });
-
-}
-
-function showManifest(text){
-
- var result=
- "<span class='green'>MANIFEST DECOMPRESSED!</span><br><br>";
-
- var fields=[
-  "MIDlet-Name",
-  "MIDlet-Version",
-  "MIDlet-Vendor",
-  "MIDlet-1",
-  "MIDlet-Jar-Size",
-  "MIDlet-Jar-URL"
- ];
-
- for(var i=0;i<fields.length;i++){
-
-  var key=fields[i];
-
-  var regex=new RegExp(
-   "^"+key+":\\s*(.*)$",
-   "im"
-  );
-
-  var match=text.match(regex);
-
-  if(match){
-
-   result+=
-   "<b>"+key+"</b><br>"+
-   match[1]+"<br><br>";
-
-  }
-
- }
-
- result+="<br>FULL MANIFEST:<br>"+
- text.replace(/\r?\n/g,"<br>");
-
- statusBox.innerHTML=result;
-
-}
-
-function resetApp(){
-
- selectedFile=null;
- picker.value="";
-
- info.innerHTML="No file selected.";
-
- statusBox.innerHTML="Waiting for JAR file...";
-
-}
-
-window.onload=function(){
-
- if(typeof fflate!=="undefined"){
-
-  statusBox.innerHTML=
-  "<span class='green'>FFLATE LOADED SUCCESSFULLY</span>";
-
- }else{
-
-  statusBox.innerHTML=
-  "<span class='red'>FFLATE NOT LOADED</span><br>"+
-  "Internet or CDN access required.";
-
- }
-
-};
-
 </script>
 
 </body>
