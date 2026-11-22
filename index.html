@@ -2,15 +2,15 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TEST 8.11</title>
+<title>TEST 8.12</title>
 
 <style>
 body {
-    background: #111;
+    background: #101010;
     color: #00ff80;
     font-family: Arial;
     font-size: 12px;
-    padding: 8px;
+    padding: 7px;
 }
 h3 {
     color: yellow;
@@ -24,8 +24,8 @@ h3 {
 }
 button {
     width: 100%;
-    padding: 9px;
-    background: #00aa55;
+    padding: 10px;
+    background: #008844;
     color: white;
     border: 0;
 }
@@ -38,13 +38,15 @@ button {
 
 <body>
 
-<h3>TEST 8.11</h3>
-<div class="box" id="status">STATUS: STARTING...</div>
-<div class="box" id="javascript">JavaScript: CHECKING</div>
-<div class="box" id="java">Java Runtime: CHECKING</div>
-<div class="box" id="plugin">Java Plugin: CHECKING</div>
-<div class="box" id="fileapi">File API: CHECKING</div>
-<div class="box" id="browser">Browser: CHECKING</div>
+<h3>TEST 8.12</h3>
+
+<div class="box" id="status">STATUS: STARTING</div>
+<div class="box" id="midlet">MIDlet API: CHECKING</div>
+<div class="box" id="java">JAVA API: CHECKING</div>
+<div class="box" id="installer">INSTALLER API: CHECKING</div>
+<div class="box" id="filesystem">DEVICE FILESYSTEM: CHECKING</div>
+<div class="box" id="cloud">CLOUD PHONE API: CHECKING</div>
+<div class="box" id="other">OTHER INSTALL APIs: CHECKING</div>
 <div class="box" id="result">RESULT: WAITING</div>
 
 <div class="box">
@@ -59,104 +61,115 @@ ERROR DETAILS:
 var currentStep = "INITIALIZATION";
 
 window.onerror = function(msg, url, line, column) {
+    document.getElementById("status").innerHTML =
+        "STATUS: ERROR";
+
     document.getElementById("error").innerHTML =
         "STEP: " + currentStep +
-        "\nERROR: " + msg +
+        "\nMESSAGE: " + msg +
         "\nLINE: " + line +
         "\nCOLUMN: " + column;
-
-    document.getElementById("status").innerHTML =
-        "STATUS: ERROR DETECTED";
 
     return true;
 };
 
-function setText(id, value) {
-    document.getElementById(id).innerHTML = value;
+function exists(obj, name) {
+    try {
+        return typeof obj[name] != "undefined";
+    } catch(e) {
+        return false;
+    }
 }
 
 function runTest() {
+
     try {
-        currentStep = "JAVASCRIPT";
-        setText("javascript", "JavaScript: WORKING");
 
-        currentStep = "JAVA RUNTIME";
+        currentStep = "MIDLET API";
 
-        var javaFound = false;
+        var midletFound =
+            exists(window, "MIDlet") ||
+            exists(navigator, "MIDlet");
 
-        if (typeof window.Java != "undefined") {
-            javaFound = true;
-        }
+        document.getElementById("midlet").innerHTML =
+            "MIDlet API: " +
+            (midletFound ? "FOUND" : "NOT DETECTED");
 
-        if (navigator.javaEnabled) {
-            try {
-                if (navigator.javaEnabled()) {
-                    javaFound = true;
-                }
-            } catch(e) {}
-        }
+        currentStep = "JAVA API";
 
-        setText("java",
-            "Java Runtime Indicator: " +
-            (javaFound ? "FOUND" : "NOT DETECTED"));
+        var javaFound =
+            exists(window, "Java") ||
+            exists(navigator, "javaEnabled");
 
-        currentStep = "JAVA PLUGIN";
+        document.getElementById("java").innerHTML =
+            "JAVA API: " +
+            (javaFound ? "FOUND" : "NOT DETECTED");
 
-        var pluginFound = false;
+        currentStep = "INSTALLER API";
 
-        if (navigator.plugins) {
-            for (var i = 0; i < navigator.plugins.length; i++) {
-                var name = navigator.plugins[i].name;
+        var installerFound =
+            exists(navigator, "mozApps") ||
+            exists(window, "InstallTrigger") ||
+            exists(window, "MIDletInstaller");
 
-                if (name.toLowerCase().indexOf("java") >= 0) {
-                    pluginFound = true;
-                }
-            }
-        }
+        document.getElementById("installer").innerHTML =
+            "INSTALLER API: " +
+            (installerFound ? "POSSIBLE API FOUND" : "NOT DETECTED");
 
-        setText("plugin",
-            "Java Plugin: " +
-            (pluginFound ? "FOUND" : "NOT DETECTED"));
+        currentStep = "DEVICE FILESYSTEM";
 
-        currentStep = "FILE API";
+        var fsFound =
+            exists(window, "requestFileSystem") ||
+            exists(window, "webkitRequestFileSystem");
 
-        var fileSupport = false;
+        document.getElementById("filesystem").innerHTML =
+            "DEVICE FILESYSTEM API: " +
+            (fsFound ? "API FOUND" : "NOT DETECTED");
 
-        if (window.File && window.FileReader &&
-            window.FileList && window.Blob) {
-            fileSupport = true;
-        }
+        currentStep = "CLOUD PHONE API";
 
-        setText("fileapi",
-            "File API: " +
-            (fileSupport ? "SUPPORTED" : "NOT SUPPORTED"));
+        var cloudFound =
+            exists(navigator, "hasFeature") ||
+            exists(navigator, "volumeManager");
 
-        currentStep = "BROWSER";
+        document.getElementById("cloud").innerHTML =
+            "CLOUD PHONE API: " +
+            (cloudFound ? "FOUND" : "NOT DETECTED");
 
-        setText("browser",
-            "User Agent:\n" + navigator.userAgent);
+        currentStep = "OTHER INSTALL APIs";
+
+        var otherFound =
+            exists(navigator, "getInstalledRelatedApps") ||
+            exists(navigator, "registerProtocolHandler");
+
+        document.getElementById("other").innerHTML =
+            "OTHER WEB APIs: " +
+            (otherFound ? "SOME APIs FOUND" : "NOT DETECTED");
 
         currentStep = "FINAL RESULT";
 
-        setText("result",
-            "RESULT: TEST COMPLETED\n" +
-            "Java Runtime: " +
-            (javaFound ? "INDICATOR FOUND" : "NOT DETECTED") +
-            "\nJava Plugin: " +
-            (pluginFound ? "FOUND" : "NOT DETECTED") +
-            "\nFile API: " +
-            (fileSupport ? "SUPPORTED" : "NOT SUPPORTED") +
-            "\n\nNOTE: Browser test cannot confirm native MIDlet support.");
+        document.getElementById("result").innerHTML =
+            "RESULT: TEST COMPLETED\n\n" +
+            "MIDlet API: " + (midletFound ? "FOUND" : "NOT DETECTED") +
+            "\nJava API: " + (javaFound ? "FOUND" : "NOT DETECTED") +
+            "\nInstaller API: " + (installerFound ? "FOUND" : "NOT DETECTED") +
+            "\nFilesystem API: " + (fsFound ? "FOUND" : "NOT DETECTED") +
+            "\n\nNOTE: Browser API detection cannot prove native installation support.";
 
-        setText("status", "STATUS: TEST COMPLETED");
-        setText("error", "NONE");
+        document.getElementById("status").innerHTML =
+            "STATUS: TEST COMPLETED";
+
+        document.getElementById("error").innerHTML = "NONE";
 
     } catch(e) {
-        setText("status", "STATUS: TEST FAILED");
-        setText("error",
+
+        document.getElementById("status").innerHTML =
+            "STATUS: TEST FAILED";
+
+        document.getElementById("error").innerHTML =
             "STEP: " + currentStep +
             "\nERROR NAME: " + e.name +
-            "\nERROR MESSAGE: " + e.message);
+            "\nERROR MESSAGE: " + e.message;
     }
 }
 
