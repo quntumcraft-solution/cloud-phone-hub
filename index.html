@@ -1,18 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RUTIK FILE TEST</title>
+<title>RUTIK FILE TEST V2</title>
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
-  padding:8px;
+  padding:6px;
   background:#101820;
   color:white;
-  font-family:Arial;
-  font-size:13px;
+  font-family:Arial,sans-serif;
+  font-size:12px;
 }
-h3{color:#00e5ff;font-size:16px;}
+
+h3{
+  color:#00e5ff;
+  font-size:15px;
+  margin:5px 0 12px;
+}
+
+p{
+  margin:7px 0;
+}
+
+input{
+  width:100%;
+  font-size:11px;
+  margin:8px 0;
+  color:white;
+}
+
 button{
   width:100%;
   padding:10px 3px;
@@ -20,88 +43,265 @@ button{
   background:#00bcd4;
   color:#000;
   border:0;
+  font-size:13px;
   font-weight:bold;
 }
+
 #result{
   background:#263238;
-  padding:8px;
+  border:1px solid #00bcd4;
+  padding:7px;
   margin-top:8px;
-  overflow-wrap:anywhere;
   line-height:1.6;
+  overflow-wrap:anywhere;
+  word-break:break-all;
 }
-input{width:100%;margin:10px 0;}
+
+.success{
+  color:#00ff90;
+}
+
+.error{
+  color:#ff5252;
+}
 </style>
 </head>
+
 <body>
 
-<h3>RUTIK FILE DIAGNOSTIC</h3>
+<h3>RUTIK FILE TEST V2</h3>
 
-<p>STEP 1: Select JAR File</p>
+<p>STEP 1: SELECT JAR FILE</p>
 
-<input type="file" id="picker" accept=".jar,.jad">
+<input
+ type="file"
+ id="picker"
+ accept=".jar,.jad"
+>
 
-<button onclick="checkFile()">CHECK FILE</button>
+<button onclick="checkFile()">
+CHECK FILE
+</button>
 
-<div id="result">Waiting for file...</div>
+<button onclick="resetTest()">
+RESET TEST
+</button>
+
+<div id="result">
+Waiting for file...
+</div>
 
 <script>
-var selectedFile = null;
 
 var picker = document.getElementById("picker");
 var result = document.getElementById("result");
 
-picker.addEventListener("change", function(){
+var selectedFile = null;
+var reader = null;
+var timer = null;
+var finished = false;
+
+
+/* FILE SELECTION */
+
+picker.addEventListener("change",function(){
 
   selectedFile = null;
 
   if(!picker.files || picker.files.length === 0){
-    result.innerHTML = "ERROR: No file received!";
+
+    result.innerHTML =
+    "<span class='error'>ERROR: No file received</span>";
+
     return;
   }
 
   selectedFile = picker.files[0];
 
   result.innerHTML =
-    "FILE RECEIVED!<br>" +
-    "Name: " + selectedFile.name + "<br>" +
-    "Size: " + selectedFile.size + " bytes<br>" +
-    "Type: " + selectedFile.type;
+  "<span class='success'>FILE RECEIVED!</span><br>" +
+  "Name: " + selectedFile.name + "<br>" +
+  "Size: " + selectedFile.size + " bytes<br>" +
+  "Type: " + selectedFile.type + "<br>" +
+  "Ready for testing.";
+
 });
+
+
+/* FILE READING TEST */
 
 function checkFile(){
 
   if(!selectedFile){
-    result.innerHTML += "<br>ERROR: JavaScript cannot access file.";
+
+    result.innerHTML =
+    "<span class='error'>ERROR: Select a file first!</span>";
+
     return;
   }
 
-  result.innerHTML += "<br>Reading file...";
+  if(!selectedFile.slice){
 
-  var reader = new FileReader();
+    result.innerHTML =
+    "<span class='error'>ERROR: File Slice not supported!</span>";
+
+    return;
+  }
+
+  result.innerHTML =
+  "Testing small file portion...<br>" +
+  "File: " + selectedFile.name + "<br>" +
+  "Reading first 64 Bytes...";
+
+  finished = false;
+
+  var part = selectedFile.slice(0,64);
+
+  reader = new FileReader();
+
+
+  /* TIMEOUT TEST */
+
+  timer = setTimeout(function(){
+
+    if(!finished){
+
+      finished = true;
+
+      try{
+        reader.abort();
+      }catch(e){}
+
+      result.innerHTML =
+      "<span class='error'>" +
+      "TIMEOUT!<br>" +
+      "FileReader did not respond within 8 seconds." +
+      "</span>";
+
+    }
+
+  },8000);
+
+
+  /* SUCCESS */
 
   reader.onload = function(e){
 
-    var data = new Uint8Array(e.target.result);
+    if(finished) return;
+
+    finished = true;
+
+    clearTimeout(timer);
+
+    var bytes = new Uint8Array(e.target.result);
 
     var hex = "";
 
-    for(var i=0; i<Math.min(data.length,8); i++){
-      hex += data[i].toString(16).padStart(2,"0") + " ";
+    for(var i=0;i<bytes.length;i++){
+
+      var value = bytes[i].toString(16);
+
+      if(value.length < 2){
+        value = "0" + value;
+      }
+
+      hex += value.toUpperCase() + " ";
     }
 
-    result.innerHTML +=
-      "<br>FileReader: SUCCESS" +
-      "<br>Bytes Read: " + data.length +
-      "<br>First Bytes: " + hex;
+    result.innerHTML =
+    "<span class='success'>SUCCESS!</span><br>" +
+    "File: " + selectedFile.name + "<br>" +
+    "Total Size: " + selectedFile.size + " bytes<br>" +
+    "Bytes Read: " + bytes.length + "<br>" +
+    "FileReader: SUCCESS<br>" +
+    "HEX DATA:<br>" + hex;
+
   };
+
+
+  /* ERROR */
 
   reader.onerror = function(){
-    result.innerHTML += "<br>FileReader: FAILED";
+
+    if(finished) return;
+
+    finished = true;
+
+    clearTimeout(timer);
+
+    result.innerHTML =
+    "<span class='error'>" +
+    "ERROR: FileReader failed.<br>" +
+    "Details: " +
+    (reader.error ? reader.error.name : "Unknown") +
+    "</span>";
+
   };
 
-  reader.readAsArrayBuffer(selectedFile);
+
+  /* ABORT */
+
+  reader.onabort = function(){
+
+    if(finished) return;
+
+    finished = true;
+
+    clearTimeout(timer);
+
+    result.innerHTML =
+    "<span class='error'>READ ABORTED</span>";
+
+  };
+
+
+  /* READ ONLY 64 BYTES */
+
+  try{
+
+    reader.readAsArrayBuffer(part);
+
+  }catch(error){
+
+    finished = true;
+
+    clearTimeout(timer);
+
+    result.innerHTML =
+    "<span class='error'>" +
+    "EXCEPTION: " + error.message +
+    "</span>";
+
+  }
+
 }
+
+
+/* RESET */
+
+function resetTest(){
+
+  if(reader){
+
+    try{
+      reader.abort();
+    }catch(e){}
+
+  }
+
+  clearTimeout(timer);
+
+  picker.value = "";
+
+  selectedFile = null;
+
+  finished = false;
+
+  result.innerHTML = "Waiting for file...";
+
+}
+
 </script>
 
 </body>
-</html>
+  </html>
