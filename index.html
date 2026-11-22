@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RUTIK JAVA INSTALLER</title>
-
 <style>
 *{box-sizing:border-box}
 body{
@@ -13,77 +12,53 @@ body{
 }
 .header{
  background:#073b4c;border:1px solid #00e5ff;
- text-align:center;padding:12px 3px;
+ text-align:center;padding:10px 2px;
 }
-h2{color:#00e5ff;font-size:17px;margin:0}
-.section{
+h2{color:#00e5ff;font-size:16px;margin:0}
+.box{
  background:#263238;padding:9px;
- margin-top:10px;border:1px solid #455a64;
+ margin-top:9px;border:1px solid #455a64;
 }
-input{
- width:100%;margin:12px 0;color:white;font-size:11px;
-}
+input{width:100%;margin:12px 0;color:white}
 button{
- width:100%;padding:13px 3px;margin:7px 0;
- border:0;background:#00bcd4;color:#000;
+ width:100%;padding:12px;margin:6px 0;
+ background:#00bcd4;border:0;
  font-weight:bold;font-size:13px;
 }
-.install{background:#00c853;font-size:15px}
 #status{
  background:#17252d;border:1px solid #00bcd4;
- padding:10px;margin-top:10px;
- line-height:1.7;overflow-wrap:anywhere;
+ padding:9px;margin-top:9px;
+ line-height:1.6;overflow-wrap:anywhere;
 }
 .green{color:#00ff90}
 .red{color:#ff5252}
 .yellow{color:#ffeb3b}
-.footer{
- text-align:center;font-size:10px;
- color:#90a4ae;margin-top:15px;
-}
 </style>
 </head>
-
 <body>
 
 <div class="header">
 <h2>RUTIK JAVA INSTALLER</h2>
-ONE CLICK INSTALLER V1.1
+V1.2 FILEREADER TEST
 </div>
 
-<div class="section">
-<b>SELECT JAVA APPLICATION</b>
-
+<div class="box">
+<b>SELECT JAR / JAD FILE</b>
 <input type="file" id="file" accept=".jar,.jad">
-
 <div id="info">No file selected.</div>
 </div>
 
-<div class="section">
-
-<button class="install" onclick="installJava()">
-ONE CLICK INSTALL
-</button>
-
+<div class="box">
+<button onclick="testFile()">TEST FILE READER</button>
 <button onclick="resetApp()">RESET</button>
-
-<div id="status">Waiting for Java application...</div>
-
-</div>
-
-<div class="footer">
-RUTIK JAVA INSTALLER<br>
-128x160 SCREEN
+<div id="status">Waiting for file...</div>
 </div>
 
 <script>
-
 var picker=document.getElementById("file");
 var info=document.getElementById("info");
 var statusBox=document.getElementById("status");
-
 var selectedFile=null;
-var fileAddress=null;
 
 picker.onchange=function(){
 
@@ -102,112 +77,82 @@ picker.onchange=function(){
  "Size: "+selectedFile.size+" bytes";
 
  statusBox.innerHTML=
- "<span class='green'>READY TO INSTALL</span>";
+ "<span class='green'>FILE READY</span>";
 };
 
-function installJava(){
+function testFile(){
 
  if(!selectedFile){
   statusBox.innerHTML=
-  "<span class='red'>ERROR: Select a file first.</span>";
+  "<span class='red'>Please select a file first.</span>";
   return;
  }
 
- var name=selectedFile.name.toLowerCase();
-
- if(name.slice(-4)!==".jar" &&
-    name.slice(-4)!==".jad"){
-
+ if(typeof FileReader==="undefined"){
   statusBox.innerHTML=
-  "<span class='red'>Unsupported file format.</span>";
+  "<span class='red'>FileReader NOT SUPPORTED</span>";
   return;
  }
 
- statusBox.innerHTML="Checking browser support...";
+ if(!selectedFile.slice){
+  statusBox.innerHTML=
+  "<span class='red'>File slicing NOT SUPPORTED</span>";
+  return;
+ }
+
+ statusBox.innerHTML=
+ "<span class='yellow'>READING FIRST 64 BYTES...</span>";
 
  try{
 
-  var urlAPI=window.URL || window.webkitURL;
+  var reader=new FileReader();
 
-  if(!urlAPI || !urlAPI.createObjectURL){
+  reader.onload=function(){
 
-   statusBox.innerHTML=
-   "<span class='red'>ERROR: Blob URL not supported.</span><br>"+
-   "Cloud Phone browser does not support this feature.";
-   return;
-  }
+   var result=reader.result;
+   var output="";
 
-  if(fileAddress){
-   try{
-    urlAPI.revokeObjectURL(fileAddress);
-   }catch(e){}
-   fileAddress=null;
-  }
-
-  fileAddress=urlAPI.createObjectURL(selectedFile);
-
-  var link=document.createElement("a");
-
-  link.setAttribute("href",fileAddress);
-  link.setAttribute("download",selectedFile.name);
-  link.style.display="none";
-
-  document.body.appendChild(link);
-
-  statusBox.innerHTML=
-  "<span class='yellow'>REQUESTING FILE...</span><br>"+
-  selectedFile.name;
-
-  if(typeof link.click==="function"){
-   link.click();
-  }else{
-   statusBox.innerHTML=
-   "<span class='red'>ERROR: Browser cannot click download link.</span>";
-  }
-
-  setTimeout(function(){
-
-   statusBox.innerHTML=
-   "<span class='yellow'>REQUEST SENT</span><br><br>"+
-   "File: "+selectedFile.name+"<br>"+
-   "Check whether the phone displays an Open or Download option.<br><br>"+
-   "<span class='red'>Native installation is not confirmed.</span>";
-
-   if(link.parentNode){
-    link.parentNode.removeChild(link);
+   if(typeof result==="string"){
+    for(var i=0;i<result.length;i++){
+     output+=result.charCodeAt(i).toString(16)+" ";
+    }
+   }else{
+    var bytes=new Uint8Array(result);
+    for(var j=0;j<bytes.length;j++){
+     output+=("0"+bytes[j].toString(16)).slice(-2)+" ";
+    }
    }
 
-  },1500);
+   statusBox.innerHTML=
+   "<span class='green'>FILEREADER SUCCESS</span><br>"+
+   "Bytes read: "+(result.byteLength || result.length)+"<br>"+
+   "Data: "+output+"<br><br>"+
+   "FileReader is working.";
+  };
 
- }catch(error){
+  reader.onerror=function(){
+   statusBox.innerHTML=
+   "<span class='red'>READ ERROR</span><br>"+
+   (reader.error ? reader.error.message : "Unknown error");
+  };
+
+  reader.readAsArrayBuffer(selectedFile.slice(0,64));
+
+ }catch(e){
 
   statusBox.innerHTML=
-  "<span class='red'>INSTALL ERROR</span><br>"+
-  "Error: "+error.name+"<br>"+
-  "Message: "+error.message;
+  "<span class='red'>ERROR</span><br>"+
+  e.name+"<br>"+e.message;
 
  }
-
 }
 
 function resetApp(){
-
- var urlAPI=window.URL || window.webkitURL;
-
- if(fileAddress && urlAPI){
-  try{
-   urlAPI.revokeObjectURL(fileAddress);
-  }catch(e){}
- }
-
- fileAddress=null;
  selectedFile=null;
  picker.value="";
-
  info.innerHTML="No file selected.";
- statusBox.innerHTML="Waiting for Java application...";
+ statusBox.innerHTML="Waiting for file...";
 }
-
 </script>
 
 </body>
