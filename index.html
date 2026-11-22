@@ -1,329 +1,107 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>RUTIK JAVA APP ANALYZER V3</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUTIK FILE TEST</title>
 <style>
-*{box-sizing:border-box}
 body{
- margin:0;
- background:#101827;
- color:#f4f7fb;
- font:12px Arial,sans-serif;
+  margin:0;
+  padding:8px;
+  background:#101820;
+  color:white;
+  font-family:Arial;
+  font-size:13px;
 }
-.app{max-width:380px;margin:auto;padding:8px}
-header,.panel{
- background:#192638;
- border:1px solid #34465d;
- border-radius:7px;
- padding:9px;
- margin:7px 0;
+h3{color:#00e5ff;font-size:16px;}
+button{
+  width:100%;
+  padding:10px 3px;
+  margin:6px 0;
+  background:#00bcd4;
+  color:#000;
+  border:0;
+  font-weight:bold;
 }
-header{background:#182b45}
-h1{font-size:15px;color:#7dd3fc;margin:0 0 4px}
-h2{font-size:12px;color:#93c5fd;margin:0 0 8px}
-.sub{font-size:10px;color:#bdc9d8;line-height:1.4}
-button,.pick{
- display:block;width:100%;padding:10px 6px;
- margin:6px 0;background:#087eae;color:white;
- border:0;border-radius:5px;text-align:center;
- font-weight:bold;
+#result{
+  background:#263238;
+  padding:8px;
+  margin-top:8px;
+  overflow-wrap:anywhere;
+  line-height:1.6;
 }
-#f{position:absolute;left:-9999px}
-.line{margin:6px 0;overflow-wrap:anywhere}
-.k{color:#9fb3c8}
-.status{
- padding:8px;background:#27384d;border-radius:5px;
- margin-top:7px;line-height:1.45;overflow-wrap:anywhere
-}
-.good{color:#86efac}
-.bad{color:#fca5a5}
-.warn{color:#fcd34d}
-pre{
- white-space:pre-wrap;overflow-wrap:anywhere;
- background:#0c1420;padding:7px;border-radius:5px;
- max-height:160px;overflow:auto;font:10px monospace
-}
-footer{text-align:center;color:#8495aa;font-size:9px;padding:8px}
+input{width:100%;margin:10px 0;}
 </style>
 </head>
-
 <body>
-<div class="app">
 
-<header>
-<h1>RUTIK JAVA APP ANALYZER</h1>
-<div class="sub">IT9020 • JAR / JAD TEST V3</div>
-</header>
+<h3>RUTIK FILE DIAGNOSTIC</h3>
 
-<section class="panel">
-<h2>1. SELECT FILE</h2>
-<label class="pick" for="f">CHOOSE .JAR / .JAD FILE</label>
-<input id="f" type="file" accept=".jar,.jad">
-<div class="sub">Select Java application file from your phone.</div>
-</section>
+<p>STEP 1: Select JAR File</p>
 
-<section class="panel">
-<h2>2. FILE INFORMATION</h2>
-<div class="line">Name: <span id="name">—</span></div>
-<div class="line">Size: <span id="size">—</span></div>
-<div class="line">Format: <span id="format">—</span></div>
-<div id="status" class="status">Waiting for file.</div>
-</section>
+<input type="file" id="picker" accept=".jar,.jad">
 
-<section class="panel">
-<h2>3. JAVA APPLICATION DETAILS</h2>
-<div class="line">MIDlet Name: <span id="app">—</span></div>
-<div class="line">Version: <span id="ver">—</span></div>
-<div class="line">Vendor: <span id="vendor">—</span></div>
-<div class="line">Configuration: <span id="config">—</span></div>
-<div class="line">Profile: <span id="profile">—</span></div>
-<div class="line">JAR URL: <span id="url">—</span></div>
-<div class="line">JAR Size: <span id="jsize">—</span></div>
-<div class="line">MIDlet entries: <span id="midlets">—</span></div>
-</section>
+<button onclick="checkFile()">CHECK FILE</button>
 
-<section class="panel">
-<h2>4. MANIFEST / JAD CONTENT</h2>
-<pre id="manifest">Not read yet.</pre>
-</section>
-
-<section class="panel">
-<h2>5. ANALYSIS RESULT</h2>
-<button id="analyze">ANALYZE SELECTED FILE</button>
-<div id="result" class="status">Select a file and analyze.</div>
-<div class="sub">
-This tool reads metadata only. It does not install Java apps.
-</div>
-</section>
-
-<footer>RUTIK JAVA APP ANALYZER • V3</footer>
-</div>
+<div id="result">Waiting for file...</div>
 
 <script>
-(()=>{
-const $=id=>document.getElementById(id);
-let file=null;
+var selectedFile = null;
 
-function msg(id,t,c){
- $(id).className='status '+(c||'');
- $(id).textContent=t;
-}
+var picker = document.getElementById("picker");
+var result = document.getElementById("result");
 
-function reset(){
- ['app','ver','vendor','config','profile','url','jsize','midlets']
- .forEach(x=>$(x).textContent='—');
+picker.addEventListener("change", function(){
 
- $('manifest').textContent='Not read yet.';
- msg('result','Select a file and analyze.');
-}
+  selectedFile = null;
 
-function parseManifest(raw){
-
- const text=raw.replace(/\r\n/g,'\n')
- .replace(/\r/g,'\n')
- .replace(/\n[ \t]/g,'');
-
- const fields={};
-
- text.split('\n').forEach(line=>{
-  const i=line.indexOf(':');
-
-  if(i>0){
-   const key=line.slice(0,i).trim().toLowerCase();
-   const value=line.slice(i+1).trim();
-   fields[key]=value;
-  }
- });
-
- const get=k=>fields[k.toLowerCase()]||'Not specified';
-
- $('app').textContent=get('MIDlet-Name');
- $('ver').textContent=get('MIDlet-Version');
- $('vendor').textContent=get('MIDlet-Vendor');
- $('config').textContent=get('MicroEdition-Configuration');
- $('profile').textContent=get('MicroEdition-Profile');
- $('url').textContent=get('MIDlet-Jar-URL');
- $('jsize').textContent=get('MIDlet-Jar-Size');
-
- const entries=Object.keys(fields)
- .filter(k=>/^midlet-\d+$/.test(k)).sort();
-
- $('midlets').textContent=entries.length
- ?entries.map(k=>k+': '+fields[k]).join(' | ')
- :'Not specified';
-
- $('manifest').textContent=text.slice(0,5000)||'Manifest is empty.';
-
- return fields;
-}
-
-function u16(v,p){
- return v.getUint16(p,true);
-}
-
-function u32(v,p){
- return v.getUint32(p,true);
-}
-
-async function extractManifest(buffer){
-
- const view=new DataView(buffer);
- const bytes=new Uint8Array(buffer);
- let eocd=-1;
-
- for(let p=bytes.length-22;
- p>=Math.max(0,bytes.length-65557);p--){
-
-  if(u32(view,p)===0x06054b50){
-   eocd=p;
-   break;
-  }
- }
-
- if(eocd<0)
- throw Error('ZIP end directory not found. Invalid JAR?');
-
- const entries=u16(view,eocd+10);
- let pos=u32(view,eocd+16);
-
- for(let n=0;n<entries;n++){
-
-  if(u32(view,pos)!==0x02014b50)
-  throw Error('Invalid ZIP central directory.');
-
-  const method=u16(view,pos+10);
-  const compressedSize=u32(view,pos+20);
-  const nameLen=u16(view,pos+28);
-  const extraLen=u16(view,pos+30);
-  const commentLen=u16(view,pos+32);
-  const localOffset=u32(view,pos+42);
-
-  const entryName=new TextDecoder().decode(
-   bytes.slice(pos+46,pos+46+nameLen)
-  );
-
-  if(entryName.toUpperCase()==='META-INF/MANIFEST.MF'){
-
-   if(u32(view,localOffset)!==0x04034b50)
-   throw Error('Invalid local ZIP entry.');
-
-   const dataStart=localOffset+30+
-   u16(view,localOffset+26)+
-   u16(view,localOffset+28);
-
-   const compressed=bytes.slice(
-    dataStart,dataStart+compressedSize
-   );
-
-   let output;
-
-   if(method===0){
-    output=compressed;
-   }
-   else if(method===8){
-
-    if(typeof DecompressionStream==='undefined')
-    throw Error('ZIP decompression API unavailable.');
-
-    let ds;
-
-    try{
-     ds=new DecompressionStream('deflate-raw');
-    }
-    catch(e){
-     throw Error('Browser does not support deflate-raw.');
-    }
-
-    output=new Uint8Array(
-     await new Response(
-      new Blob([compressed]).stream().pipeThrough(ds)
-     ).arrayBuffer()
-    );
-   }
-   else{
-    throw Error('Unsupported ZIP compression method '+method);
-   }
-
-   return new TextDecoder('utf-8').decode(output);
+  if(!picker.files || picker.files.length === 0){
+    result.innerHTML = "ERROR: No file received!";
+    return;
   }
 
-  pos+=46+nameLen+extraLen+commentLen;
- }
+  selectedFile = picker.files[0];
 
- throw Error('META-INF/MANIFEST.MF not found.');
-}
-
-$('f').addEventListener('change',()=>{
-
- file=$('f').files&&$('f').files[0]||null;
- reset();
-
- if(!file){
-  msg('status','No file selected.','warn');
-  return;
- }
-
- $('name').textContent=file.name;
- $('size').textContent=file.size+' bytes';
- $('format').textContent=file.name.split('.').pop().toUpperCase();
-
- msg('status','File selected successfully. Press ANALYZE.','good');
+  result.innerHTML =
+    "FILE RECEIVED!<br>" +
+    "Name: " + selectedFile.name + "<br>" +
+    "Size: " + selectedFile.size + " bytes<br>" +
+    "Type: " + selectedFile.type;
 });
 
-$('analyze').addEventListener('click',async()=>{
+function checkFile(){
 
- if(!file){
-  msg('result','Please select a JAR or JAD file first.','bad');
-  return;
- }
-
- reset();
- msg('status','Reading file…','warn');
- msg('result','Analysis in progress…');
-
- try{
-
-  const ext=file.name.toLowerCase().split('.').pop();
-  let content;
-
-  if(ext==='jad'){
-   content=await file.text();
-  }
-  else if(ext==='jar'){
-   content=await extractManifest(await file.arrayBuffer());
-  }
-  else{
-   throw Error('Only .jar and .jad files are supported.');
+  if(!selectedFile){
+    result.innerHTML += "<br>ERROR: JavaScript cannot access file.";
+    return;
   }
 
-  const fields=parseManifest(content);
+  result.innerHTML += "<br>Reading file...";
 
-  msg('status','Manifest / descriptor read successfully.','good');
+  var reader = new FileReader();
 
-  const found=!!fields['midlet-name']||
-  Object.keys(fields).some(k=>/^midlet-\d+$/.test(k));
+  reader.onload = function(e){
 
-  msg('result',
-   found
-   ?'Java MIDlet metadata found. Native installation is not verified.'
-   :'Manifest read, but MIDlet identity fields are missing.',
-   'good'
-  );
+    var data = new Uint8Array(e.target.result);
 
- }catch(e){
+    var hex = "";
 
-  msg('status','Read failed: '+e.message,'bad');
-  msg('result','Analyzer error: '+e.message,'bad');
+    for(var i=0; i<Math.min(data.length,8); i++){
+      hex += data[i].toString(16).padStart(2,"0") + " ";
+    }
 
- }
+    result.innerHTML +=
+      "<br>FileReader: SUCCESS" +
+      "<br>Bytes Read: " + data.length +
+      "<br>First Bytes: " + hex;
+  };
 
-});
+  reader.onerror = function(){
+    result.innerHTML += "<br>FileReader: FAILED";
+  };
 
-})();
+  reader.readAsArrayBuffer(selectedFile);
+}
 </script>
+
 </body>
 </html>
