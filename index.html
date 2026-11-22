@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK JAR ANALYZER</title>
+<title>RUTIK JAVA ANALYZER</title>
 
 <style>
 *{box-sizing:border-box}
@@ -40,8 +40,8 @@ button{
 <body>
 
 <div class="header">
-<h2>RUTIK JAR ANALYZER</h2>
-VERSION 1.4
+<h2>RUTIK JAVA ANALYZER</h2>
+VERSION 1.5
 </div>
 
 <div class="box">
@@ -51,7 +51,7 @@ VERSION 1.4
 </div>
 
 <div class="box">
-<button onclick="analyze()">ANALYZE JAR</button>
+<button onclick="analyze()">READ MANIFEST</button>
 <button onclick="resetApp()">RESET</button>
 <div id="status">Waiting for JAR file...</div>
 </div>
@@ -79,7 +79,7 @@ picker.onchange=function(){
  selectedFile.name+"<br>"+
  selectedFile.size+" bytes";
 
- statusBox.innerHTML="Ready to analyze.";
+ statusBox.innerHTML="Ready.";
 };
 
 function readPart(file,start,end,callback){
@@ -119,40 +119,36 @@ function readText(bytes){
  return s;
 }
 
-function showError(message){
+function showError(msg){
  statusBox.innerHTML=
- "<span class='red'>ERROR</span><br>"+message;
+ "<span class='red'>ERROR</span><br>"+msg;
 }
 
 function analyze(){
 
  if(!selectedFile){
-  showError("Select a JAR file first.");
+  showError("Select JAR file first.");
   return;
  }
 
- var size=selectedFile.size;
-
- if(size<22){
-  showError("File is too small.");
+ if(typeof DecompressionStream==="undefined"){
+  showError("DecompressionStream NOT SUPPORTED.");
   return;
  }
 
  statusBox.innerHTML=
- "<span class='yellow'>SEARCHING ZIP DIRECTORY...</span>";
+ "<span class='yellow'>SEARCHING MANIFEST...</span>";
 
- findEOCD(size);
-
+ findEOCD(selectedFile.size);
 }
 
 function findEOCD(size){
 
  var end=size;
- var chunkSize=512;
 
  function scan(){
 
-  var start=Math.max(0,end-chunkSize);
+  var start=Math.max(0,end-512);
 
   readPart(selectedFile,start,end,function(err,b){
 
@@ -163,44 +159,26 @@ function findEOCD(size){
 
    for(var i=b.length-4;i>=0;i--){
 
-    if(
-     b[i]===0x50 &&
-     b[i+1]===0x4b &&
-     b[i+2]===0x05 &&
-     b[i+3]===0x06
-    ){
+    if(b[i]===0x50 &&
+       b[i+1]===0x4b &&
+       b[i+2]===0x05 &&
+       b[i+3]===0x06){
 
-     var entries=u16(b,i+10);
-     var cdSize=u32(b,i+12);
-     var cdOffset=u32(b,i+16);
+     var total=u16(b,i+10);
+     var offset=u32(b,i+16);
 
-     if(entries===65535 ||
-        cdSize===4294967295 ||
-        cdOffset===4294967295){
-
-      showError("ZIP64 archives are not supported in this version.");
-      return;
-     }
-
-     statusBox.innerHTML=
-     "<span class='green'>ZIP DIRECTORY FOUND</span><br>"+
-     "Entries: "+entries+"<br>"+
-     "Directory size: "+cdSize+" bytes<br>"+
-     "Searching files...";
-
-     readDirectory(cdOffset,entries,0);
+     readDirectory(offset,total,0);
      return;
     }
    }
 
    if(start===0){
-    showError("ZIP End Directory not found.");
+    showError("ZIP directory not found.");
     return;
    }
 
    end=start+3;
    scan();
-
   });
  }
 
@@ -210,8 +188,7 @@ function findEOCD(size){
 function readDirectory(offset,total,index){
 
  if(index>=total){
-  statusBox.innerHTML+=
-  "<br><span class='yellow'>MANIFEST.MF NOT FOUND</span>";
+  showError("MANIFEST.MF not found.");
   return;
  }
 
@@ -223,12 +200,10 @@ function readDirectory(offset,total,index){
   }
 
   if(h.length<46 ||
-     h[0]!==0x50 ||
-     h[1]!==0x4b ||
-     h[2]!==0x01 ||
-     h[3]!==0x02){
+     h[0]!==0x50 || h[1]!==0x4b ||
+     h[2]!==0x01 || h[3]!==0x02){
 
-   showError("Invalid ZIP directory entry.");
+   showError("Invalid ZIP directory.");
    return;
   }
 
@@ -241,7 +216,7 @@ function readDirectory(offset,total,index){
   var localOffset=u32(h,42);
 
   var nameStart=offset+46;
-  var nextOffset=nameStart+nameLen+extraLen+commentLen;
+  var next=nameStart+nameLen+extraLen+commentLen;
 
   readPart(selectedFile,nameStart,nameStart+nameLen,function(e,n){
 
@@ -254,26 +229,21 @@ function readDirectory(offset,total,index){
 
    if(filename.toUpperCase()==="META-INF/MANIFEST.MF"){
 
-    statusBox.innerHTML=
-    "<span class='green'>MANIFEST FOUND!</span><br>"+
-    "File: "+filename+"<br>"+
-    "Compression: "+method+"<br>"+
-    "Compressed size: "+compressed+"<br>"+
-    "Original size: "+original+"<br>"+
-    "Reading manifest...";
-
     readManifest(localOffset,method,compressed,original);
     return;
    }
 
-   readDirectory(nextOffset,total,index+1);
-
+   readDirectory(next,total,index+1);
   });
-
  });
 }
 
 function readManifest(localOffset,method,compressed,original){
+
+ if(method!==8){
+  showError("Expected DEFLATE method 8. Found: "+method);
+  return;
+ }
 
  readPart(selectedFile,localOffset,localOffset+30,function(err,h){
 
@@ -282,13 +252,8 @@ function readManifest(localOffset,method,compressed,original){
    return;
   }
 
-  if(h.length<30 ||
-     h[0]!==0x50 ||
-     h[1]!==0x4b ||
-     h[2]!==0x03 ||
-     h[3]!==0x04){
-
-   showError("Invalid local file header.");
+  if(h.length<30){
+   showError("Invalid local header.");
    return;
   }
 
@@ -297,36 +262,105 @@ function readManifest(localOffset,method,compressed,original){
 
   var dataStart=localOffset+30+nameLen+extraLen;
 
-  if(method!==0){
+  statusBox.innerHTML=
+  "<span class='yellow'>READING COMPRESSED MANIFEST...</span>";
 
-   statusBox.innerHTML=
-   "<span class='yellow'>MANIFEST FOUND</span><br>"+
-   "Compression method: "+method+"<br><br>"+
-   "Manifest is compressed.<br>"+
-   "Decompression is not available in this version.<br><br>"+
-   "We can handle this in the next version.";
-
-   return;
-  }
-
-  var amount=Math.min(compressed,8192);
-
-  readPart(selectedFile,dataStart,dataStart+amount,function(e,data){
+  readPart(selectedFile,dataStart,dataStart+compressed,function(e,data){
 
    if(e){
     showError(e);
     return;
    }
 
-   var text=readText(data);
-
-   statusBox.innerHTML=
-   "<span class='green'>MANIFEST READ SUCCESS!</span><br><br>"+
-   text.replace(/\r?\n/g,"<br>");
-
+   decompress(data);
   });
-
  });
+}
+
+function decompress(data){
+
+ try{
+
+  var ds=new DecompressionStream("deflate-raw");
+
+  var blob=new Blob([data]);
+
+  var stream=blob.stream().pipeThrough(ds);
+
+  var reader=stream.getReader();
+
+  var chunks=[];
+  var total=0;
+
+  function next(){
+
+   reader.read().then(function(result){
+
+    if(result.done){
+
+     var output=new Uint8Array(total);
+     var pos=0;
+
+     for(var i=0;i<chunks.length;i++){
+      output.set(chunks[i],pos);
+      pos+=chunks[i].length;
+     }
+
+     showManifest(readText(output));
+     return;
+    }
+
+    chunks.push(result.value);
+    total+=result.value.length;
+
+    if(total>65536){
+     showError("Manifest too large.");
+     return;
+    }
+
+    next();
+
+   }).catch(function(error){
+    showError("Decompression failed: "+error.message);
+   });
+  }
+
+  next();
+
+ }catch(e){
+  showError("DEFLATE ERROR: "+e.message);
+ }
+}
+
+function showManifest(text){
+
+ var result=
+ "<span class='green'>MANIFEST DECOMPRESSED!</span><br><br>";
+
+ var fields=[
+  "MIDlet-Name",
+  "MIDlet-Version",
+  "MIDlet-Vendor",
+  "MIDlet-1",
+  "MIDlet-Jar-Size",
+  "MIDlet-Jar-URL"
+ ];
+
+ for(var i=0;i<fields.length;i++){
+
+  var key=fields[i];
+  var regex=new RegExp("^"+key+":\\s*(.*)$","im");
+  var match=text.match(regex);
+
+  if(match){
+   result+=key+":<br>"+match[1]+"<br><br>";
+  }
+ }
+
+ result+="<br>FULL MANIFEST:<br>"+
+ text.replace(/\r?\n/g,"<br>");
+
+ statusBox.innerHTML=result;
 }
 
 function resetApp(){
@@ -335,10 +369,8 @@ function resetApp(){
  picker.value="";
  info.innerHTML="No file selected.";
  statusBox.innerHTML="Waiting for JAR file...";
-
 }
 
 </script>
-
 </body>
-</html>
+ </html>
