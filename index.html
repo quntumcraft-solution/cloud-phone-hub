@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK JAVA ANALYZER</title>
+<title>RUTIK JAVA ANALYZER V1.6</title>
 
 <style>
 *{box-sizing:border-box}
@@ -35,25 +35,36 @@ button{
 .red{color:#ff5252}
 .yellow{color:#ffeb3b}
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
 </head>
 
 <body>
 
 <div class="header">
 <h2>RUTIK JAVA ANALYZER</h2>
-VERSION 1.5
+VERSION 1.6
 </div>
 
 <div class="box">
-<b>SELECT JAR FILE</b>
-<input type="file" id="file" accept=".jar">
+<b>SELECT JAVA APPLICATION</b>
+<input type="file" id="file" accept=".jar,.jad">
 <div id="info">No file selected.</div>
 </div>
 
 <div class="box">
+
+<button onclick="checkLibrary()">CHECK LIBRARY</button>
+
 <button onclick="analyze()">READ MANIFEST</button>
+
 <button onclick="resetApp()">RESET</button>
-<div id="status">Waiting for JAR file...</div>
+
+<div id="status">
+Checking system...
+</div>
+
 </div>
 
 <script>
@@ -61,6 +72,7 @@ VERSION 1.5
 var picker=document.getElementById("file");
 var info=document.getElementById("info");
 var statusBox=document.getElementById("status");
+
 var selectedFile=null;
 
 picker.onchange=function(){
@@ -79,12 +91,38 @@ picker.onchange=function(){
  selectedFile.name+"<br>"+
  selectedFile.size+" bytes";
 
- statusBox.innerHTML="Ready.";
+ statusBox.innerHTML="File ready.";
 };
+
+function checkLibrary(){
+
+ if(typeof fflate==="undefined"){
+
+  statusBox.innerHTML=
+  "<span class='red'>FFLATE NOT LOADED</span><br>"+
+  "Internet or CDN access failed.";
+
+  return;
+ }
+
+ if(typeof fflate.inflateSync!=="function"){
+
+  statusBox.innerHTML=
+  "<span class='red'>INFLATE FUNCTION NOT FOUND</span>";
+
+  return;
+ }
+
+ statusBox.innerHTML=
+ "<span class='green'>FFLATE LIBRARY READY!</span><br>"+
+ "Version: 0.8.2<br>"+
+ "DEFLATE function available.";
+}
 
 function readPart(file,start,end,callback){
 
  try{
+
   var reader=new FileReader();
 
   reader.onload=function(){
@@ -98,7 +136,9 @@ function readPart(file,start,end,callback){
   reader.readAsArrayBuffer(file.slice(start,end));
 
  }catch(e){
+
   callback(e.message,null);
+
  }
 }
 
@@ -112,16 +152,21 @@ function u32(b,p){
 }
 
 function readText(bytes){
+
  var s="";
+
  for(var i=0;i<bytes.length;i++){
   s+=String.fromCharCode(bytes[i]);
  }
+
  return s;
 }
 
-function showError(msg){
+function showError(message){
+
  statusBox.innerHTML=
- "<span class='red'>ERROR</span><br>"+msg;
+ "<span class='red'>ERROR</span><br>"+message;
+
 }
 
 function analyze(){
@@ -131,15 +176,16 @@ function analyze(){
   return;
  }
 
- if(typeof DecompressionStream==="undefined"){
-  showError("DecompressionStream NOT SUPPORTED.");
+ if(typeof fflate==="undefined"){
+  showError("FFLATE library not loaded. Check internet.");
   return;
  }
 
  statusBox.innerHTML=
- "<span class='yellow'>SEARCHING MANIFEST...</span>";
+ "<span class='yellow'>SEARCHING ZIP DIRECTORY...</span>";
 
  findEOCD(selectedFile.size);
+
 }
 
 function findEOCD(size){
@@ -148,7 +194,7 @@ function findEOCD(size){
 
  function scan(){
 
-  var start=Math.max(0,end-512);
+  var start=Math.max(0,end-1024);
 
   readPart(selectedFile,start,end,function(err,b){
 
@@ -159,30 +205,42 @@ function findEOCD(size){
 
    for(var i=b.length-4;i>=0;i--){
 
-    if(b[i]===0x50 &&
-       b[i+1]===0x4b &&
-       b[i+2]===0x05 &&
-       b[i+3]===0x06){
+    if(
+     b[i]===0x50 &&
+     b[i+1]===0x4b &&
+     b[i+2]===0x05 &&
+     b[i+3]===0x06
+    ){
 
-     var total=u16(b,i+10);
+     var entries=u16(b,i+10);
      var offset=u32(b,i+16);
 
-     readDirectory(offset,total,0);
+     if(entries===65535 || offset===4294967295){
+      showError("ZIP64 format not supported.");
+      return;
+     }
+
+     readDirectory(offset,entries,0);
      return;
+
     }
+
    }
 
    if(start===0){
-    showError("ZIP directory not found.");
+    showError("ZIP End Directory not found.");
     return;
    }
 
    end=start+3;
    scan();
+
   });
+
  }
 
  scan();
+
 }
 
 function readDirectory(offset,total,index){
@@ -200,19 +258,25 @@ function readDirectory(offset,total,index){
   }
 
   if(h.length<46 ||
-     h[0]!==0x50 || h[1]!==0x4b ||
-     h[2]!==0x01 || h[3]!==0x02){
+     h[0]!==0x50 ||
+     h[1]!==0x4b ||
+     h[2]!==0x01 ||
+     h[3]!==0x02){
 
-   showError("Invalid ZIP directory.");
+   showError("Invalid ZIP directory entry.");
    return;
+
   }
 
+  var flags=u16(h,8);
   var method=u16(h,10);
   var compressed=u32(h,20);
   var original=u32(h,24);
+
   var nameLen=u16(h,28);
   var extraLen=u16(h,30);
   var commentLen=u16(h,32);
+
   var localOffset=u32(h,42);
 
   var nameStart=offset+46;
@@ -229,20 +293,37 @@ function readDirectory(offset,total,index){
 
    if(filename.toUpperCase()==="META-INF/MANIFEST.MF"){
 
-    readManifest(localOffset,method,compressed,original);
+    if(flags & 1){
+     showError("Manifest is encrypted.");
+     return;
+    }
+
+    readManifest(
+     localOffset,
+     method,
+     compressed,
+     original
+    );
+
     return;
+
    }
 
    readDirectory(next,total,index+1);
+
   });
+
  });
+
 }
 
 function readManifest(localOffset,method,compressed,original){
 
- if(method!==8){
-  showError("Expected DEFLATE method 8. Found: "+method);
+ if(method!==8 && method!==0){
+
+  showError("Unsupported compression method: "+method);
   return;
+
  }
 
  readPart(selectedFile,localOffset,localOffset+30,function(err,h){
@@ -252,9 +333,15 @@ function readManifest(localOffset,method,compressed,original){
    return;
   }
 
-  if(h.length<30){
-   showError("Invalid local header.");
+  if(h.length<30 ||
+     h[0]!==0x50 ||
+     h[1]!==0x4b ||
+     h[2]!==0x03 ||
+     h[3]!==0x04){
+
+   showError("Invalid local ZIP header.");
    return;
+
   }
 
   var nameLen=u16(h,26);
@@ -263,73 +350,58 @@ function readManifest(localOffset,method,compressed,original){
   var dataStart=localOffset+30+nameLen+extraLen;
 
   statusBox.innerHTML=
-  "<span class='yellow'>READING COMPRESSED MANIFEST...</span>";
+  "<span class='yellow'>READING MANIFEST...</span>";
 
-  readPart(selectedFile,dataStart,dataStart+compressed,function(e,data){
+  readPart(
+   selectedFile,
+   dataStart,
+   dataStart+compressed,
+   function(e,data){
 
-   if(e){
-    showError(e);
-    return;
-   }
+    if(e){
+     showError(e);
+     return;
+    }
 
-   decompress(data);
-  });
- });
-}
+    try{
 
-function decompress(data){
+     var output;
 
- try{
+     if(method===8){
 
-  var ds=new DecompressionStream("deflate-raw");
+      output=fflate.inflateSync(data);
 
-  var blob=new Blob([data]);
+     }else{
 
-  var stream=blob.stream().pipeThrough(ds);
+      output=data;
 
-  var reader=stream.getReader();
+     }
 
-  var chunks=[];
-  var total=0;
+     if(output.length!==original){
 
-  function next(){
+      statusBox.innerHTML=
+      "<span class='yellow'>WARNING</span><br>"+
+      "Expected: "+original+" bytes<br>"+
+      "Read: "+output.length+" bytes<br><br>";
 
-   reader.read().then(function(result){
-
-    if(result.done){
-
-     var output=new Uint8Array(total);
-     var pos=0;
-
-     for(var i=0;i<chunks.length;i++){
-      output.set(chunks[i],pos);
-      pos+=chunks[i].length;
      }
 
      showManifest(readText(output));
-     return;
+
+    }catch(error){
+
+     showError(
+      "DEFLATE ERROR: "+
+      (error.message || error)
+     );
+
     }
 
-    chunks.push(result.value);
-    total+=result.value.length;
+   }
+  );
 
-    if(total>65536){
-     showError("Manifest too large.");
-     return;
-    }
+ });
 
-    next();
-
-   }).catch(function(error){
-    showError("Decompression failed: "+error.message);
-   });
-  }
-
-  next();
-
- }catch(e){
-  showError("DEFLATE ERROR: "+e.message);
- }
 }
 
 function showManifest(text){
@@ -349,28 +421,60 @@ function showManifest(text){
  for(var i=0;i<fields.length;i++){
 
   var key=fields[i];
-  var regex=new RegExp("^"+key+":\\s*(.*)$","im");
+
+  var regex=new RegExp(
+   "^"+key+":\\s*(.*)$",
+   "im"
+  );
+
   var match=text.match(regex);
 
   if(match){
-   result+=key+":<br>"+match[1]+"<br><br>";
+
+   result+=
+   "<b>"+key+"</b><br>"+
+   match[1]+"<br><br>";
+
   }
+
  }
 
  result+="<br>FULL MANIFEST:<br>"+
  text.replace(/\r?\n/g,"<br>");
 
  statusBox.innerHTML=result;
+
 }
 
 function resetApp(){
 
  selectedFile=null;
  picker.value="";
+
  info.innerHTML="No file selected.";
+
  statusBox.innerHTML="Waiting for JAR file...";
+
 }
 
+window.onload=function(){
+
+ if(typeof fflate!=="undefined"){
+
+  statusBox.innerHTML=
+  "<span class='green'>FFLATE LOADED SUCCESSFULLY</span>";
+
+ }else{
+
+  statusBox.innerHTML=
+  "<span class='red'>FFLATE NOT LOADED</span><br>"+
+  "Internet or CDN access required.";
+
+ }
+
+};
+
 </script>
+
 </body>
  </html>
