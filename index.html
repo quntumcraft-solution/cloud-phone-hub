@@ -3,64 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK TEST 8.5</title>
-
+<title>RUTIK TEST 8.6</title>
 <style>
-body{
- background:#111;
- color:#00ff00;
- font:12px Arial;
- padding:8px;
-}
-.box{
- border:1px solid #00ff00;
- padding:8px;
- margin:8px 0;
- word-wrap:break-word;
-}
-button{
- width:100%;
- padding:12px;
- margin:6px 0;
-}
+body{background:#111;color:#00ff00;font:12px Arial;padding:8px}
+.box{border:1px solid #00ff00;padding:8px;margin:8px 0;word-wrap:break-word}
+button{width:100%;padding:12px;margin:6px 0}
 </style>
 </head>
-
 <body>
 
-<h3>RUTIK FULL JAR READER</h3>
+<h3>RUTIK ZIP DIRECTORY SCANNER</h3>
 
 <div class="box" id="status">STATUS: PAGE LOADED</div>
 
 <input type="file" id="file" accept=".jar,.zip">
 
-<button id="start">START FULL FILE TEST</button>
+<button id="scan">SCAN JAR DIRECTORY</button>
 
 <div class="box" id="result">RESULT: WAITING</div>
 
-<div class="box" id="progress">PROGRESS: 0%</div>
+<div class="box" id="listing">FILE LIST: WAITING</div>
 
 <div class="box" id="error">ERROR: NONE</div>
 
-<script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 
+<script>
 var statusBox=document.getElementById("status");
 var resultBox=document.getElementById("result");
-var progressBox=document.getElementById("progress");
+var listingBox=document.getElementById("listing");
 var errorBox=document.getElementById("error");
 var fileInput=document.getElementById("file");
 
-var chunkSize=65536;
-var offset=0;
-var totalRead=0;
-var totalSize=0;
-var reader=null;
 var selectedFile=null;
 
 function showError(step,e){
-
  statusBox.innerHTML="STATUS: FAILED";
-
  errorBox.innerHTML=
  "ERROR STEP: "+step+
  "<br>ERROR NAME: "+(e.name||"Unknown")+
@@ -68,182 +46,156 @@ function showError(step,e){
 }
 
 window.onerror=function(msg,url,line,col){
-
- errorBox.innerHTML=
- "JAVASCRIPT ERROR: "+msg+
- "<br>LINE: "+line+
- "<br>COLUMN: "+col;
-
- statusBox.innerHTML="STATUS: JAVASCRIPT ERROR";
+ showError("JAVASCRIPT",msg+" | LINE: "+line+" | COLUMN: "+col);
  return false;
 };
 
 fileInput.onchange=function(){
-
  try{
-
  selectedFile=fileInput.files[0];
-
  if(selectedFile){
-
  statusBox.innerHTML="STATUS: FILE SELECTED";
-
- resultBox.innerHTML=
- "FILE: "+selectedFile.name+
+ resultBox.innerHTML="FILE: "+selectedFile.name+
  "<br>SIZE: "+selectedFile.size+" Bytes";
-
- }else{
-
- statusBox.innerHTML="STATUS: NO FILE";
  }
-
  }catch(e){
-
  showError("FILE SELECTION",e);
-
  }
-
 };
 
-function readNextChunk(){
+document.getElementById("scan").onclick=function(){
+
+ errorBox.innerHTML="ERROR: NONE";
+ listingBox.innerHTML="FILE LIST: SCANNING...";
 
  try{
 
- if(offset>=totalSize){
-
- statusBox.innerHTML="TEST COMPLETED";
-
- resultBox.innerHTML=
- "FILE: "+selectedFile.name+
- "<br>ORIGINAL SIZE: "+totalSize+
- "<br>READ BYTES: "+totalRead+
- "<br>CHUNK SIZE: "+chunkSize+
- "<br>RESULT: FULL FILE READ SUCCESSFUL";
-
- progressBox.innerHTML="PROGRESS: 100%";
-
- return;
+ if(!selectedFile){
+ throw new Error("PLEASE SELECT JAR FILE");
  }
 
- var end=offset+chunkSize;
-
- if(end>totalSize){
- end=totalSize;
+ if(typeof fflate==="undefined"){
+ throw new Error("FFLATE LIBRARY NOT LOADED");
  }
 
- var part=selectedFile.slice(offset,end);
+ statusBox.innerHTML="STEP 1: READING JAR";
 
- reader=new FileReader();
+ var reader=new FileReader();
 
  reader.onload=function(){
 
  try{
 
- if(!reader.result){
- throw new Error("EMPTY CHUNK DATA");
+ statusBox.innerHTML="STEP 2: ZIP SCANNING";
+
+ var data=new Uint8Array(reader.result);
+ var view=new DataView(data.buffer);
+
+ var eocd=-1;
+ var i;
+
+ for(i=data.length-22;i>=0;i--){
+ if(view.getUint32(i,true)===0x06054b50){
+ eocd=i;
+ break;
+ }
  }
 
- var bytes=reader.result.byteLength;
+ if(eocd<0){
+ throw new Error("ZIP END RECORD NOT FOUND");
+ }
 
- totalRead=totalRead+bytes;
- offset=end;
+ var count=view.getUint16(eocd+10,true);
+ var cdOffset=view.getUint32(eocd+16,true);
 
- var percent=Math.floor(
- (totalRead/totalSize)*100
- );
+ var files=[];
+ var pos=cdOffset;
+ var classCount=0;
+ var manifestFound=false;
+ var metaFound=false;
+ var total=0;
 
- progressBox.innerHTML=
- "PROGRESS: "+percent+"%"+
- "<br>READ: "+totalRead+
- "<br>TOTAL: "+totalSize;
+ for(i=0;i<count;i++){
 
- statusBox.innerHTML=
- "READING CHUNK: "+totalRead+" BYTES";
+ if(view.getUint32(pos,true)!==0x02014b50){
+ throw new Error("INVALID CENTRAL DIRECTORY AT "+pos);
+ }
+
+ var method=view.getUint16(pos+10,true);
+ var compSize=view.getUint32(pos+20,true);
+ var uncompSize=view.getUint32(pos+24,true);
+ var nameLen=view.getUint16(pos+28,true);
+ var extraLen=view.getUint16(pos+30,true);
+ var commentLen=view.getUint16(pos+32,true);
+
+ var nameBytes=data.slice(pos+46,pos+46+nameLen);
+ var name="";
+
+ for(var j=0;j<nameBytes.length;j++){
+ name+=String.fromCharCode(nameBytes[j]);
+ }
+
+ files.push({
+ name:name,
+ method:method,
+ size:uncompSize,
+ compressed:compSize
+ });
+
+ if(name.toUpperCase()==="META-INF/MANIFEST.MF"){
+ manifestFound=true;
+ }
+
+ if(name.toUpperCase().indexOf("META-INF/")===0){
+ metaFound=true;
+ }
+
+ if(name.toLowerCase().slice(-6)===".class"){
+ classCount++;
+ }
+
+ total+=uncompSize;
+
+ pos+=46+nameLen+extraLen+commentLen;
+ }
+
+ statusBox.innerHTML="STEP 3: SCAN COMPLETED";
 
  resultBox.innerHTML=
- "FILE: "+selectedFile.name+
- "<br>CHUNK READ: "+bytes+
- "<br>TOTAL READ: "+totalRead;
+ "ZIP ENTRIES: "+count+
+ "<br>CLASS FILES: "+classCount+
+ "<br>MANIFEST: "+(manifestFound?"FOUND":"NOT FOUND")+
+ "<br>META-INF: "+(metaFound?"FOUND":"NOT FOUND")+
+ "<br>TOTAL UNCOMPRESSED SIZE: "+total+
+ "<br>ERROR: NONE";
 
- readNextChunk();
+ listingBox.innerHTML="FILE LIST:";
+
+ for(i=0;i<files.length;i++){
+ listingBox.innerHTML+=
+ "<br>"+(i+1)+". "+files[i].name+
+ " ("+files[i].size+" Bytes)";
+ }
+
+ statusBox.innerHTML="TEST SUCCESSFUL";
 
  }catch(e){
-
- showError("CHUNK PROCESSING",e);
-
+ showError("ZIP DIRECTORY SCAN",e);
  }
 
  };
 
  reader.onerror=function(){
-
- showError(
- "FILE READING",
- reader.error||"UNKNOWN FILEREADER ERROR"
- );
-
+ showError("FILE READING",reader.error||"UNKNOWN ERROR");
  };
 
- reader.onabort=function(){
-
- statusBox.innerHTML="STATUS: ABORTED";
-
- errorBox.innerHTML="ERROR: READING ABORTED";
-
- };
-
- reader.readAsArrayBuffer(part);
+ reader.readAsArrayBuffer(selectedFile);
 
  }catch(e){
-
- showError("READ NEXT CHUNK",e);
-
- }
-
-}
-
-document.getElementById("start").onclick=function(){
-
- try{
-
- errorBox.innerHTML="ERROR: NONE";
-
- if(!selectedFile){
-
- throw new Error("PLEASE SELECT A JAR FILE");
- }
-
- if(typeof FileReader!=="function"){
-
- throw new Error("FILEREADER NOT SUPPORTED");
- }
-
- totalSize=selectedFile.size;
-
- if(totalSize<=0){
-
- throw new Error("EMPTY FILE");
- }
-
- offset=0;
- totalRead=0;
-
- statusBox.innerHTML="TEST STARTED";
-
- resultBox.innerHTML="PREPARING FILE READING...";
-
- progressBox.innerHTML="PROGRESS: 0%";
-
- readNextChunk();
-
- }catch(e){
-
- showError("START TEST",e);
-
+ showError("MAIN SCANNER",e);
  }
 
 };
-
 </script>
 
 </body>
