@@ -3,71 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK ERROR TEST</title>
+<title>RUTIK TEST 8.4</title>
+
 <style>
-body{background:#111;color:#00ff00;font:12px Arial;padding:8px}
-.box{border:1px solid #00ff00;padding:8px;margin:8px 0;word-wrap:break-word}
-button{width:100%;padding:12px;margin:5px 0}
+body{
+ background:#111;
+ color:#00ff00;
+ font:12px Arial;
+ padding:8px;
+}
+.box{
+ border:1px solid #00ff00;
+ padding:8px;
+ margin:8px 0;
+ word-wrap:break-word;
+}
+button{
+ width:100%;
+ padding:12px;
+ margin:6px 0;
+}
+input{width:100%;margin:10px 0}
 </style>
 </head>
+
 <body>
 
-<h3>RUTIK ERROR DETECTOR</h3>
+<h3>RUTIK JAR READER TEST</h3>
 
-<div class="box" id="status">1. HTML LOADED</div>
-<div class="box" id="output">2. WAITING</div>
-<div class="box" id="errors">ERROR: NONE</div>
+<div class="box" id="status">STATUS: PAGE LOADED</div>
 
-<button id="btn">START TEST</button>
+<input type="file" id="file" accept=".jar,.zip">
+
+<button id="test">READ JAR FILE</button>
+
+<div class="box" id="result">RESULT: WAITING</div>
+
+<div class="box" id="error">ERROR: NONE</div>
 
 <script>
 
 var statusBox=document.getElementById("status");
-var output=document.getElementById("output");
-var errorBox=document.getElementById("errors");
+var resultBox=document.getElementById("result");
+var errorBox=document.getElementById("error");
+var fileInput=document.getElementById("file");
 
-function log(t){
- output.innerHTML+="<br>"+t;
+function showError(step,e){
+ errorBox.innerHTML=
+ "ERROR STEP: "+step+
+ "<br>ERROR NAME: "+(e.name||"Unknown")+
+ "<br>ERROR MESSAGE: "+(e.message||e);
+ statusBox.innerHTML="STATUS: FAILED";
 }
-
-function err(t){
- errorBox.innerHTML+="<br>"+t;
-}
-
-statusBox.innerHTML="2. JAVASCRIPT STARTED";
 
 window.onerror=function(msg,url,line,col){
- err("ERROR: "+msg+" | LINE: "+line+" | COLUMN: "+col);
- statusBox.innerHTML="JAVASCRIPT ERROR";
+ errorBox.innerHTML=
+ "JAVASCRIPT ERROR: "+msg+
+ "<br>LINE: "+line+
+ "<br>COLUMN: "+col;
+ statusBox.innerHTML="STATUS: JAVASCRIPT FAILED";
  return false;
 };
 
-document.getElementById("btn").onclick=function(){
-
- statusBox.innerHTML="3. BUTTON CLICKED";
- output.innerHTML="TEST RESULTS:";
-
+fileInput.onchange=function(){
  try{
- var p=typeof Promise;
- log("PROMISE: "+p);
- }catch(e){err(e.name+": "+e.message);}
+ var f=fileInput.files[0];
 
- try{
- var f=typeof FileReader;
- log("FILEREADER: "+f);
- }catch(e){err(e.name+": "+e.message);}
-
- try{
- var a=new Function("return (async function(){return 1;})();");
- log("ASYNC/AWAIT: SUPPORTED");
+ if(f){
+ statusBox.innerHTML="STATUS: FILE SELECTED";
+ resultBox.innerHTML=
+ "FILE: "+f.name+
+ "<br>SIZE: "+f.size+" Bytes";
+ }
  }catch(e){
- log("ASYNC/AWAIT: NOT SUPPORTED");
- err(e.name+": "+e.message);
+ showError("FILE SELECTION",e);
+ }
+};
+
+document.getElementById("test").onclick=function(){
+
+ errorBox.innerHTML="ERROR: NONE";
+ resultBox.innerHTML="RESULT: TEST STARTED";
+
+ try{
+
+ var f=fileInput.files[0];
+
+ if(!f){
+ resultBox.innerHTML="PLEASE SELECT A JAR FILE FIRST";
+ return;
  }
 
- statusBox.innerHTML="4. TEST COMPLETED";
+ statusBox.innerHTML="STEP 1: FILE CHECK PASSED";
+
+ if(typeof FileReader!=="function"){
+ throw new Error("FileReader NOT SUPPORTED");
+ }
+
+ statusBox.innerHTML="STEP 2: FILEREADER AVAILABLE";
+
+ var reader=new FileReader();
+
+ reader.onload=function(){
+
+ try{
+
+ statusBox.innerHTML="STEP 3: FILE READ SUCCESS";
+
+ var data=reader.result;
+
+ if(!data){
+ throw new Error("EMPTY FILE DATA");
+ }
+
+ var bytes=new Uint8Array(data);
+
+ var hex="";
+ var i;
+
+ for(i=0;i<bytes.length;i++){
+ hex+=("0"+bytes[i].toString(16)).slice(-2).toUpperCase()+" ";
+ }
+
+ resultBox.innerHTML=
+ "FILE: "+f.name+
+ "<br>SIZE: "+f.size+
+ "<br>FIRST 4 BYTES: "+hex;
+
+ if(bytes[0]===80 &&
+ bytes[1]===75 &&
+ bytes[2]===3 &&
+ bytes[3]===4){
+
+ resultBox.innerHTML+="<br>JAR/ZIP HEADER: VALID";
+ statusBox.innerHTML="TEST SUCCESSFUL";
+
+ }else{
+
+ resultBox.innerHTML+="<br>JAR/ZIP HEADER: NOT MATCHED";
+ statusBox.innerHTML="TEST COMPLETED";
+ }
+
+ }catch(e){
+ showError("FILE DATA PROCESSING",e);
+ }
+
+ };
+
+ reader.onerror=function(){
+ showError("FILE READING",reader.error||"Unknown FileReader Error");
+ };
+
+ reader.onabort=function(){
+ errorBox.innerHTML="ERROR: FILE READING ABORTED";
+ statusBox.innerHTML="STATUS: ABORTED";
+ };
+
+ statusBox.innerHTML="STEP 3: READING FILE";
+
+ reader.readAsArrayBuffer(f.slice(0,4));
+
+ }catch(e){
+ showError("MAIN TEST",e);
+ }
+
 };
 
 </script>
+
 </body>
-</html>
+ </html>
