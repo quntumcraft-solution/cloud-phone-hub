@@ -2,43 +2,64 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK ZIP SCANNER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUTIK ZIP SCANNER V1.8.1</title>
 
 <style>
+*{
+ box-sizing:border-box;
+}
+
 body{
  background:#101820;
  color:white;
- font-family:Arial;
+ font-family:Arial,sans-serif;
  font-size:12px;
  padding:7px;
+ margin:0;
 }
+
 h2{
  text-align:center;
  color:#00e5ff;
  font-size:16px;
 }
+
 .box{
  background:#1c2b36;
  border:1px solid #395365;
  padding:8px;
  margin-bottom:8px;
 }
-input{width:100%;margin:8px 0}
+
+input{
+ width:100%;
+ margin:8px 0;
+ color:white;
+}
+
 button{
  width:100%;
- padding:11px;
+ padding:12px;
  background:#00a8c7;
  color:white;
  border:0;
  font-weight:bold;
+ margin-top:8px;
 }
+
 pre{
  white-space:pre-wrap;
  word-break:break-all;
  color:#b8ffca;
  font-size:11px;
 }
+
+.heading{
+ color:#00e5ff;
+ font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -47,202 +68,353 @@ pre{
 <h2>RUTIK ZIP SCANNER</h2>
 
 <div class="box">
-<b>STEP 1 - SELECT JAR FILE</b>
+
+<div class="heading">STEP 1 - SELECT JAR FILE</div>
+
 <input type="file" id="jarFile" accept=".jar,.zip">
+
 <button id="scanBtn">SCAN ZIP DIRECTORY</button>
+
 </div>
 
+
 <div class="box">
-<b>STEP 2 - STATUS</b>
+<div class="heading">STEP 2 - FILE STATUS</div>
 <pre id="status">Waiting for file...</pre>
 </div>
 
+
 <div class="box">
-<b>STEP 3 - ZIP INFORMATION</b>
+<div class="heading">STEP 3 - ZIP INFORMATION</div>
 <pre id="info">No information yet.</pre>
 </div>
 
+
 <div class="box">
-<b>STEP 4 - FILE LIST</b>
+<div class="heading">STEP 4 - FILE LIST</div>
 <pre id="list">No files found yet.</pre>
 </div>
 
+
 <div class="box">
-<b>STEP 5 - FILE TYPE COUNT</b>
+<div class="heading">STEP 5 - FILE TYPE COUNT</div>
 <pre id="types">Waiting...</pre>
 </div>
 
+
 <div class="box">
-<b>STEP 6 - FINAL RESULT</b>
+<div class="heading">STEP 6 - FINAL RESULT</div>
 <pre id="result">Waiting...</pre>
 </div>
 
+
+<div class="box">
+<div class="heading">DEBUG LOG</div>
+<pre id="debug">System Ready.</pre>
+</div>
+
+
 <script>
 
-var input=document.getElementById("jarFile");
-var statusBox=document.getElementById("status");
-var infoBox=document.getElementById("info");
-var listBox=document.getElementById("list");
-var typesBox=document.getElementById("types");
-var resultBox=document.getElementById("result");
+/* ELEMENTS */
 
-function readPart(file,start,end){
- return new Promise(function(resolve,reject){
-  var r=new FileReader();
+var input = document.getElementById("jarFile");
+var scanBtn = document.getElementById("scanBtn");
 
-  r.onload=function(){
-   resolve(new Uint8Array(r.result));
-  };
+var statusBox = document.getElementById("status");
+var infoBox = document.getElementById("info");
+var listBox = document.getElementById("list");
+var typesBox = document.getElementById("types");
+var resultBox = document.getElementById("result");
+var debugBox = document.getElementById("debug");
 
-  r.onerror=function(){
-   reject("FILE READ ERROR");
-  };
 
-  r.readAsArrayBuffer(file.slice(start,end));
- });
+/* DEBUG */
+
+function log(message){
+
+ debugBox.textContent += "\n" + message;
+
 }
 
-function u16(a,p){
- return a[p] | (a[p+1]<<8);
-}
 
-function u32(a,p){
- return (
-  a[p] |
-  (a[p+1]<<8) |
-  (a[p+2]<<16) |
-  (a[p+3]<<24)
- )>>>0;
-}
+/* FILE SELECTION */
 
-function getName(a){
- var s="";
- for(var i=0;i<a.length;i++){
-  s+=String.fromCharCode(a[i]);
- }
+input.onchange = function(){
+
  try{
-  return decodeURIComponent(escape(s));
+
+  if(!input.files || input.files.length === 0){
+
+   statusBox.textContent = "NO FILE SELECTED";
+   return;
+
+  }
+
+  var file = input.files[0];
+
+  statusBox.textContent =
+   "FILE SELECTED SUCCESSFULLY" +
+   "\nNAME: " + file.name +
+   "\nSIZE: " + file.size + " bytes";
+
+  infoBox.textContent = "File is ready for scanning.";
+
+  debugBox.textContent =
+   "FILE CHANGE EVENT SUCCESSFUL" +
+   "\nFILE API AVAILABLE" +
+   "\nFILES COUNT: " + input.files.length +
+   "\nFILE NAME: " + file.name +
+   "\nFILE SIZE: " + file.size;
+
  }catch(e){
-  return s;
+
+  statusBox.textContent = "FILE ERROR: " + e.message;
+
  }
-}
-
-document.getElementById("scanBtn").onclick=function(){
-
- scanZIP();
 
 };
 
-async function scanZIP(){
+
+/* READ FILE PART */
+
+function readPart(file,start,end){
+
+ return new Promise(function(resolve,reject){
+
+  var reader = new FileReader();
+
+  reader.onload = function(){
+
+   resolve(new Uint8Array(reader.result));
+
+  };
+
+  reader.onerror = function(){
+
+   reject(new Error("FILE READ ERROR"));
+
+  };
+
+  reader.readAsArrayBuffer(file.slice(start,end));
+
+ });
+
+}
+
+
+/* ZIP NUMBERS */
+
+function u16(a,p){
+
+ return a[p] | (a[p+1] << 8);
+
+}
+
+
+function u32(a,p){
+
+ return (
+  a[p] |
+  (a[p+1] << 8) |
+  (a[p+2] << 16) |
+  (a[p+3] << 24)
+ ) >>> 0;
+
+}
+
+
+/* FILE NAME DECODER */
+
+function getName(a){
+
+ var s = "";
+
+ for(var i=0;i<a.length;i++){
+
+  s += String.fromCharCode(a[i]);
+
+ }
 
  try{
 
-  var file=input.files[0];
+  return decodeURIComponent(escape(s));
 
-  if(!file){
-   statusBox.textContent="ERROR: SELECT FILE FIRST";
-   return;
-  }
+ }catch(e){
 
-  statusBox.textContent="FILE SELECTED: "+file.name;
+  return s;
 
-  infoBox.textContent="Scanning...";
-  listBox.textContent="Reading directory...";
-  typesBox.textContent="Processing...";
-  resultBox.textContent="Please wait...";
+ }
 
-  // STEP 1: Read ZIP ending
+}
 
-  statusBox.textContent="STEP 1: READING ZIP END";
 
-  var tailSize=Math.min(file.size,65557);
+/* BUTTON */
 
-  var tail=await readPart(
+scanBtn.onclick = function(){
+
+ debugBox.textContent = "SCAN BUTTON CLICKED";
+
+ var files = input.files;
+
+ if(!files || files.length === 0){
+
+  statusBox.textContent = "ERROR: SELECT FILE FIRST";
+
+  log("NO FILE FOUND");
+
+  return;
+
+ }
+
+ var file = files[0];
+
+ log("FILE FOUND: " + file.name);
+
+ scanZIP(file);
+
+};
+
+
+/* ZIP SCANNER */
+
+async function scanZIP(file){
+
+ try{
+
+  statusBox.textContent = "STEP 1: READING ZIP END";
+
+  infoBox.textContent = "Scanning ZIP...";
+  listBox.textContent = "Reading directory...";
+  typesBox.textContent = "Processing...";
+  resultBox.textContent = "Please wait...";
+
+
+  /* READ ZIP END */
+
+  var tailSize = Math.min(file.size,65557);
+
+  var tail = await readPart(
    file,
    file.size-tailSize,
    file.size
   );
 
-  var eocd=-1;
+  log("FILE DATA READ SUCCESSFULLY");
+
+
+  /* FIND ZIP END RECORD */
+
+  var eocd = -1;
 
   for(var i=tail.length-22;i>=0;i--){
 
-   if(u32(tail,i)===0x06054b50){
-    eocd=i;
+   if(
+    tail[i] === 80 &&
+    tail[i+1] === 75 &&
+    tail[i+2] === 5 &&
+    tail[i+3] === 6
+   ){
+
+    eocd = i;
     break;
+
    }
 
   }
 
-  if(eocd<0){
+  if(eocd < 0){
+
    throw new Error("ZIP END RECORD NOT FOUND");
+
   }
 
-  // STEP 2: Read directory information
+  log("ZIP END RECORD FOUND");
 
-  statusBox.textContent="STEP 2: READING DIRECTORY";
 
-  var disk=u16(tail,eocd+4);
-  var centralDisk=u16(tail,eocd+6);
-  var diskEntries=u16(tail,eocd+8);
-  var totalEntries=u16(tail,eocd+10);
+  /* ZIP INFORMATION */
 
-  var dirSize=u32(tail,eocd+12);
-  var dirOffset=u32(tail,eocd+16);
+  statusBox.textContent = "STEP 2: READING ZIP INFORMATION";
 
-  if(disk!==0 || centralDisk!==0){
-   throw new Error("MULTI-DISK ZIP NOT SUPPORTED");
+  var disk = u16(tail,eocd+4);
+  var centralDisk = u16(tail,eocd+6);
+
+  var totalEntries = u16(tail,eocd+10);
+
+  var dirSize = u32(tail,eocd+12);
+  var dirOffset = u32(tail,eocd+16);
+
+  if(disk !== 0 || centralDisk !== 0){
+
+   throw new Error("MULTI DISK ZIP NOT SUPPORTED");
+
   }
 
-  if(totalEntries===65535 || dirOffset===4294967295){
+  if(
+   totalEntries === 65535 ||
+   dirOffset === 4294967295
+  ){
+
    throw new Error("ZIP64 NOT SUPPORTED");
+
   }
 
-  if(dirOffset+dirSize>file.size){
-   throw new Error("INVALID DIRECTORY LOCATION");
+  if(dirOffset + dirSize > file.size){
+
+   throw new Error("INVALID ZIP DIRECTORY");
+
   }
 
-  // STEP 3: Read directory
 
-  statusBox.textContent="STEP 3: SCANNING FILES";
+  /* READ DIRECTORY */
 
-  var directory=await readPart(
+  statusBox.textContent = "STEP 3: SCANNING DIRECTORY";
+
+  var directory = await readPart(
    file,
    dirOffset,
    dirOffset+dirSize
   );
 
-  var pos=0;
-  var files=[];
-  var classCount=0;
-  var imageCount=0;
-  var audioCount=0;
-  var jadCount=0;
-  var manifestCount=0;
-  var otherCount=0;
+  log("DIRECTORY DATA READ SUCCESSFULLY");
 
-  while(pos+46<=directory.length){
 
-   if(u32(directory,pos)!==0x02014b50){
+  /* SCAN ENTRIES */
+
+  var files = [];
+
+  var classCount = 0;
+  var imageCount = 0;
+  var audioCount = 0;
+  var jadCount = 0;
+  var manifestCount = 0;
+  var otherCount = 0;
+
+  var pos = 0;
+
+  while(pos+46 <= directory.length){
+
+   if(u32(directory,pos) !== 0x02014b50){
+
     break;
+
    }
 
-   var flags=u16(directory,pos+8);
-   var method=u16(directory,pos+10);
+   var method = u16(directory,pos+10);
 
-   var compressed=u32(directory,pos+20);
-   var original=u32(directory,pos+24);
+   var compressed = u32(directory,pos+20);
+   var original = u32(directory,pos+24);
 
-   var nameLength=u16(directory,pos+28);
-   var extraLength=u16(directory,pos+30);
-   var commentLength=u16(directory,pos+32);
+   var nameLength = u16(directory,pos+28);
+   var extraLength = u16(directory,pos+30);
+   var commentLength = u16(directory,pos+32);
 
-   var nameBytes=directory.slice(
+   var nameBytes = directory.slice(
     pos+46,
     pos+46+nameLength
    );
 
-   var name=getName(nameBytes);
+   var name = getName(nameBytes);
 
    files.push({
     name:name,
@@ -251,97 +423,127 @@ async function scanZIP(){
     original:original
    });
 
-   var lower=name.toLowerCase();
+   var lower = name.toLowerCase();
 
-   if(lower.slice(-6)===".class"){
+   if(lower.slice(-6) === ".class"){
+
     classCount++;
+
    }
    else if(
-    lower.slice(-4)===".png" ||
-    lower.slice(-4)===".jpg" ||
-    lower.slice(-5)===".jpeg" ||
-    lower.slice(-4)===".gif"
+    lower.slice(-4) === ".png" ||
+    lower.slice(-4) === ".jpg" ||
+    lower.slice(-5) === ".jpeg" ||
+    lower.slice(-4) === ".gif"
    ){
+
     imageCount++;
+
    }
    else if(
-    lower.slice(-4)===".mp3" ||
-    lower.slice(-4)===".wav"
+    lower.slice(-4) === ".mp3" ||
+    lower.slice(-4) === ".wav"
    ){
+
     audioCount++;
+
    }
-   else if(lower.slice(-4)===".jad"){
+   else if(lower.slice(-4) === ".jad"){
+
     jadCount++;
+
    }
-   else if(lower==="meta-inf/manifest.mf"){
+   else if(lower === "meta-inf/manifest.mf"){
+
     manifestCount++;
+
    }
    else{
+
     otherCount++;
+
    }
 
-   pos+=46+nameLength+extraLength+commentLength;
+   pos += 46 + nameLength + extraLength + commentLength;
 
   }
 
-  // STEP 4: Display information
 
-  infoBox.textContent=
-   "FILE: "+file.name+
-   "\nSIZE: "+file.size+" bytes"+
-   "\nZIP ENTRIES: "+files.length+
-   "\nEXPECTED ENTRIES: "+totalEntries+
-   "\nDIRECTORY SIZE: "+dirSize+
-   "\nDIRECTORY OFFSET: "+dirOffset+
+  /* ZIP INFORMATION OUTPUT */
+
+  infoBox.textContent =
+   "FILE: " + file.name +
+   "\nSIZE: " + file.size + " bytes" +
+   "\nZIP ENTRIES: " + files.length +
+   "\nEXPECTED ENTRIES: " + totalEntries +
+   "\nDIRECTORY SIZE: " + dirSize +
+   "\nDIRECTORY OFFSET: " + dirOffset +
    "\n\nDIRECTORY READ: SUCCESS";
 
-  // STEP 5: File list
+  log("TOTAL ENTRIES: " + files.length);
 
-  var output="TOTAL FILES: "+files.length+"\n\n";
+
+  /* FILE LIST */
+
+  var output = "TOTAL FILES: " + files.length + "\n\n";
 
   for(var j=0;j<files.length;j++){
 
-   output+=(j+1)+". "+files[j].name+"\n";
+   output += (j+1) + ". " + files[j].name + "\n";
 
-   if(j>=149){
-    output+="\nMORE FILES NOT DISPLAYED";
+   if(j >= 149){
+
+    output += "\nMORE FILES NOT DISPLAYED";
+
     break;
+
    }
 
   }
 
-  listBox.textContent=output;
+  listBox.textContent = output;
 
-  // STEP 6: File type count
 
-  typesBox.textContent=
-   "JAVA CLASS: "+classCount+
-   "\nIMAGES: "+imageCount+
-   "\nAUDIO: "+audioCount+
-   "\nJAD FILES: "+jadCount+
-   "\nMANIFEST: "+manifestCount+
-   "\nOTHER FILES: "+otherCount;
+  /* FILE TYPES */
 
-  // FINAL
+  typesBox.textContent =
+   "JAVA CLASS: " + classCount +
+   "\nIMAGES: " + imageCount +
+   "\nAUDIO: " + audioCount +
+   "\nJAD FILES: " + jadCount +
+   "\nMANIFEST: " + manifestCount +
+   "\nOTHER FILES: " + otherCount;
 
-  var success=files.length===totalEntries;
 
-  resultBox.textContent=
-   (success?"ZIP DIRECTORY TEST PASSED":"ZIP DIRECTORY CHECK INCOMPLETE")+
-   "\n\nFiles Found: "+files.length+
-   "\nExpected: "+totalEntries+
-   "\nClass Files: "+classCount+
-   "\nManifest: "+manifestCount+
-   "\n\nTEST 8: "+(success?"SUCCESS":"CHECK REQUIRED");
+  /* FINAL RESULT */
 
-  statusBox.textContent="SCAN COMPLETED";
+  var success = files.length === totalEntries;
+
+  resultBox.textContent =
+   (success ? "ZIP DIRECTORY TEST PASSED" :
+    "ZIP DIRECTORY CHECK INCOMPLETE") +
+
+   "\n\nFILES FOUND: " + files.length +
+   "\nEXPECTED: " + totalEntries +
+   "\nCLASS FILES: " + classCount +
+   "\nMANIFEST: " + manifestCount +
+
+   "\n\nTEST 8: " +
+   (success ? "SUCCESS" : "CHECK REQUIRED");
+
+
+  statusBox.textContent = "SCAN COMPLETED SUCCESSFULLY";
+
+  log("SCAN COMPLETED");
 
  }catch(e){
 
-  statusBox.textContent="ERROR: "+e.message;
+  statusBox.textContent = "ERROR: " + e.message;
 
-  resultBox.textContent=
-   "TEST FAILED\n\n"+e.message;
+  resultBox.textContent =
+   "TEST FAILED\n\n" + e.message;
+
+  log("ERROR: " + e.message);
 
  }
 
@@ -350,4 +552,4 @@ async function scanZIP(){
 </script>
 
 </body>
-</html>
+ </html>
