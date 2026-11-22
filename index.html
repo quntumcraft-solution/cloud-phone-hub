@@ -3,203 +3,151 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#101820">
-<title>RUTIK TUBE</title>
+<title>RUTIK DOWNLOADER</title>
 
 <style>
-:root {
-  --bg: #101820;
-  --panel: #1b2935;
-  --text: #f4f7fb;
-  --muted: #a9bac8;
-  --accent: #ff3b30;
-  --focus: #ffd166;
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:#101820;
+ color:#fff;
+ font-family:Arial, sans-serif;
+ font-size:12px;
 }
 
-* {
-  box-sizing: border-box;
+.app{
+ width:100%;
+ max-width:420px;
+ min-height:100vh;
+ margin:auto;
+ display:flex;
+ flex-direction:column;
 }
 
-html, body {
-  margin: 0;
-  width: 100%;
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Arial, Roboto, sans-serif;
+header{
+ background:#1b2935;
+ padding:9px;
+ border-bottom:2px solid #ff3b30;
 }
 
-body {
-  font-size: 13px;
+.logo{
+ font-size:18px;
+ font-weight:bold;
 }
 
-.app {
-  width: 100%;
-  max-width: 420px;
-  min-height: 100vh;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
+.logo span{color:#ff3b30}
+
+.subtitle{
+ color:#a9bac8;
+ font-size:10px;
+ margin-top:3px;
 }
 
-header {
-  background: #182632;
-  border-bottom: 2px solid var(--accent);
-  padding: 7px 8px;
+main{
+ padding:9px;
+ flex:1;
 }
 
-.brand {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: 1px;
+h3{
+ font-size:13px;
+ margin:7px 0;
 }
 
-.brand span {
-  color: var(--accent);
+.tabs{
+ display:flex;
+ gap:6px;
 }
 
-.sub {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 2px;
+.tab{
+ width:50%;
+ background:#304657;
+ border:0;
+ color:white;
+ padding:10px 4px;
+ border-radius:4px;
+ font-weight:bold;
 }
 
-main {
-  padding: 8px;
-  flex: 1;
+.tab.active{
+ background:#ff3b30;
 }
 
-h2 {
-  font-size: 13px;
-  margin: 5px 0 8px;
+.card{
+ background:#1b2935;
+ border:1px solid #344958;
+ padding:9px;
+ border-radius:5px;
+ margin-top:10px;
 }
 
-label {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-  margin: 8px 0 4px;
+label{
+ display:block;
+ color:#a9bac8;
+ margin:10px 0 5px;
+ font-size:11px;
 }
 
-input {
-  width: 100%;
-  min-width: 0;
-  background: #fff;
-  color: #111;
-  border: 2px solid #8293a1;
-  border-radius: 4px;
-  padding: 8px 6px;
-  font-size: 13px;
-  outline: none;
+input{
+ width:100%;
+ padding:9px 6px;
+ border:1px solid #718493;
+ border-radius:4px;
+ font-size:12px;
+ background:white;
+ color:#111;
 }
 
-input:focus,
-button:focus,
-a:focus {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+button{
+ cursor:pointer;
 }
 
-button,
-.linkbtn {
-  display: block;
-  width: 100%;
-  border: 0;
-  border-radius: 4px;
-  background: var(--accent);
-  color: white;
-  font-weight: bold;
-  padding: 9px 6px;
-  margin-top: 7px;
-  text-align: center;
-  text-decoration: none;
-  font-size: 12px;
-  cursor: pointer;
+.action{
+ width:100%;
+ padding:10px 5px;
+ margin-top:9px;
+ background:#ff3b30;
+ color:white;
+ border:0;
+ border-radius:4px;
+ font-weight:bold;
 }
 
-button.secondary,
-.linkbtn.secondary {
-  background: #304657;
+.secondary{
+ background:#304657;
 }
 
-.note {
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.4;
-  margin-top: 8px;
+#result{
+ display:none;
 }
 
-.card {
-  background: var(--panel);
-  border: 1px solid #344958;
-  border-radius: 5px;
-  padding: 8px;
-  margin-top: 9px;
+.message{
+ font-size:10px;
+ color:#a9bac8;
+ line-height:1.5;
+ margin-top:8px;
 }
 
-#playerWrap {
-  display: none;
-  margin-top: 9px;
+footer{
+ text-align:center;
+ color:#a9bac8;
+ padding:8px;
+ font-size:9px;
+ border-top:1px solid #344958;
 }
 
-#player {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border: 0;
+button:focus,input:focus,a:focus{
+ outline:2px solid #ffd166;
+ outline-offset:2px;
 }
 
-.row {
-  display: flex;
-  gap: 6px;
-}
-
-.row > * {
-  flex: 1;
-  min-width: 0;
-}
-
-footer {
-  background: #182632;
-  border-top: 1px solid #344958;
-  padding: 6px 8px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 9px;
-}
-
-@media (max-width: 180px) {
-  body {
-    font-size: 11px;
-  }
-
-  header {
-    padding: 5px;
-  }
-
-  .brand {
-    font-size: 15px;
-  }
-
-  main {
-    padding: 6px;
-  }
-
-  input {
-    font-size: 12px;
-    padding: 7px 4px;
-  }
-
-  button,
-  .linkbtn {
-    font-size: 11px;
-    padding: 8px 4px;
-  }
-
-  .card {
-    padding: 6px;
-  }
+@media(max-width:180px){
+ .logo{font-size:15px}
+ main{padding:6px}
+ .card{padding:7px}
+ input{padding:8px 4px}
 }
 </style>
 </head>
@@ -209,255 +157,272 @@ footer {
 <div class="app">
 
 <header>
-  <div class="brand">
-    RUTIK <span>TUBE</span>
-  </div>
-  <div class="sub">
-    Lightweight YouTube Search
-  </div>
+ <div class="logo">RUTIK <span>DOWNLOADER</span></div>
+ <div class="subtitle">Video & Audio Downloader</div>
 </header>
 
 <main>
 
-  <h2>Search YouTube</h2>
+<h3>SELECT FILE TYPE</h3>
 
-  <form id="searchForm">
+<div class="tabs">
+ <button class="tab active" id="videoTab" type="button">
+  VIDEO
+ </button>
 
-    <label for="query">
-      Video / Channel name
-    </label>
+ <button class="tab" id="audioTab" type="button">
+  AUDIO
+ </button>
+</div>
 
-    <input
-      id="query"
-      type="text"
-      placeholder="Search here..."
-      autocomplete="off"
-    >
+<div class="card">
 
-    <button type="submit">
-      SEARCH
-    </button>
+ <h3 id="heading">VIDEO DOWNLOADER</h3>
 
-  </form>
+ <label for="url">Paste Direct File URL</label>
 
-  <div class="card">
+ <input
+  id="url"
+  type="url"
+  placeholder="https://example.com/video.mp4"
+  autocomplete="off"
+ >
 
-    <div style="font-weight:bold">
-      Play a video
-    </div>
+ <button class="action" id="downloadBtn" type="button">
+  DOWNLOAD VIDEO
+ </button>
 
-    <label for="videoId">
-      Paste YouTube link or video ID
-    </label>
+ <div class="message">
+  Supported examples: MP4, WEBM, MP3, M4A, OGG.
+  Use direct file links that you own or have permission to download.
+ </div>
 
-    <input
-      id="videoId"
-      type="text"
-      placeholder="Video URL / ID"
-    >
+</div>
 
-    <button id="playBtn" type="button">
-      PLAY VIDEO
-    </button>
+<div class="card" id="result">
 
-    <div id="playerWrap">
+ <h3>DOWNLOAD READY</h3>
 
-      <iframe
-        id="player"
-        title="YouTube video player"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+ <div id="fileInfo" class="message"></div>
 
-      <a
-        id="openVideo"
-        class="linkbtn secondary"
-        target="_blank"
-        rel="noopener">
-        OPEN ON YOUTUBE
-      </a>
+ <a id="downloadLink"
+    class="action"
+    style="display:block;text-align:center;text-decoration:none"
+    target="_blank"
+    rel="noopener">
+    OPEN / DOWNLOAD FILE
+ </a>
 
-    </div>
+ <button class="action secondary" id="resetBtn" type="button">
+  CLEAR
+ </button>
 
-  </div>
+</div>
 
-  <div class="card">
+<div class="card">
 
-    <div style="font-weight:bold">
-      Quick links
-    </div>
+ <h3>HOW TO USE</h3>
 
-    <div class="row">
+ <div class="message">
+  1. Select Video or Audio.<br>
+  2. Paste a direct file URL.<br>
+  3. Press Download.<br>
+  4. Open the file link.
+ </div>
 
-      <a
-        class="linkbtn secondary"
-        href="https://m.youtube.com/"
-        target="_blank"
-        rel="noopener">
-        YouTube
-      </a>
+</div>
 
-      <a
-        class="linkbtn secondary"
-        href="https://www.youtube.com/feed/trending"
-        target="_blank"
-        rel="noopener">
-        Trending
-      </a>
-
-    </div>
-
-    <div class="note">
-      Search opens YouTube results.
-      Video playback depends on YouTube
-      and Cloud Phone browser support.
-    </div>
-
-  </div>
+<div class="message">
+ Note: YouTube links and protected streaming links are not supported.
+</div>
 
 </main>
 
 <footer>
-  Made for 128 × 160 keypad phones
+ RUTIK DOWNLOADER | 128 × 160
 </footer>
 
 </div>
 
 <script>
 
-(function() {
+(function(){
 
-  const $ = id => document.getElementById(id);
+ let type = "video";
 
-  // YOUTUBE SEARCH
+ const $ = id => document.getElementById(id);
 
-  function search() {
+ function setType(value){
 
-    const q = $('query').value.trim();
+  type = value;
 
-    if (!q) {
-      $('query').focus();
-      return;
-    }
-
-    location.href =
-      'https://m.youtube.com/results?search_query=' +
-      encodeURIComponent(q);
-
-  }
-
-  $('searchForm').addEventListener(
-    'submit',
-    function(e) {
-      e.preventDefault();
-      search();
-    }
+  $("videoTab").classList.toggle(
+   "active", type === "video"
   );
 
+  $("audioTab").classList.toggle(
+   "active", type === "audio"
+  );
 
-  // EXTRACT YOUTUBE VIDEO ID
+  if(type === "video"){
 
-  function extractId(value) {
+   $("heading").textContent = "VIDEO DOWNLOADER";
 
-    value = value.trim();
+   $("downloadBtn").textContent = "DOWNLOAD VIDEO";
 
-    if (/^[a-zA-Z0-9_-]{11}$/.test(value)) {
-      return value;
-    }
+   $("url").placeholder =
+    "https://example.com/video.mp4";
 
-    try {
+  }else{
 
-      const u = new URL(value);
+   $("heading").textContent = "AUDIO DOWNLOADER";
 
-      if (u.hostname.indexOf('youtu.be') !== -1) {
-        return u.pathname.split('/').filter(Boolean)[0] || '';
-      }
+   $("downloadBtn").textContent = "DOWNLOAD AUDIO";
 
-      if (u.searchParams.get('v')) {
-        return u.searchParams.get('v');
-      }
-
-      const parts = u.pathname.split('/').filter(Boolean);
-
-      const i = parts.findIndex(
-        p => p === 'embed' || p === 'shorts' || p === 'live'
-      );
-
-      if (i >= 0 && parts[i + 1]) {
-        return parts[i + 1];
-      }
-
-    } catch(e) {}
-
-    return '';
+   $("url").placeholder =
+    "https://example.com/audio.mp3";
 
   }
 
+  $("result").style.display = "none";
 
-  // PLAY VIDEO
+ }
 
-  $('playBtn').addEventListener('click', function() {
+ $("videoTab").addEventListener(
+  "click", () => setType("video")
+ );
 
-    const id = extractId($('videoId').value);
-
-    if (!id) {
-      $('videoId').focus();
-      $('videoId').placeholder = 'Enter a valid YouTube link';
-      return;
-    }
-
-    const url =
-      'https://www.youtube.com/watch?v=' +
-      encodeURIComponent(id);
-
-    $('player').src =
-      'https://www.youtube-nocookie.com/embed/' +
-      encodeURIComponent(id);
-
-    $('openVideo').href = url;
-
-    $('playerWrap').style.display = 'block';
-
-    $('playerWrap').scrollIntoView();
-
-  });
+ $("audioTab").addEventListener(
+  "click", () => setType("audio")
+ );
 
 
-  // KEYPAD NAVIGATION
+ function validURL(value){
 
-  function controls() {
+  try{
 
-    return Array.from(
-      document.querySelectorAll('input, button, a')
-    ).filter(el => el.offsetParent !== null);
+   const u = new URL(value);
+
+   return (
+    u.protocol === "https:" ||
+    u.protocol === "http:"
+   );
+
+  }catch(e){
+
+   return false;
 
   }
 
-  document.addEventListener('keydown', function(e) {
+ }
 
-    if (
-      e.key === 'ArrowDown' ||
-      e.key === 'ArrowUp'
-    ) {
 
-      const list = controls();
+ $("downloadBtn").addEventListener(
+  "click", function(){
 
-      const i = list.indexOf(document.activeElement);
+   const value = $("url").value.trim();
 
-      if (i < 0) return;
+   if(!value){
 
-      e.preventDefault();
+    alert("Please enter a file URL");
 
-      const next =
-        e.key === 'ArrowDown'
-          ? Math.min(i + 1, list.length - 1)
-          : Math.max(i - 1, 0);
+    $("url").focus();
 
-      list[next].focus();
+    return;
 
-    }
+   }
 
-  });
+   if(!validURL(value)){
+
+    alert("Please enter a valid HTTP or HTTPS URL");
+
+    return;
+
+   }
+
+   const lower = value.toLowerCase();
+
+   if(
+    lower.includes("youtube.com") ||
+    lower.includes("youtu.be")
+   ){
+
+    alert(
+     "YouTube links are not supported. Enter a direct file URL."
+    );
+
+    return;
+
+   }
+
+   $("downloadLink").href = value;
+
+   $("downloadLink").setAttribute(
+    "download", ""
+   );
+
+   $("fileInfo").textContent =
+    "Selected type: " +
+    type.toUpperCase() +
+    " | Open the link below to access your file.";
+
+   $("result").style.display = "block";
+
+   $("result").scrollIntoView();
+
+  }
+ );
+
+
+ $("resetBtn").addEventListener(
+  "click", function(){
+
+   $("url").value = "";
+
+   $("result").style.display = "none";
+
+   $("url").focus();
+
+  }
+ );
+
+
+ // Keypad navigation
+
+ document.addEventListener(
+  "keydown", function(e){
+
+   if(
+    e.key !== "ArrowDown" &&
+    e.key !== "ArrowUp"
+   ) return;
+
+   const items = Array.from(
+    document.querySelectorAll(
+     "input,button,a"
+    )
+   ).filter(el => el.offsetParent !== null);
+
+   const index = items.indexOf(
+    document.activeElement
+   );
+
+   if(index < 0) return;
+
+   e.preventDefault();
+
+   let next = index;
+
+   if(e.key === "ArrowDown"){
+    next = Math.min(index + 1, items.length - 1);
+   }else{
+    next = Math.max(index - 1, 0);
+   }
+
+   items[next].focus();
+
+  }
+ );
 
 })();
 
