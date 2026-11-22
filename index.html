@@ -7,77 +7,39 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{
- margin:0;
- padding:7px;
- background:#101820;
- color:white;
- font-family:Arial;
- font-size:13px;
+ margin:0;padding:7px;background:#101820;
+ color:white;font-family:Arial;font-size:13px;
 }
-
 .header{
- background:#073b4c;
- border:1px solid #00e5ff;
- text-align:center;
- padding:12px 3px;
+ background:#073b4c;border:1px solid #00e5ff;
+ text-align:center;padding:12px 3px;
 }
-
-h2{
- color:#00e5ff;
- font-size:17px;
- margin:0;
-}
-
+h2{color:#00e5ff;font-size:17px;margin:0}
 .section{
- background:#263238;
- padding:9px;
- margin-top:10px;
- border:1px solid #455a64;
+ background:#263238;padding:9px;
+ margin-top:10px;border:1px solid #455a64;
 }
-
 input{
- width:100%;
- margin:12px 0;
- color:white;
- font-size:11px;
+ width:100%;margin:12px 0;color:white;font-size:11px;
 }
-
 button{
- width:100%;
- padding:13px 3px;
- margin:7px 0;
- border:0;
- background:#00bcd4;
- color:#000;
- font-weight:bold;
- font-size:13px;
+ width:100%;padding:13px 3px;margin:7px 0;
+ border:0;background:#00bcd4;color:#000;
+ font-weight:bold;font-size:13px;
 }
-
-.install{
- background:#00c853;
- font-size:15px;
-}
-
+.install{background:#00c853;font-size:15px}
 #status{
- background:#17252d;
- border:1px solid #00bcd4;
- padding:10px;
- margin-top:10px;
- line-height:1.7;
- overflow-wrap:anywhere;
+ background:#17252d;border:1px solid #00bcd4;
+ padding:10px;margin-top:10px;
+ line-height:1.7;overflow-wrap:anywhere;
 }
-
 .green{color:#00ff90}
 .red{color:#ff5252}
 .yellow{color:#ffeb3b}
-
 .footer{
- text-align:center;
- font-size:10px;
- color:#90a4ae;
- margin-top:15px;
+ text-align:center;font-size:10px;
+ color:#90a4ae;margin-top:15px;
 }
 </style>
 </head>
@@ -86,23 +48,15 @@ button{
 
 <div class="header">
 <h2>RUTIK JAVA INSTALLER</h2>
-ONE CLICK INSTALLER V1.0
+ONE CLICK INSTALLER V1.1
 </div>
 
 <div class="section">
-
 <b>SELECT JAVA APPLICATION</b>
 
-<input
- type="file"
- id="file"
- accept=".jar,.jad"
->
+<input type="file" id="file" accept=".jar,.jad">
 
-<div id="info">
-No file selected.
-</div>
-
+<div id="info">No file selected.</div>
 </div>
 
 <div class="section">
@@ -111,19 +65,15 @@ No file selected.
 ONE CLICK INSTALL
 </button>
 
-<button onclick="resetApp()">
-RESET
-</button>
+<button onclick="resetApp()">RESET</button>
 
-<div id="status">
-Waiting for Java application...
-</div>
+<div id="status">Waiting for Java application...</div>
 
 </div>
 
 <div class="footer">
 RUTIK JAVA INSTALLER<br>
-Designed for 128x160 screen
+128x160 SCREEN
 </div>
 
 <script>
@@ -133,14 +83,13 @@ var info=document.getElementById("info");
 var statusBox=document.getElementById("status");
 
 var selectedFile=null;
-var objectURL=null;
+var fileAddress=null;
 
-picker.addEventListener("change",function(){
+picker.onchange=function(){
 
  selectedFile=null;
 
  if(!picker.files || picker.files.length===0){
-
   info.innerHTML="No file selected.";
   return;
  }
@@ -150,78 +99,79 @@ picker.addEventListener("change",function(){
  info.innerHTML=
  "<span class='green'>FILE SELECTED</span><br>"+
  "Name: "+selectedFile.name+"<br>"+
- "Size: "+selectedFile.size+" bytes<br>"+
- "Type: "+selectedFile.type;
+ "Size: "+selectedFile.size+" bytes";
 
  statusBox.innerHTML=
  "<span class='green'>READY TO INSTALL</span>";
-
-});
+};
 
 function installJava(){
 
  if(!selectedFile){
-
   statusBox.innerHTML=
-  "<span class='red'>ERROR: Select a JAR or JAD file first.</span>";
-
+  "<span class='red'>ERROR: Select a file first.</span>";
   return;
  }
 
  var name=selectedFile.name.toLowerCase();
 
- if(
-  name.slice(-4)!==".jar" &&
-  name.slice(-4)!==".jad"
- ){
+ if(name.slice(-4)!==".jar" &&
+    name.slice(-4)!==".jad"){
 
   statusBox.innerHTML=
   "<span class='red'>Unsupported file format.</span>";
-
   return;
  }
 
- statusBox.innerHTML=
- "Preparing application...";
+ statusBox.innerHTML="Checking browser support...";
 
  try{
 
-  if(objectURL){
+  var urlAPI=window.URL || window.webkitURL;
 
-   URL.revokeObjectURL(objectURL);
+  if(!urlAPI || !urlAPI.createObjectURL){
 
+   statusBox.innerHTML=
+   "<span class='red'>ERROR: Blob URL not supported.</span><br>"+
+   "Cloud Phone browser does not support this feature.";
+   return;
   }
 
-  objectURL=URL.createObjectURL(selectedFile);
+  if(fileAddress){
+   try{
+    urlAPI.revokeObjectURL(fileAddress);
+   }catch(e){}
+   fileAddress=null;
+  }
+
+  fileAddress=urlAPI.createObjectURL(selectedFile);
 
   var link=document.createElement("a");
 
-  link.href=objectURL;
-  link.download=selectedFile.name;
-  link.type=selectedFile.type ||
-   (name.slice(-4)===".jar"
-    ? "application/java-archive"
-    : "text/vnd.sun.j2me.app-descriptor");
-
+  link.setAttribute("href",fileAddress);
+  link.setAttribute("download",selectedFile.name);
   link.style.display="none";
 
   document.body.appendChild(link);
 
   statusBox.innerHTML=
-  "<span class='yellow'>HANDING FILE TO BROWSER...</span><br>"+
-  "Application: "+selectedFile.name+"<br>"+
-  "Requesting file open/download...";
+  "<span class='yellow'>REQUESTING FILE...</span><br>"+
+  selectedFile.name;
 
-  link.click();
+  if(typeof link.click==="function"){
+   link.click();
+  }else{
+   statusBox.innerHTML=
+   "<span class='red'>ERROR: Browser cannot click download link.</span>";
+  }
 
   setTimeout(function(){
 
    statusBox.innerHTML=
-   "<span class='yellow'>INSTALL REQUEST SENT</span><br><br>"+
+   "<span class='yellow'>REQUEST SENT</span><br><br>"+
    "File: "+selectedFile.name+"<br>"+
-   "The browser received the request.<br><br>"+
-   "Check whether the phone shows an Open, Download or Install option.<br><br>"+
-   "<span class='red'>Native installation is not yet confirmed.</span>";
+   "Check whether the phone displays an Open or Download option.<br><br>"+
+   "<span class='red'>Native installation is not confirmed.</span>";
 
    if(link.parentNode){
     link.parentNode.removeChild(link);
@@ -233,8 +183,8 @@ function installJava(){
 
   statusBox.innerHTML=
   "<span class='red'>INSTALL ERROR</span><br>"+
-  error.name+"<br>"+
-  error.message;
+  "Error: "+error.name+"<br>"+
+  "Message: "+error.message;
 
  }
 
@@ -242,21 +192,20 @@ function installJava(){
 
 function resetApp(){
 
- if(objectURL){
+ var urlAPI=window.URL || window.webkitURL;
 
-  URL.revokeObjectURL(objectURL);
-  objectURL=null;
-
+ if(fileAddress && urlAPI){
+  try{
+   urlAPI.revokeObjectURL(fileAddress);
+  }catch(e){}
  }
 
+ fileAddress=null;
  selectedFile=null;
  picker.value="";
 
  info.innerHTML="No file selected.";
-
- statusBox.innerHTML=
- "Waiting for Java application...";
-
+ statusBox.innerHTML="Waiting for Java application...";
 }
 
 </script>
