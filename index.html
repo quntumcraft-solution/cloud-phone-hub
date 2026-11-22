@@ -2,570 +2,88 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RUTIK JAR ANALYZER V1.7.1</title>
-
-<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUTIK JAR TEST</title>
 <style>
-*{box-sizing:border-box}
-
 body{
- margin:0;
- padding:7px;
  background:#101820;
  color:white;
- font-family:Arial,sans-serif;
- font-size:12px;
+ font-family:Arial;
+ padding:10px;
+ font-size:13px;
 }
-
-h2{
- text-align:center;
- color:#00e5ff;
- font-size:16px;
-}
-
 .box{
- background:#1c2b36;
- border:1px solid #395365;
- padding:8px;
- margin-bottom:8px;
- border-radius:5px;
+ background:#263746;
+ padding:10px;
+ margin-bottom:10px;
 }
-
 button{
  width:100%;
- padding:11px;
- margin-top:8px;
+ padding:12px;
  background:#00a8c7;
  color:white;
  border:0;
  font-weight:bold;
+ margin-top:10px;
 }
-
-input{
- width:100%;
- font-size:11px;
- margin-top:8px;
-}
-
-pre{
- white-space:pre-wrap;
- word-break:break-all;
- color:#b8ffca;
- font-size:11px;
-}
-
-.title{
- color:#00e5ff;
- font-weight:bold;
-}
-
-.good{color:#00ff99}
-.bad{color:#ff7373}
-
-#status{
- color:#ffe66d;
- margin-top:8px;
- word-break:break-all;
-}
-
+input{width:100%;margin-top:10px}
+pre{white-space:pre-wrap;word-break:break-all}
 </style>
 </head>
-
 <body>
 
-<h2>RUTIK JAR ANALYZER</h2>
-<center class="small">VERSION 1.7.1 DEBUG</center>
+<h3>RUTIK JAR ANALYZER V1.7.2</h3>
 
 <div class="box">
- <div class="title">STEP 1 - SELECT JAR FILE</div>
-
- <input type="file" id="file" accept=".jar,.zip">
-
- <button id="analyzeBtn">ANALYZE JAR</button>
-
- <div id="status">Waiting for file...</div>
+<b>SELECT JAR FILE</b>
+<input type="file" id="jarFile" accept=".jar,.jad,.zip">
 </div>
 
 <div class="box">
- <div class="title">STEP 2 - JAR INFORMATION</div>
- <pre id="info">No information yet.</pre>
+<button onclick="checkFile()">CHECK SELECTED FILE</button>
 </div>
 
 <div class="box">
- <div class="title">STEP 3 - JAVA CLASS FILES</div>
- <pre id="classes">No class files found yet.</pre>
-</div>
-
-<div class="box">
- <div class="title">STEP 4 - MAIN MIDLET CHECK</div>
- <pre id="main">Waiting...</pre>
-</div>
-
-<div class="box">
- <div class="title">STEP 5 - FINAL RESULT</div>
- <pre id="result">Waiting...</pre>
-</div>
-
-<div class="box">
- <div class="title">DEBUG LOG</div>
- <pre id="debug">System Ready.</pre>
+<b>DEBUG RESULT</b>
+<pre id="output">Waiting for file...</pre>
 </div>
 
 <script>
 
-var fileInput=document.getElementById("file");
-var analyzeBtn=document.getElementById("analyzeBtn");
+function checkFile(){
 
-var statusBox=document.getElementById("status");
-var infoBox=document.getElementById("info");
-var classBox=document.getElementById("classes");
-var mainBox=document.getElementById("main");
-var resultBox=document.getElementById("result");
-var debugBox=document.getElementById("debug");
+ var input=document.getElementById("jarFile");
+ var output=document.getElementById("output");
 
-var selectedFile=null;
-
-function log(message){
- debugBox.textContent+= "\n"+message;
-}
-
-function setStatus(message){
- statusBox.textContent=message;
- log(message);
-}
-
-function readSlice(file,start,end){
-
- return new Promise(function(resolve,reject){
-
-  var reader=new FileReader();
-
-  reader.onload=function(){
-   resolve(new Uint8Array(reader.result));
-  };
-
-  reader.onerror=function(){
-   reject("FILE READ ERROR");
-  };
-
-  reader.readAsArrayBuffer(file.slice(start,end));
-
- });
-
-}
-
-function u16(a,p){
- return a[p] | (a[p+1]<<8);
-}
-
-function u32(a,p){
- return (
-  a[p] |
-  (a[p+1]<<8) |
-  (a[p+2]<<16) |
-  (a[p+3]<<24)
- )>>>0;
-}
-
-function decodeBytes(a){
-
- if(typeof TextDecoder!=="undefined"){
-  return new TextDecoder("utf-8").decode(a);
- }
-
- var s="";
-
- for(var i=0;i<a.length;i++){
-  s+=String.fromCharCode(a[i]);
- }
+ output.innerHTML="BUTTON CLICK SUCCESSFUL";
 
  try{
-  return decodeURIComponent(escape(s));
- }catch(e){
-  return s;
- }
 
-}
-
-function manifestValue(text,key){
-
- var lines=text.replace(/\r/g,"").split("\n");
- var value="";
- var found=false;
-
- for(var i=0;i<lines.length;i++){
-
-  var line=lines[i];
-
-  if(found && line.charAt(0)===" "){
-   value+=line.substring(1);
-   continue;
-  }
-
-  if(found){
-   break;
-  }
-
-  if(line.indexOf(key+":")===0){
-   value=line.substring(key.length+1).trim();
-   found=true;
-  }
-
- }
-
- return found?value:"Not Found";
-
-}
-
-fileInput.onchange=function(){
-
- if(fileInput.files && fileInput.files.length>0){
-
-  selectedFile=fileInput.files[0];
-
-  setStatus("FILE SELECTED SUCCESSFULLY");
-
-  infoBox.textContent=
-   "File Name: "+selectedFile.name+
-   "\nFile Size: "+selectedFile.size+" bytes";
-
- }else{
-
-  selectedFile=null;
-  setStatus("FILE NOT SELECTED");
-
- }
-
-};
-
-analyzeBtn.onclick=function(){
-
- log("BUTTON CLICK EVENT SUCCESSFUL");
-
- if(!selectedFile){
-
-  if(fileInput.files && fileInput.files.length>0){
-   selectedFile=fileInput.files[0];
-  }else{
-   setStatus("ERROR: PLEASE SELECT JAR FILE");
+  if(!input.files){
+   output.innerHTML+="\nERROR: FILE API NOT AVAILABLE";
    return;
   }
 
- }
+  output.innerHTML+="\nFILE API AVAILABLE";
 
- runAnalyzer();
+  output.innerHTML+="\nFILES COUNT: "+input.files.length;
 
-};
-
-async function runAnalyzer(){
-
- debugBox.textContent="Starting Analyzer...";
-
- infoBox.textContent="Analyzing...";
- classBox.textContent="Scanning...";
- mainBox.textContent="Checking...";
- resultBox.textContent="Processing...";
-
- try{
-
-  setStatus("STEP 1: CHECKING LIBRARY");
-
-  if(typeof fflate==="undefined"){
-   throw new Error("FFLATE LIBRARY NOT LOADED. CHECK INTERNET.");
+  if(input.files.length===0){
+   output.innerHTML+="\nNO FILE SELECTED";
+   return;
   }
 
-  if(typeof fflate.inflateSync!=="function"){
-   throw new Error("INFLATE FUNCTION NOT AVAILABLE");
-  }
+  var f=input.files[0];
 
-  log("FFLATE LIBRARY OK");
+  output.innerHTML+=
+   "\n\nFILE NAME: "+f.name+
+   "\nFILE SIZE: "+f.size+
+   "\nFILE TYPE: "+f.type+
+   "\n\nFILE OBJECT SUCCESSFUL";
 
-  var file=selectedFile;
+ }catch(e){
 
-  setStatus("STEP 2: READING ZIP DIRECTORY");
-
-  var tailSize=Math.min(file.size,65557);
-
-  var tail=await readSlice(
-   file,
-   file.size-tailSize,
-   file.size
-  );
-
-  log("END SECTION READ SUCCESSFULLY");
-
-  var eocd=-1;
-
-  for(var i=tail.length-22;i>=0;i--){
-
-   if(u32(tail,i)===0x06054b50){
-    eocd=i;
-    break;
-   }
-
-  }
-
-  if(eocd<0){
-   throw new Error("ZIP END RECORD NOT FOUND");
-  }
-
-  log("ZIP END RECORD FOUND");
-
-  var total=u16(tail,eocd+10);
-  var dirSize=u32(tail,eocd+12);
-  var dirOffset=u32(tail,eocd+16);
-
-  if(total===65535 || dirOffset===4294967295){
-   throw new Error("ZIP64 FORMAT NOT SUPPORTED");
-  }
-
-  if(dirOffset+dirSize>file.size){
-   throw new Error("INVALID ZIP DIRECTORY");
-  }
-
-  setStatus("STEP 3: READING FILE LIST");
-
-  var directory=await readSlice(
-   file,
-   dirOffset,
-   dirOffset+dirSize
-  );
-
-  var entries=[];
-  var classFiles=[];
-  var manifest=null;
-
-  var pos=0;
-
-  while(pos+46<=directory.length){
-
-   if(u32(directory,pos)!==0x02014b50){
-    break;
-   }
-
-   var flags=u16(directory,pos+8);
-   var method=u16(directory,pos+10);
-
-   var compSize=u32(directory,pos+20);
-   var uncompSize=u32(directory,pos+24);
-
-   var nameLength=u16(directory,pos+28);
-   var extraLength=u16(directory,pos+30);
-   var commentLength=u16(directory,pos+32);
-
-   var localOffset=u32(directory,pos+42);
-
-   var nameBytes=directory.slice(
-    pos+46,
-    pos+46+nameLength
-   );
-
-   var name=decodeBytes(nameBytes);
-
-   var entry={
-    name:name,
-    flags:flags,
-    method:method,
-    compSize:compSize,
-    uncompSize:uncompSize,
-    localOffset:localOffset
-   };
-
-   entries.push(entry);
-
-   if(name.toUpperCase()==="META-INF/MANIFEST.MF"){
-    manifest=entry;
-   }
-
-   if(/\.class$/i.test(name)){
-    classFiles.push(name);
-   }
-
-   pos+=46+nameLength+extraLength+commentLength;
-
-  }
-
-  log("ZIP ENTRIES FOUND: "+entries.length);
-  log("CLASS FILES FOUND: "+classFiles.length);
-
-  if(pos===0){
-   throw new Error("ZIP DIRECTORY IS EMPTY OR INVALID");
-  }
-
-  setStatus("STEP 4: READING MANIFEST");
-
-  var manifestText="";
-
-  if(manifest){
-
-   if(manifest.flags & 1){
-    throw new Error("MANIFEST IS ENCRYPTED");
-   }
-
-   var local=await readSlice(
-    file,
-    manifest.localOffset,
-    manifest.localOffset+30
-   );
-
-   if(u32(local,0)!==0x04034b50){
-    throw new Error("INVALID MANIFEST HEADER");
-   }
-
-   var localNameLength=u16(local,26);
-   var localExtraLength=u16(local,28);
-
-   var dataStart=
-    manifest.localOffset+
-    30+
-    localNameLength+
-    localExtraLength;
-
-   var compressed=await readSlice(
-    file,
-    dataStart,
-    dataStart+manifest.compSize
-   );
-
-   var data;
-
-   if(manifest.method===0){
-
-    data=compressed;
-
-   }else if(manifest.method===8){
-
-    data=fflate.inflateSync(compressed);
-
-   }else{
-
-    throw new Error(
-     "UNSUPPORTED COMPRESSION: "+manifest.method
-    );
-
-   }
-
-   manifestText=decodeBytes(data);
-
-   log("MANIFEST DECOMPRESSED SUCCESSFULLY");
-
-  }else{
-
-   log("MANIFEST NOT FOUND");
-
-  }
-
-  var midletName=manifestValue(
-   manifestText,"MIDlet-Name"
-  );
-
-  var midletVersion=manifestValue(
-   manifestText,"MIDlet-Version"
-  );
-
-  var midletVendor=manifestValue(
-   manifestText,"MIDlet-Vendor"
-  );
-
-  var midlet1=manifestValue(
-   manifestText,"MIDlet-1"
-  );
-
-  var mainClass="Not Found";
-
-  if(midlet1!=="Not Found"){
-
-   var parts=midlet1.split(",");
-
-   if(parts.length>=3){
-    mainClass=parts[2].trim();
-   }
-
-  }
-
-  var mainPath=mainClass.replace(/\./g,"/")+".class";
-
-  var mainFound=false;
-
-  for(var j=0;j<classFiles.length;j++){
-
-   if(classFiles[j]===mainPath){
-    mainFound=true;
-    break;
-   }
-
-  }
-
-  infoBox.textContent=
-   "FILE: "+file.name+
-   "\nSIZE: "+file.size+" bytes"+
-   "\nZIP ENTRIES: "+entries.length+
-   "\nMANIFEST: "+(manifest?"FOUND":"NOT FOUND")+
-   "\n\nMIDlet Name: "+midletName+
-   "\nMIDlet Version: "+midletVersion+
-   "\nMIDlet Vendor: "+midletVendor+
-   "\nMIDlet-1: "+midlet1;
-
-  var output="TOTAL CLASS FILES: "+classFiles.length+"\n\n";
-
-  for(var k=0;k<classFiles.length;k++){
-
-   output+=(k+1)+". "+classFiles[k]+"\n";
-
-   if(k>=99){
-    output+="\nMORE FILES NOT DISPLAYED";
-    break;
-   }
-
-  }
-
-  classBox.textContent=output;
-
-  mainBox.textContent=
-   "MAIN CLASS: "+mainClass+
-   "\nCLASS PATH: "+mainPath+
-   "\nCLASS FOUND: "+(mainFound?"YES":"NO");
-
-  var finalOutput=
-   "ANALYSIS COMPLETED\n\n"+
-   "Manifest: "+(manifest?"PASS":"FAIL")+
-   "\nClass Files: "+classFiles.length+
-   "\nMIDlet Name: "+midletName+
-   "\nMain Class: "+mainClass+
-   "\nMain Class Present: "+(mainFound?"YES":"NO");
-
-  if(manifest && classFiles.length>0 && mainFound){
-
-   finalOutput+=
-    "\n\nPOTENTIAL JAVA ME MIDLET FOUND";
-
-  }else{
-
-   finalOutput+=
-    "\n\nMIDLET STRUCTURE INCOMPLETE OR NOT CONFIRMED";
-
-  }
-
-  finalOutput+=
-   "\n\nNOTE: ANALYSIS ONLY."+
-   "\nTHIS TOOL DOES NOT INSTALL OR RUN JAVA APPS.";
-
-  resultBox.textContent=finalOutput;
-
-  setStatus("ANALYSIS COMPLETED SUCCESSFULLY");
-
- }catch(error){
-
-  var message=error.message || String(error);
-
-  setStatus("ERROR: "+message);
-
-  resultBox.textContent=
-   "ANALYSIS FAILED\n\n"+message;
-
-  log("ERROR DETAILS: "+message);
+  output.innerHTML+="\nERROR: "+e.message;
 
  }
 
@@ -574,4 +92,4 @@ async function runAnalyzer(){
 </script>
 
 </body>
- </html>
+</html>
