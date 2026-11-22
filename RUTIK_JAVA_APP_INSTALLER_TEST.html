@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>RUTIK JAVA APP INSTALLER</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:#f4f7fb;font:12px Arial,sans-serif}
+.app{width:100%;max-width:360px;margin:auto;padding:8px}
+header{background:#182b45;border:1px solid #315276;border-radius:7px;padding:9px;margin-bottom:8px}
+h1{font-size:15px;margin:0 0 4px;color:#7dd3fc}
+.sub{font-size:10px;color:#bdc9d8}
+.panel{background:#192638;border:1px solid #34465d;border-radius:7px;padding:9px;margin:7px 0}
+h2{font-size:12px;margin:0 0 8px;color:#93c5fd}
+button,.pick{display:block;width:100%;border:0;border-radius:5px;padding:10px 6px;margin:6px 0;background:#087eae;color:white;font-weight:bold;font-size:12px;text-align:center}
+button:focus,.pick:focus{outline:2px solid #facc15}
+.secondary{background:#334155}
+#fileInput{position:absolute;left:-9999px;width:1px;height:1px}
+.line{margin:5px 0;overflow-wrap:anywhere}
+.k{color:#9fb3c8}
+.val{color:#fff}
+.status{padding:8px;border-radius:5px;background:#27384d;margin-top:7px;line-height:1.4}
+.good{color:#86efac}.warn{color:#fcd34d}.bad{color:#fca5a5}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font:10px monospace;background:#0c1420;padding:7px;border-radius:5px;max-height:95px;overflow:auto}
+footer{text-align:center;color:#8495aa;font-size:9px;padding:8px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>RUTIK JAVA APP INSTALLER</h1>
+  <div class="sub">IT9020 • JAR / JAD COMPATIBILITY TEST v1</div>
+</header>
+
+<section class="panel">
+  <h2>1. SELECT JAVA APPLICATION</h2>
+  <label class="pick" for="fileInput">CHOOSE .JAR / .JAD FILE</label>
+  <input id="fileInput" type="file" accept=".jar,.jad,application/java-archive,text/vnd.sun.j2me.app-descriptor">
+  <div class="sub">Select a Java file from your phone if the file picker is supported.</div>
+</section>
+
+<section class="panel">
+  <h2>2. SELECTED FILE</h2>
+  <div class="line"><span class="k">Name: </span><span class="val" id="name">Not selected</span></div>
+  <div class="line"><span class="k">Type: </span><span class="val" id="type">—</span></div>
+  <div class="line"><span class="k">Size: </span><span class="val" id="size">—</span></div>
+  <div class="line"><span class="k">Read access: </span><span class="val" id="read">—</span></div>
+  <div id="status" class="status">Waiting for a file.</div>
+</section>
+
+<section class="panel">
+  <h2>3. JAVA APP DETAILS</h2>
+  <div class="line"><span class="k">MIDlet-Name: </span><span id="appname">—</span></div>
+  <div class="line"><span class="k">MIDlet-Version: </span><span id="version">—</span></div>
+  <div class="line"><span class="k">MIDlet-Vendor: </span><span id="vendor">—</span></div>
+  <div class="line"><span class="k">MIDlet-Jar-URL: </span><span id="jarurl">—</span></div>
+  <div class="line"><span class="k">MIDlet-Jar-Size: </span><span id="jarsize">—</span></div>
+  <pre id="jadtext" style="display:none"></pre>
+</section>
+
+<section class="panel">
+  <h2>4. INSTALLATION CHECK</h2>
+  <button id="check" class="secondary" type="button">CHECK INSTALL SUPPORT</button>
+  <div id="installStatus" class="status">Installation has not been attempted.</div>
+  <div class="sub" style="margin-top:7px">This test page cannot add native Java support or bypass the phone's operating-system restrictions.</div>
+</section>
+
+<footer>RUTIK JAVA APP INSTALLER • TEST BUILD 1.0</footer>
+</div>
+<script>
+(function(){
+ const input=document.getElementById('fileInput');
+ const $=id=>document.getElementById(id);
+ let selected=null;
+ function setStatus(msg,cls){$('status').className='status '+(cls||'');$('status').textContent=msg;}
+ function formatSize(n){if(n<1024)return n+' bytes';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB';}
+ function resetDetails(){
+  ['appname','version','vendor','jarurl','jarsize'].forEach(id=>$(id).textContent='—');
+  $('jadtext').style.display='none';$('jadtext').textContent='';
+ }
+ input.addEventListener('change',function(){
+  resetDetails(); selected=input.files&&input.files[0]||null;
+  if(!selected){$('name').textContent='Not selected';$('type').textContent='—';$('size').textContent='—';$('read').textContent='—';setStatus('No file selected.','warn');return;}
+  const ext=selected.name.toLowerCase().split('.').pop();
+  $('name').textContent=selected.name;
+  $('type').textContent=ext.toUpperCase();
+  $('size').textContent=formatSize(selected.size);
+  $('read').textContent='File object received';
+  if(ext==='jad'){
+   setStatus('JAD file selected. Reading descriptor…','good');
+   const reader=new FileReader();
+   reader.onload=function(){
+    const text=String(reader.result||'');
+    const fields={
+     appname:/^MIDlet-Name\s*:\s*(.*)$/im,
+     version:/^MIDlet-Version\s*:\s*(.*)$/im,
+     vendor:/^MIDlet-Vendor\s*:\s*(.*)$/im,
+     jarurl:/^MIDlet-Jar-URL\s*:\s*(.*)$/im,
+     jarsize:/^MIDlet-Jar-Size\s*:\s*(.*)$/im
+    };
+    Object.keys(fields).forEach(k=>{const m=text.match(fields[k]);$(k).textContent=m?m[1].trim():'Not specified';});
+    $('jadtext').style.display='block';$('jadtext').textContent=text.slice(0,1800);
+    setStatus('JAD read successfully. This confirms file-picker and file-reading access only; it does not confirm Java installation support.','good');
+   };
+   reader.onerror=function(){ $('read').textContent='Read failed';setStatus('The browser could not read this JAD file.','bad');};
+   try{reader.readAsText(selected);}catch(e){$('read').textContent='Read blocked';setStatus('File reading is blocked: '+e.message,'bad');}
+  }else if(ext==='jar'){
+   setStatus('JAR selected. Browser received the file, but this test does not unpack or install JAR files.','warn');
+  }else{
+   setStatus('Unsupported file extension. Please choose .jar or .jad.','bad');
+  }
+  $('installStatus').textContent='Not attempted. Select a file, then press CHECK INSTALL SUPPORT.';
+ });
+ $('check').addEventListener('click',function(){
+  if(!selected){$('installStatus').innerHTML='<span class="bad">No file selected. Choose a .jar or .jad file first.</span>';return;}
+  const ext=selected.name.toLowerCase().split('.').pop();
+  $('installStatus').innerHTML='<span class="warn">Web file access: YES.</span><br>Native Java installation: NOT VERIFIED.<br>The webpage has no standard browser permission to install a MIDlet into the phone. If the phone has a built-in Java installer/runtime, it must provide its own supported handoff or installer.';
+ });
+})();
+</script>
+</body>
+</html>
