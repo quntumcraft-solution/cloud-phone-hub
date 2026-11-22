@@ -2,75 +2,226 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JAR Scanner 8.6</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JAR Analyzer 8.7</title>
 
 <style>
 body {
-    background: #101820;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    padding: 8px;
+    background:#101820;
+    color:white;
+    font-family:Arial,sans-serif;
+    font-size:13px;
+    padding:8px;
 }
 h3 {
-    color: #00e5ff;
-    text-align: center;
+    color:#00e5ff;
+    text-align:center;
 }
-button, input {
-    width: 100%;
-    padding: 9px;
-    margin: 6px 0;
-    box-sizing: border-box;
+button,input {
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    box-sizing:border-box;
 }
 button {
-    background: #00a8cc;
-    color: white;
-    border: 0;
+    background:#00a8cc;
+    color:white;
+    border:0;
 }
 #result {
-    background: #202c36;
-    padding: 8px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.5;
+    background:#202c36;
+    padding:9px;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    line-height:1.5;
 }
-.ok { color: #00ff90; }
-.err { color: #ff5555; }
 </style>
 </head>
 
 <body>
 
-<h3>JAR ZIP DIRECTORY SCANNER</h3>
+<h3>TEST 8.7</h3>
+<h4>JAVA CLASS FILE ANALYZER</h4>
 
-<p>Select your JAR file:</p>
 <input type="file" id="fileInput" accept=".jar,.zip">
 
-<button id="scanBtn">SCAN JAR FILE</button>
+<button id="scanBtn">ANALYZE JAR</button>
 
 <div id="result">STATUS: WAITING</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 
 <script>
 
 var result = document.getElementById("result");
 
-function showError(name, message, step) {
-    result.innerHTML =
+function showError(step,e) {
+    result.textContent =
         "STATUS: ERROR\n" +
         "STEP: " + step + "\n" +
-        "ERROR NAME: " + name + "\n" +
-        "ERROR MESSAGE: " + message;
+        "ERROR NAME: " + (e.name || "Error") + "\n" +
+        "ERROR MESSAGE: " + (e.message || String(e));
 }
 
-window.onerror = function(message, source, line, column, error) {
+window.onerror = function(message,source,line,column,error) {
     showError(
-        error && error.name ? error.name : "JavaScript Error",
-        message + "\nLine: " + line + "\nColumn: " + column,
-        "GLOBAL ERROR"
+        "GLOBAL ERROR - Line " + line + " Column " + column,
+        error || {name:"JavaScript Error",message:message}
     );
     return true;
 };
+
+function analyzeClass(bytes) {
+
+    var view = new DataView(
+        bytes.buffer,
+        bytes.byteOffset,
+        bytes.byteLength
+    );
+
+    if (bytes.length < 10) {
+        throw new Error("CLASS FILE TOO SMALL");
+    }
+
+    var magic = view.getUint32(0,false);
+
+    if (magic !== 0xCAFEBABE) {
+        throw new Error("INVALID JAVA CLASS MAGIC NUMBER");
+    }
+
+    var minor = view.getUint16(4,false);
+    var major = view.getUint16(6,false);
+
+    var cpCount = view.getUint16(8,false);
+
+    var cp = [];
+    var pos = 10;
+    var i = 1;
+
+    while (i < cpCount) {
+
+        if (pos >= bytes.length) {
+            throw new Error("CONSTANT POOL OUT OF RANGE");
+        }
+
+        var tag = bytes[pos];
+        pos++;
+
+        if (tag === 1) {
+
+            var len = view.getUint16(pos,false);
+            pos += 2;
+
+            var str = "";
+
+            for (var j=0;j<len;j++) {
+                str += String.fromCharCode(bytes[pos+j]);
+            }
+
+            cp[i] = {tag:tag,value:str};
+            pos += len;
+
+        } else if (
+            tag === 3 || tag === 4
+        ) {
+
+            cp[i] = {tag:tag};
+            pos += 4;
+
+        } else if (
+            tag === 5 || tag === 6
+        ) {
+
+            cp[i] = {tag:tag};
+            pos += 8;
+            i++;
+
+        } else if (
+            tag === 7 || tag === 8 ||
+            tag === 16 || tag === 19 ||
+            tag === 20
+        ) {
+
+            cp[i] = {
+                tag:tag,
+                index:view.getUint16(pos,false)
+            };
+
+            pos += 2;
+
+        } else if (
+            tag === 9 || tag === 10 ||
+            tag === 11 || tag === 12 ||
+            tag === 17 || tag === 18
+        ) {
+
+            cp[i] = {tag:tag};
+            pos += 4;
+
+        } else if (tag === 15) {
+
+            cp[i] = {tag:tag};
+            pos += 3;
+
+        } else {
+
+            throw new Error(
+                "UNKNOWN CONSTANT POOL TAG: " + tag
+            );
+
+        }
+
+        if (pos > bytes.length) {
+            throw new Error("CLASS DATA TRUNCATED");
+        }
+
+        i++;
+    }
+
+    var access = view.getUint16(pos,false);
+    var thisClass = view.getUint16(pos+2,false);
+    var superClass = view.getUint16(pos+4,false);
+
+    var className = "UNKNOWN";
+
+    if (
+        cp[thisClass] &&
+        cp[thisClass].tag === 7
+    ) {
+
+        var nameIndex = cp[thisClass].index;
+
+        if (cp[nameIndex] && cp[nameIndex].tag === 1) {
+            className = cp[nameIndex].value;
+        }
+    }
+
+    var superName = "NONE";
+
+    if (
+        superClass > 0 &&
+        cp[superClass] &&
+        cp[superClass].tag === 7
+    ) {
+
+        var superIndex = cp[superClass].index;
+
+        if (cp[superIndex] && cp[superIndex].tag === 1) {
+            superName = cp[superIndex].value;
+        }
+    }
+
+    return {
+        magic:"CAFEBABE",
+        minor:minor,
+        major:major,
+        constantPool:cpCount,
+        className:className,
+        superName:superName,
+        access:access,
+        size:bytes.length
+    };
+}
 
 document.getElementById("scanBtn").onclick = function() {
 
@@ -81,191 +232,128 @@ document.getElementById("scanBtn").onclick = function() {
         var input = document.getElementById("fileInput");
 
         if (!input.files || input.files.length === 0) {
-            result.innerHTML = "ERROR: Please select a JAR file.";
+            result.textContent = "ERROR: SELECT JAR FILE";
             return;
+        }
+
+        if (!window.fflate) {
+            throw new Error("FFLATE LIBRARY NOT LOADED. CHECK INTERNET.");
         }
 
         var file = input.files[0];
 
-        result.innerHTML =
-            "STATUS: READING FILE\n" +
-            "FILE: " + file.name + "\n" +
-            "SIZE: " + file.size + " bytes";
+        result.textContent = "STATUS: READING JAR FILE...";
 
         step = "FILE READER";
 
         var reader = new FileReader();
 
         reader.onerror = function() {
-            showError(
-                "FileReaderError",
-                "Unable to read selected file.",
-                "FILE READER"
-            );
+            showError("FILE READER",new Error("FILE READ FAILED"));
         };
 
         reader.onload = function(event) {
 
+            var currentStep = "CONVERT FILE DATA";
+
             try {
 
-                step = "CONVERT DATA";
+                var bytes = new Uint8Array(event.target.result);
 
-                var buffer = event.target.result;
-                var bytes = new Uint8Array(buffer);
+                currentStep = "UNZIP JAR";
 
-                var view = new DataView(
-                    bytes.buffer,
-                    bytes.byteOffset,
-                    bytes.byteLength
-                );
+                var files = window.fflate.unzipSync(bytes);
 
-                var length = bytes.length;
+                var classFile = null;
+                var classFilename = "";
+                var classCount = 0;
 
-                if (length < 22) {
-                    throw new Error("File is too small to be a ZIP/JAR.");
-                }
+                currentStep = "FIND CLASS FILES";
 
-                step = "FIND ZIP END RECORD";
-
-                var eocd = -1;
-                var start = length - 22;
-                var minimum = length - 65557;
-
-                if (minimum < 0) {
-                    minimum = 0;
-                }
-
-                var i;
-
-                for (i = start; i >= minimum; i--) {
+                for (var name in files) {
 
                     if (
-                        view.getUint32(i, true) === 0x06054b50
+                        files.hasOwnProperty(name) &&
+                        name.toLowerCase().slice(-6) === ".class"
                     ) {
-                        eocd = i;
-                        break;
-                    }
-                }
 
-                if (eocd < 0) {
-                    throw new Error("ZIP End Record not found.");
-                }
-
-                step = "READ ZIP DIRECTORY";
-
-                var entries = view.getUint16(eocd + 10, true);
-                var directorySize = view.getUint32(eocd + 12, true);
-                var directoryOffset = view.getUint32(eocd + 16, true);
-
-                if (directoryOffset + directorySize > length) {
-                    throw new Error("ZIP directory is outside file boundary.");
-                }
-
-                var pos = directoryOffset;
-                var classCount = 0;
-                var manifestFound = false;
-                var metaInfFound = false;
-                var totalUncompressed = 0;
-                var fileList = "";
-                var parsed = 0;
-
-                step = "SCAN DIRECTORY ENTRIES";
-
-                for (i = 0; i < entries; i++) {
-
-                    if (pos + 46 > length) {
-                        throw new Error("Directory entry exceeds file boundary.");
-                    }
-
-                    var signature = view.getUint32(pos, true);
-
-                    if (signature !== 0x02014b50) {
-                        throw new Error(
-                            "Invalid central directory signature at entry " + i
-                        );
-                    }
-
-                    var compressedSize = view.getUint32(pos + 20, true);
-                    var uncompressedSize = view.getUint32(pos + 24, true);
-
-                    var nameLength = view.getUint16(pos + 28, true);
-                    var extraLength = view.getUint16(pos + 30, true);
-                    var commentLength = view.getUint16(pos + 32, true);
-
-                    var nextPos =
-                        pos + 46 + nameLength + extraLength + commentLength;
-
-                    if (nextPos > length) {
-                        throw new Error("Invalid filename or directory length.");
-                    }
-
-                    var filename = "";
-
-                    for (var j = 0; j < nameLength; j++) {
-                        filename += String.fromCharCode(bytes[pos + 46 + j]);
-                    }
-
-                    filename = filename.replace(/\\/g, "/");
-
-                    if (filename.toLowerCase().indexOf(".class") === filename.length - 6) {
                         classCount++;
+
+                        if (classFile === null) {
+                            classFile = files[name];
+                            classFilename = name;
+                        }
                     }
-
-                    if (filename.toUpperCase() === "META-INF/MANIFEST.MF") {
-                        manifestFound = true;
-                    }
-
-                    if (filename.toUpperCase().indexOf("META-INF/") === 0) {
-                        metaInfFound = true;
-                    }
-
-                    totalUncompressed += uncompressedSize;
-
-                    if (parsed < 35) {
-                        fileList += filename + "\n";
-                    }
-
-                    parsed++;
-                    pos = nextPos;
                 }
 
-                step = "DISPLAY RESULTS";
+                if (classFile === null) {
+                    throw new Error("NO CLASS FILE FOUND");
+                }
 
-                result.innerHTML =
-                    '<span class="ok">STATUS: SCAN COMPLETED</span>\n\n' +
-                    "FILE: " + file.name + "\n" +
-                    "ORIGINAL SIZE: " + length + " bytes\n\n" +
+                currentStep = "ANALYZE CLASS";
 
-                    "ZIP ENTRIES: " + entries + "\n" +
-                    "PARSED ENTRIES: " + parsed + "\n" +
-                    "CLASS FILES: " + classCount + "\n" +
-                    "MANIFEST: " + (manifestFound ? "FOUND" : "NOT FOUND") + "\n" +
-                    "META-INF: " + (metaInfFound ? "FOUND" : "NOT FOUND") + "\n" +
-                    "TOTAL UNCOMPRESSED SIZE: " + totalUncompressed + " bytes\n\n" +
+                var info = analyzeClass(classFile);
 
-                    "FILE LIST:\n" + fileList + "\n" +
+                currentStep = "DISPLAY RESULT";
+
+                var versionText = "UNKNOWN";
+
+                if (info.major === 45) {
+                    versionText = "Java 1.1";
+                } else if (info.major === 46) {
+                    versionText = "Java 1.2";
+                } else if (info.major === 47) {
+                    versionText = "Java 1.3";
+                } else if (info.major === 48) {
+                    versionText = "Java 1.4";
+                } else if (info.major === 49) {
+                    versionText = "Java 5";
+                } else if (info.major === 50) {
+                    versionText = "Java 6";
+                } else if (info.major === 51) {
+                    versionText = "Java 7";
+                } else if (info.major === 52) {
+                    versionText = "Java 8";
+                } else if (info.major >= 53) {
+                    versionText = "Java 9 or newer";
+                }
+
+                result.textContent =
+                    "STATUS: TEST SUCCESSFUL\n\n" +
+
+                    "JAR FILE: " + file.name + "\n" +
+                    "JAR SIZE: " + bytes.length + " bytes\n\n" +
+
+                    "CLASS FILES FOUND: " + classCount + "\n\n" +
+
+                    "FIRST CLASS FILE:\n" +
+                    classFilename + "\n\n" +
+
+                    "JAVA CLASS ANALYSIS:\n" +
+                    "MAGIC NUMBER: " + info.magic + "\n" +
+                    "MAGIC CHECK: VALID\n" +
+                    "MINOR VERSION: " + info.minor + "\n" +
+                    "MAJOR VERSION: " + info.major + "\n" +
+                    "JAVA VERSION: " + versionText + "\n" +
+                    "CONSTANT POOL COUNT: " + info.constantPool + "\n" +
+                    "CLASS NAME: " + info.className + "\n" +
+                    "SUPER CLASS: " + info.superName + "\n" +
+                    "CLASS SIZE: " + info.size + " bytes\n\n" +
+
                     "ERROR: NONE";
 
-            } catch (e) {
+            } catch(e) {
 
-                showError(
-                    e.name || "Error",
-                    e.message || String(e),
-                    step
-                );
+                showError(currentStep,e);
 
             }
         };
 
         reader.readAsArrayBuffer(file);
 
-    } catch (e) {
+    } catch(e) {
 
-        showError(
-            e.name || "Error",
-            e.message || String(e),
-            step
-        );
+        showError(step,e);
 
     }
 
@@ -274,4 +362,4 @@ document.getElementById("scanBtn").onclick = function() {
 </script>
 
 </body>
- </html>
+    </html>
