@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK TEST 8.4</title>
+<title>RUTIK TEST 8.5</title>
 
 <style>
 body{
@@ -23,21 +23,22 @@ button{
  padding:12px;
  margin:6px 0;
 }
-input{width:100%;margin:10px 0}
 </style>
 </head>
 
 <body>
 
-<h3>RUTIK JAR READER TEST</h3>
+<h3>RUTIK FULL JAR READER</h3>
 
 <div class="box" id="status">STATUS: PAGE LOADED</div>
 
 <input type="file" id="file" accept=".jar,.zip">
 
-<button id="test">READ JAR FILE</button>
+<button id="start">START FULL FILE TEST</button>
 
 <div class="box" id="result">RESULT: WAITING</div>
+
+<div class="box" id="progress">PROGRESS: 0%</div>
 
 <div class="box" id="error">ERROR: NONE</div>
 
@@ -45,126 +46,200 @@ input{width:100%;margin:10px 0}
 
 var statusBox=document.getElementById("status");
 var resultBox=document.getElementById("result");
+var progressBox=document.getElementById("progress");
 var errorBox=document.getElementById("error");
 var fileInput=document.getElementById("file");
 
+var chunkSize=65536;
+var offset=0;
+var totalRead=0;
+var totalSize=0;
+var reader=null;
+var selectedFile=null;
+
 function showError(step,e){
+
+ statusBox.innerHTML="STATUS: FAILED";
+
  errorBox.innerHTML=
  "ERROR STEP: "+step+
  "<br>ERROR NAME: "+(e.name||"Unknown")+
  "<br>ERROR MESSAGE: "+(e.message||e);
- statusBox.innerHTML="STATUS: FAILED";
 }
 
 window.onerror=function(msg,url,line,col){
+
  errorBox.innerHTML=
  "JAVASCRIPT ERROR: "+msg+
  "<br>LINE: "+line+
  "<br>COLUMN: "+col;
- statusBox.innerHTML="STATUS: JAVASCRIPT FAILED";
+
+ statusBox.innerHTML="STATUS: JAVASCRIPT ERROR";
  return false;
 };
 
 fileInput.onchange=function(){
- try{
- var f=fileInput.files[0];
 
- if(f){
+ try{
+
+ selectedFile=fileInput.files[0];
+
+ if(selectedFile){
+
  statusBox.innerHTML="STATUS: FILE SELECTED";
+
  resultBox.innerHTML=
- "FILE: "+f.name+
- "<br>SIZE: "+f.size+" Bytes";
+ "FILE: "+selectedFile.name+
+ "<br>SIZE: "+selectedFile.size+" Bytes";
+
+ }else{
+
+ statusBox.innerHTML="STATUS: NO FILE";
  }
+
  }catch(e){
+
  showError("FILE SELECTION",e);
+
  }
+
 };
 
-document.getElementById("test").onclick=function(){
-
- errorBox.innerHTML="ERROR: NONE";
- resultBox.innerHTML="RESULT: TEST STARTED";
+function readNextChunk(){
 
  try{
 
- var f=fileInput.files[0];
+ if(offset>=totalSize){
 
- if(!f){
- resultBox.innerHTML="PLEASE SELECT A JAR FILE FIRST";
+ statusBox.innerHTML="TEST COMPLETED";
+
+ resultBox.innerHTML=
+ "FILE: "+selectedFile.name+
+ "<br>ORIGINAL SIZE: "+totalSize+
+ "<br>READ BYTES: "+totalRead+
+ "<br>CHUNK SIZE: "+chunkSize+
+ "<br>RESULT: FULL FILE READ SUCCESSFUL";
+
+ progressBox.innerHTML="PROGRESS: 100%";
+
  return;
  }
 
- statusBox.innerHTML="STEP 1: FILE CHECK PASSED";
+ var end=offset+chunkSize;
 
- if(typeof FileReader!=="function"){
- throw new Error("FileReader NOT SUPPORTED");
+ if(end>totalSize){
+ end=totalSize;
  }
 
- statusBox.innerHTML="STEP 2: FILEREADER AVAILABLE";
+ var part=selectedFile.slice(offset,end);
 
- var reader=new FileReader();
+ reader=new FileReader();
 
  reader.onload=function(){
 
  try{
 
- statusBox.innerHTML="STEP 3: FILE READ SUCCESS";
-
- var data=reader.result;
-
- if(!data){
- throw new Error("EMPTY FILE DATA");
+ if(!reader.result){
+ throw new Error("EMPTY CHUNK DATA");
  }
 
- var bytes=new Uint8Array(data);
+ var bytes=reader.result.byteLength;
 
- var hex="";
- var i;
+ totalRead=totalRead+bytes;
+ offset=end;
 
- for(i=0;i<bytes.length;i++){
- hex+=("0"+bytes[i].toString(16)).slice(-2).toUpperCase()+" ";
- }
+ var percent=Math.floor(
+ (totalRead/totalSize)*100
+ );
+
+ progressBox.innerHTML=
+ "PROGRESS: "+percent+"%"+
+ "<br>READ: "+totalRead+
+ "<br>TOTAL: "+totalSize;
+
+ statusBox.innerHTML=
+ "READING CHUNK: "+totalRead+" BYTES";
 
  resultBox.innerHTML=
- "FILE: "+f.name+
- "<br>SIZE: "+f.size+
- "<br>FIRST 4 BYTES: "+hex;
+ "FILE: "+selectedFile.name+
+ "<br>CHUNK READ: "+bytes+
+ "<br>TOTAL READ: "+totalRead;
 
- if(bytes[0]===80 &&
- bytes[1]===75 &&
- bytes[2]===3 &&
- bytes[3]===4){
-
- resultBox.innerHTML+="<br>JAR/ZIP HEADER: VALID";
- statusBox.innerHTML="TEST SUCCESSFUL";
-
- }else{
-
- resultBox.innerHTML+="<br>JAR/ZIP HEADER: NOT MATCHED";
- statusBox.innerHTML="TEST COMPLETED";
- }
+ readNextChunk();
 
  }catch(e){
- showError("FILE DATA PROCESSING",e);
+
+ showError("CHUNK PROCESSING",e);
+
  }
 
  };
 
  reader.onerror=function(){
- showError("FILE READING",reader.error||"Unknown FileReader Error");
+
+ showError(
+ "FILE READING",
+ reader.error||"UNKNOWN FILEREADER ERROR"
+ );
+
  };
 
  reader.onabort=function(){
- errorBox.innerHTML="ERROR: FILE READING ABORTED";
+
  statusBox.innerHTML="STATUS: ABORTED";
+
+ errorBox.innerHTML="ERROR: READING ABORTED";
+
  };
 
- statusBox.innerHTML="STEP 3: READING FILE";
-
- reader.readAsArrayBuffer(f.slice(0,4));
+ reader.readAsArrayBuffer(part);
 
  }catch(e){
- showError("MAIN TEST",e);
+
+ showError("READ NEXT CHUNK",e);
+
+ }
+
+}
+
+document.getElementById("start").onclick=function(){
+
+ try{
+
+ errorBox.innerHTML="ERROR: NONE";
+
+ if(!selectedFile){
+
+ throw new Error("PLEASE SELECT A JAR FILE");
+ }
+
+ if(typeof FileReader!=="function"){
+
+ throw new Error("FILEREADER NOT SUPPORTED");
+ }
+
+ totalSize=selectedFile.size;
+
+ if(totalSize<=0){
+
+ throw new Error("EMPTY FILE");
+ }
+
+ offset=0;
+ totalRead=0;
+
+ statusBox.innerHTML="TEST STARTED";
+
+ resultBox.innerHTML="PREPARING FILE READING...";
+
+ progressBox.innerHTML="PROGRESS: 0%";
+
+ readNextChunk();
+
+ }catch(e){
+
+ showError("START TEST",e);
+
  }
 
 };
@@ -172,4 +247,4 @@ document.getElementById("test").onclick=function(){
 </script>
 
 </body>
- </html>
+</html>
