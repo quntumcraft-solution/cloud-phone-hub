@@ -2,50 +2,90 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUTIK DEBUG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUTIK TEST 8.2</title>
 <style>
-body{background:#101820;color:white;padding:10px;font:13px Arial}
-button{width:100%;padding:12px;margin-top:10px}
-.box{background:#263746;padding:10px;margin:10px 0}
+body{background:#111;color:#0f0;font:12px Arial;padding:8px}
+.box{border:1px solid #0f0;padding:8px;margin:7px 0;word-wrap:break-word}
+button{padding:10px;width:100%;margin:5px 0}
 </style>
 </head>
 <body>
 
-<h3>RUTIK JAVASCRIPT TEST</h3>
+<h3>RUTIK COMPATIBILITY TEST</h3>
 
-<div class="box" id="load">JAVASCRIPT NOT STARTED</div>
+<div class="box" id="status">STARTING...</div>
+<div class="box" id="result">WAITING...</div>
+<div class="box" id="error">ERROR: NONE</div>
 
-<input type="file" id="file">
-
-<button id="btn">TEST BUTTON</button>
-
-<div class="box" id="output">WAITING...</div>
+<button id="run">RUN ALL TESTS</button>
 
 <script>
+var result=document.getElementById("result");
+var error=document.getElementById("error");
+var status=document.getElementById("status");
 
-document.getElementById("load").innerHTML=
-"1. JAVASCRIPT LOADED SUCCESSFULLY";
-
-document.getElementById("file").onchange=function(){
-
-var f=this.files[0];
-
-if(f){
-document.getElementById("output").innerHTML=
-"FILE SELECTED<br>"+f.name+"<br>"+f.size+" BYTES";
+function log(msg){
+ result.innerHTML+= "<br>"+msg;
 }
 
+function showError(name,msg){
+ error.innerHTML+="<br>"+name+": "+msg;
+}
+
+window.onerror=function(message,source,line,column){
+ showError("JAVASCRIPT ERROR",message+
+ "<br>Line: "+line+" Column: "+column);
+ return false;
 };
 
-document.getElementById("btn").onclick=function(){
+status.innerHTML="JAVASCRIPT STARTED";
 
-document.getElementById("output").innerHTML+=
-"<br>BUTTON CLICK SUCCESSFUL";
+document.getElementById("run").onclick=function(){
 
+ result.innerHTML="TEST STARTED";
+ error.innerHTML="ERROR: NONE";
+
+ try{
+ if(typeof Promise==="function"){
+ log("PASS: PROMISE SUPPORTED");
+ }else{
+ log("FAIL: PROMISE NOT SUPPORTED");
+ }
+ }catch(e){showError(e.name,e.message);}
+
+ try{
+ if(typeof FileReader==="function"){
+ log("PASS: FILEREADER SUPPORTED");
+ }else{
+ log("FAIL: FILEREADER NOT SUPPORTED");
+ }
+ }catch(e){showError(e.name,e.message);}
+
+ try{
+ if(typeof TextDecoder==="function"){
+ log("PASS: TEXTDECODER SUPPORTED");
+ }else{
+ log("FAIL: TEXTDECODER NOT SUPPORTED");
+ }
+ }catch(e){showError(e.name,e.message);}
+
+ try{
+ if(typeof DecompressionStream==="function"){
+ log("PASS: DECOMPRESSIONSTREAM SUPPORTED");
+ }else{
+ log("FAIL: DECOMPRESSIONSTREAM NOT SUPPORTED");
+ }
+ }catch(e){showError(e.name,e.message);}
+
+ try{
+ var a=async function(){return "OK";};
+ log("PASS: ASYNC FUNCTION SUPPORTED");
+ }catch(e){showError(e.name,e.message);}
+
+ status.innerHTML="ALL TESTS COMPLETED";
 };
 
 </script>
-
 </body>
 </html>
