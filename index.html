@@ -2,148 +2,276 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RUTIK JAVA ANALYZER V4</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUTIK JAVA INSTALLER</title>
 
 <style>
 *{box-sizing:border-box}
 
 body{
  margin:0;
- padding:7px;
+ padding:6px;
  background:#101820;
- color:white;
+ color:#fff;
  font-family:Arial,sans-serif;
  font-size:12px;
 }
 
-h3{
+.header{
+ text-align:center;
+ background:#073b4c;
+ padding:10px 3px;
+ border:1px solid #00e5ff;
+}
+
+h2{
+ margin:0;
  color:#00e5ff;
- font-size:16px;
- margin:5px 0 12px;
+ font-size:17px;
+}
+
+.header p{
+ margin:5px 0 0;
+ font-size:10px;
+}
+
+.section{
+ margin-top:9px;
+ padding:8px;
+ background:#263238;
+ border:1px solid #455a64;
+}
+
+.title{
+ color:#00e5ff;
+ font-weight:bold;
+ margin-bottom:8px;
+}
+
+input[type=file]{
+ width:100%;
+ color:white;
+ font-size:11px;
+ margin:8px 0;
 }
 
 button{
  width:100%;
- padding:10px 3px;
- margin:6px 0;
+ padding:11px 3px;
+ margin:5px 0;
+ border:0;
  background:#00bcd4;
  color:#000;
- border:0;
  font-weight:bold;
  font-size:12px;
 }
 
-input{
- width:100%;
- margin:10px 0;
+button:active{
+ background:#fff;
+}
+
+.secondary{
+ background:#455a64;
  color:white;
 }
 
-.box{
- background:#263238;
- border:1px solid #00bcd4;
+.install{
+ background:#00c853;
+ color:#000;
+ font-size:14px;
+}
+
+#status,#result{
+ background:#17252d;
+ border:1px solid #455a64;
  padding:8px;
- margin-top:8px;
+ margin-top:7px;
+ line-height:1.6;
  overflow-wrap:anywhere;
  word-break:break-word;
- line-height:1.6;
 }
 
-.label{
- color:#00e5ff;
- font-weight:bold;
-}
+.green{color:#00ff90}
+.red{color:#ff5252}
+.yellow{color:#ffeb3b}
+.blue{color:#00e5ff}
 
-.good{color:#00ff90}
-.bad{color:#ff5252}
-.small{font-size:10px;color:#bbb}
+.footer{
+ text-align:center;
+ color:#78909c;
+ font-size:9px;
+ margin:12px 0;
+}
 </style>
 </head>
 
 <body>
 
-<h3>RUTIK JAVA ANALYZER V4</h3>
-
-<p>Select Java Application (.jar)</p>
-
-<input type="file" id="picker" accept=".jar">
-
-<button onclick="analyze()">ANALYZE JAR</button>
-
-<button onclick="resetApp()">RESET</button>
-
-<div class="box" id="status">
-Waiting for JAR file...
+<div class="header">
+<h2>RUTIK JAVA INSTALLER</h2>
+<p>JAR / JAD APPLICATION MANAGER</p>
 </div>
 
-<div class="box" id="output">
-Java application information will appear here.
+<div class="section">
+
+<div class="title">STEP 1 : SELECT APPLICATION</div>
+
+<input
+ type="file"
+ id="filePicker"
+ accept=".jar,.jad"
+ onchange="fileSelected(this)"
+>
+
+<div id="fileInfo">
+No file selected.
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">STEP 2 : APPLICATION ANALYSIS</div>
+
+<button onclick="analyzeFile()">
+ANALYZE APPLICATION
+</button>
+
+<button class="secondary" onclick="resetApp()">
+RESET
+</button>
+
+<div id="status">
+Waiting for application...
+</div>
+
+<div id="result">
+Application information will appear here.
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">STEP 3 : JAVA COMPATIBILITY</div>
+
+<button onclick="checkCompatibility()">
+CHECK COMPATIBILITY
+</button>
+
+<div id="compatibility">
+Not checked.
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">STEP 4 : INSTALL APPLICATION</div>
+
+<button class="install" onclick="installApp()">
+INSTALL APPLICATION
+</button>
+
+<div id="installStatus">
+Installation not started.
+</div>
+
+</div>
+
+<div class="footer">
+RUTIK JAVA INSTALLER V1<br>
+Designed for 128x160 mobile screens
 </div>
 
 <script>
 
-var picker = document.getElementById("picker");
-var statusBox = document.getElementById("status");
-var outputBox = document.getElementById("output");
+var selectedFile=null;
+var appData={};
+var manifestData={};
 
-function status(msg){
- statusBox.innerHTML = msg;
+var picker=document.getElementById("filePicker");
+var fileInfo=document.getElementById("fileInfo");
+var statusBox=document.getElementById("status");
+var resultBox=document.getElementById("result");
+
+function setStatus(t){
+ statusBox.innerHTML=t;
 }
 
-function output(msg){
- outputBox.innerHTML = msg;
+function fileSelected(input){
+
+ selectedFile=null;
+ appData={};
+ manifestData={};
+
+ document.getElementById("compatibility").innerHTML="Not checked.";
+ document.getElementById("installStatus").innerHTML="Installation not started.";
+
+ if(!input.files || !input.files.length){
+
+  fileInfo.innerHTML="<span class='red'>No file received.</span>";
+  return;
+ }
+
+ selectedFile=input.files[0];
+
+ fileInfo.innerHTML=
+ "<span class='green'>FILE RECEIVED</span><br>"+
+ "Name: "+selectedFile.name+"<br>"+
+ "Size: "+selectedFile.size+" bytes<br>"+
+ "Type: "+(selectedFile.type || "Unknown");
+
+ setStatus("File selected successfully.");
+
 }
 
-function readPart(file,start,end){
+function readFile(file,start,end,callback){
 
- return new Promise(function(resolve,reject){
+ var reader=new FileReader();
 
-  var reader = new FileReader();
+ reader.onload=function(e){
+  callback(null,new Uint8Array(e.target.result));
+ };
 
-  reader.onload = function(e){
-   resolve(new Uint8Array(e.target.result));
-  };
+ reader.onerror=function(){
+  callback(new Error("FileReader failed."));
+ };
 
-  reader.onerror = function(){
-   reject(new Error("FileReader failed"));
-  };
+ reader.onabort=function(){
+  callback(new Error("Reading aborted."));
+ };
 
-  reader.onabort = function(){
-   reject(new Error("File reading aborted"));
-  };
+ try{
+  reader.readAsArrayBuffer(file.slice(start,end));
+ }catch(e){
+  callback(e);
+ }
 
-  try{
-   reader.readAsArrayBuffer(file.slice(start,end));
-  }catch(err){
-   reject(err);
-  }
-
- });
 }
 
 function u16(a,p){
- return a[p] | (a[p+1] << 8);
+ return a[p] | (a[p+1]<<8);
 }
 
 function u32(a,p){
  return (
   a[p] |
-  (a[p+1] << 8) |
-  (a[p+2] << 16) |
-  (a[p+3] << 24)
- ) >>> 0;
+  (a[p+1]<<8) |
+  (a[p+2]<<16) |
+  (a[p+3]<<24)
+ )>>>0;
 }
 
-function findSignature(data,sig){
+function findEOCD(a){
 
- for(var i=data.length-22;i>=0;i--){
+ for(var i=a.length-22;i>=0;i--){
 
   if(
-   data[i]===0x50 &&
-   data[i+1]===0x4b &&
-   data[i+2]===0x05 &&
-   data[i+3]===0x06
+   a[i]===80 &&
+   a[i+1]===75 &&
+   a[i+2]===5 &&
+   a[i+3]===6
   ){
    return i;
   }
@@ -155,277 +283,455 @@ function findSignature(data,sig){
 
 function parseManifest(raw){
 
- var text = raw
-  .replace(/\r\n/g,"\n")
-  .replace(/\r/g,"\n")
-  .replace(/\n[ \t]/g,"");
+ var lines=raw
+ .replace(/\r\n/g,"\n")
+ .replace(/\r/g,"\n")
+ .replace(/\n[ \t]/g,"")
+ .split("\n");
 
- var lines = text.split("\n");
- var data = {};
+ var data={};
 
- lines.forEach(function(line){
+ for(var i=0;i<lines.length;i++){
 
-  var i = line.indexOf(":");
+  var p=lines[i].indexOf(":");
 
-  if(i > 0){
+  if(p>0){
 
-   var key = line.substring(0,i).trim();
-   var value = line.substring(i+1).trim();
+   var key=lines[i].substring(0,p).trim();
+   var value=lines[i].substring(p+1).trim();
 
-   data[key] = value;
+   data[key]=value;
 
   }
 
- });
+ }
 
  return data;
 }
 
-function showManifest(data,raw){
+function displayManifest(data,raw){
 
- var html = "";
+ manifestData=data;
 
- var fields = [
-  ["MIDlet Name","MIDlet-Name"],
-  ["MIDlet Version","MIDlet-Version"],
-  ["MIDlet Vendor","MIDlet-Vendor"],
+ var html="";
+
+ var fields=[
+  ["Application Name","MIDlet-Name"],
+  ["Version","MIDlet-Version"],
+  ["Vendor","MIDlet-Vendor"],
   ["Java Configuration","MicroEdition-Configuration"],
   ["Java Profile","MicroEdition-Profile"],
   ["JAR URL","MIDlet-Jar-URL"],
-  ["JAR Size","MIDlet-Jar-Size"],
-  ["Created By","Created-By"],
-  ["Main Class","Main-Class"]
+  ["JAR Size","MIDlet-Jar-Size"]
  ];
 
- fields.forEach(function(item){
+ for(var i=0;i<fields.length;i++){
 
-  var value = data[item[1]];
+  var value=data[fields[i][1]];
 
   if(value){
-   html +=
-    "<span class='label'>" + item[0] +
-    ":</span><br>" + value + "<br><br>";
+
+   html+=
+   "<span class='blue'>"+fields[i][0]+"</span><br>"+
+   value+"<br><br>";
+
   }
 
- });
+ }
 
- html += "<span class='label'>MIDlet Entries:</span><br>";
+ html+="<span class='blue'>MIDlet Classes</span><br>";
 
- var found = false;
+ var found=false;
 
- Object.keys(data).forEach(function(key){
+ for(var key in data){
 
   if(/^MIDlet-\d+$/.test(key)){
 
-   found = true;
-
-   html += data[key] + "<br>";
+   found=true;
+   html+=data[key]+"<br>";
 
   }
 
- });
-
- if(!found){
-  html += "No MIDlet entries found.<br>";
  }
 
- html += "<br><span class='label'>Full Manifest:</span><br>";
- html += raw.replace(/</g,"&lt;").replace(/>/g,"&gt;")
-  .replace(/\n/g,"<br>");
+ if(!found){
+  html+="No MIDlet entries found.<br>";
+ }
 
- output(html);
+ html+="<br><span class='blue'>Manifest Raw Data</span><br>";
+
+ html+=raw.replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/\n/g,"<br>");
+
+ resultBox.innerHTML=html;
 
 }
 
-async function analyze(){
+function analyzeFile(){
 
- var file = picker.files && picker.files[0];
+ if(!selectedFile){
 
- if(!file){
-  status("<span class='bad'>Please select a JAR file.</span>");
+  setStatus("<span class='red'>Please select a JAR file.</span>");
   return;
  }
 
- output("Analyzing...");
- status("Step 1: Reading ZIP directory...");
+ var name=selectedFile.name.toLowerCase();
+
+ if(name.slice(-4)===".jad"){
+
+  analyzeJAD();
+  return;
+
+ }
+
+ if(name.slice(-4)!==".jar"){
+
+  setStatus("Unsupported file format.");
+  return;
+
+ }
+
+ setStatus("Reading ZIP directory...");
+
+ var tailSize=Math.min(selectedFile.size,65557);
+
+ readFile(
+  selectedFile,
+  selectedFile.size-tailSize,
+  selectedFile.size,
+  function(err,tail){
+
+   if(err){
+    setStatus("ERROR: "+err.message);
+    return;
+   }
+
+   var eocd=findEOCD(tail);
+
+   if(eocd<0){
+
+    setStatus("<span class='red'>ZIP directory not found.</span>");
+    return;
+   }
+
+   var entries=u16(tail,eocd+10);
+   var centralSize=u32(tail,eocd+12);
+   var centralOffset=u32(tail,eocd+16);
+
+   if(entries===65535 ||
+      centralOffset===4294967295){
+
+    setStatus("ZIP64 archive not supported.");
+    return;
+   }
+
+   setStatus("Reading ZIP entries...");
+
+   readFile(
+    selectedFile,
+    centralOffset,
+    centralOffset+centralSize,
+    function(err,central){
+
+     if(err){
+      setStatus("ERROR: "+err.message);
+      return;
+     }
+
+     var pos=0;
+     var manifest=null;
+
+     for(var i=0;i<entries;i++){
+
+      if(u32(central,pos)!==0x02014b50){
+       setStatus("Invalid ZIP entry.");
+       return;
+      }
+
+      var method=u16(central,pos+10);
+      var compressed=u32(central,pos+20);
+      var original=u32(central,pos+24);
+
+      var nameLength=u16(central,pos+28);
+      var extraLength=u16(central,pos+30);
+      var commentLength=u16(central,pos+32);
+
+      var offset=u32(central,pos+42);
+
+      var bytes=central.slice(
+       pos+46,
+       pos+46+nameLength
+      );
+
+      var filename="";
+
+      try{
+       filename=new TextDecoder().decode(bytes);
+      }catch(e){}
+
+      if(filename.toUpperCase()==="META-INF/MANIFEST.MF"){
+
+       manifest={
+        method:method,
+        compressed:compressed,
+        original:original,
+        offset:offset
+       };
+
+       break;
+      }
+
+      pos+=46+nameLength+extraLength+commentLength;
+
+     }
+
+     if(!manifest){
+
+      setStatus("<span class='red'>MANIFEST.MF not found.</span>");
+      return;
+     }
+
+     readManifest(manifest);
+
+    }
+   );
+
+  }
+ );
+
+}
+
+function readManifest(m){
+
+ setStatus("Reading Manifest header...");
+
+ readFile(
+  selectedFile,
+  m.offset,
+  m.offset+30,
+  function(err,header){
+
+   if(err){
+    setStatus("ERROR: "+err.message);
+    return;
+   }
+
+   if(u32(header,0)!==0x04034b50){
+
+    setStatus("Invalid local ZIP header.");
+    return;
+   }
+
+   var nameLength=u16(header,26);
+   var extraLength=u16(header,28);
+
+   var start=m.offset+30+nameLength+extraLength;
+
+   setStatus("Reading Manifest content...");
+
+   readFile(
+    selectedFile,
+    start,
+    start+m.compressed,
+    function(err,compressed){
+
+     if(err){
+      setStatus("ERROR: "+err.message);
+      return;
+     }
+
+     if(m.method===0){
+
+      finishManifest(compressed);
+      return;
+
+     }
+
+     if(m.method===8){
+
+      decompressManifest(compressed);
+      return;
+
+     }
+
+     setStatus("Unsupported compression method: "+m.method);
+
+    }
+   );
+
+  }
+ );
+
+}
+
+function decompressManifest(bytes){
+
+ if(typeof DecompressionStream==="undefined"){
+
+  setStatus(
+   "<span class='red'>Browser does not support ZIP decompression.</span>"
+  );
+
+  return;
+ }
 
  try{
 
-  var tailSize = Math.min(file.size,65557);
+  var stream=new Blob([bytes])
+   .stream()
+   .pipeThrough(new DecompressionStream("deflate-raw"));
 
-  var tailStart = file.size-tailSize;
+  new Response(stream).arrayBuffer().then(function(buffer){
 
-  var tail = await readPart(file,tailStart,file.size);
+   finishManifest(new Uint8Array(buffer));
 
-  status("Step 2: Searching ZIP signature...");
+  }).catch(function(){
 
-  var eocd = findSignature(tail);
+   setStatus("Manifest decompression failed.");
 
-  if(eocd < 0){
-   throw new Error("ZIP End Directory not found.");
-  }
+  });
 
-  var disk = u16(tail,eocd+4);
-  var centralDisk = u16(tail,eocd+6);
-  var entries = u16(tail,eocd+10);
-  var centralSize = u32(tail,eocd+12);
-  var centralOffset = u32(tail,eocd+16);
+ }catch(e){
 
-  if(disk !== 0 || centralDisk !== 0){
-   throw new Error("Multi-disk ZIP is not supported.");
-  }
-
-  if(entries === 65535 || centralOffset === 4294967295){
-   throw new Error("ZIP64 archive is not supported.");
-  }
-
-  status("Step 3: Reading ZIP file list...");
-
-  var central = await readPart(
-   file,
-   centralOffset,
-   centralOffset+centralSize
-  );
-
-  var position = 0;
-  var manifest = null;
-
-  for(var n=0;n<entries;n++){
-
-   if(u32(central,position)!==0x02014b50){
-    throw new Error("Invalid ZIP directory entry.");
-   }
-
-   var method = u16(central,position+10);
-   var compressedSize = u32(central,position+20);
-   var uncompressedSize = u32(central,position+24);
-
-   var nameLength = u16(central,position+28);
-   var extraLength = u16(central,position+30);
-   var commentLength = u16(central,position+32);
-
-   var localOffset = u32(central,position+42);
-
-   var nameBytes = central.slice(
-    position+46,
-    position+46+nameLength
-   );
-
-   var name = new TextDecoder().decode(nameBytes);
-
-   if(name.toUpperCase()==="META-INF/MANIFEST.MF"){
-
-    manifest = {
-     method:method,
-     compressedSize:compressedSize,
-     uncompressedSize:uncompressedSize,
-     localOffset:localOffset
-    };
-
-    break;
-   }
-
-   position += 46+nameLength+extraLength+commentLength;
-
-  }
-
-  if(!manifest){
-   throw new Error("META-INF/MANIFEST.MF not found.");
-  }
-
-  status("Step 4: Reading Manifest...");
-
-  var header = await readPart(
-   file,
-   manifest.localOffset,
-   manifest.localOffset+30
-  );
-
-  if(u32(header,0)!==0x04034b50){
-   throw new Error("Invalid local ZIP header.");
-  }
-
-  var localNameLength = u16(header,26);
-  var localExtraLength = u16(header,28);
-
-  var dataStart =
-   manifest.localOffset+30+
-   localNameLength+
-   localExtraLength;
-
-  var compressed = await readPart(
-   file,
-   dataStart,
-   dataStart+manifest.compressedSize
-  );
-
-  var rawBytes;
-
-  if(manifest.method===0){
-
-   rawBytes = compressed;
-
-  }else if(manifest.method===8){
-
-   status("Step 5: Decompressing Manifest...");
-
-   if(typeof DecompressionStream==="undefined"){
-    throw new Error("DecompressionStream not supported.");
-   }
-
-   var stream = new Blob([compressed])
-    .stream()
-    .pipeThrough(new DecompressionStream("deflate-raw"));
-
-   var response = new Response(stream);
-
-   rawBytes = new Uint8Array(
-    await response.arrayBuffer()
-   );
-
-  }else{
-
-   throw new Error(
-    "Unsupported ZIP compression method: "+manifest.method
-   );
-
-  }
-
-  status("<span class='good'>SUCCESS! Manifest found.</span>");
-
-  var raw = new TextDecoder("utf-8").decode(rawBytes);
-
-  var data = parseManifest(raw);
-
-  showManifest(data,raw);
-
- }catch(error){
-
-  status(
-   "<span class='bad'>ANALYSIS FAILED</span><br>" +
-   error.message
-  );
-
-  output(
-   "Error Details:<br>" +
-   String(error)
-  );
+  setStatus("Decompression error: "+e.message);
 
  }
+
+}
+
+function finishManifest(bytes){
+
+ var raw=new TextDecoder("utf-8").decode(bytes);
+
+ var data=parseManifest(raw);
+
+ appData=data;
+
+ displayManifest(data,raw);
+
+ setStatus("<span class='green'>SUCCESS: Manifest found!</span>");
+
+}
+
+function analyzeJAD(){
+
+ setStatus("Reading JAD file...");
+
+ var reader=new FileReader();
+
+ reader.onload=function(){
+
+  var data=parseManifest(reader.result);
+
+  appData=data;
+
+  displayManifest(data,reader.result);
+
+  setStatus("<span class='green'>JAD analysis completed.</span>");
+
+ };
+
+ reader.onerror=function(){
+
+  setStatus("JAD reading failed.");
+
+ };
+
+ reader.readAsText(selectedFile);
+
+}
+
+function checkCompatibility(){
+
+ if(!selectedFile){
+
+  document.getElementById("compatibility").innerHTML=
+  "<span class='red'>Select application first.</span>";
+
+  return;
+ }
+
+ var config=appData["MicroEdition-Configuration"];
+ var profile=appData["MicroEdition-Profile"];
+
+ var html="";
+
+ if(config){
+
+  html+="Java Configuration: "+config+"<br>";
+
+ }else{
+
+  html+="Java Configuration: Not declared<br>";
+
+ }
+
+ if(profile){
+
+  html+="Java Profile: "+profile+"<br>";
+
+ }else{
+
+  html+="Java Profile: Not declared<br>";
+
+ }
+
+ html+="<br>Native Java Runtime: <span class='yellow'>Not verified</span><br>";
+
+ html+="Installation compatibility cannot be confirmed until the phone's Java ME runtime is verified.";
+
+ document.getElementById("compatibility").innerHTML=html;
+
+}
+
+function installApp(){
+
+ if(!selectedFile){
+
+  document.getElementById("installStatus").innerHTML=
+  "<span class='red'>Select a JAR/JAD file first.</span>";
+
+  return;
+ }
+
+ if(!appData || Object.keys(appData).length===0){
+
+  document.getElementById("installStatus").innerHTML=
+  "<span class='yellow'>Analyze the application first.</span>";
+
+  return;
+ }
+
+ document.getElementById("installStatus").innerHTML=
+ "<span class='yellow'>NATIVE INSTALLATION NOT VERIFIED</span><br><br>"+
+ "The browser can read this application file, but it cannot directly install a Java MIDlet.<br><br>"+
+ "A compatible Java ME Runtime and an official system installation interface are required.<br><br>"+
+ "No installation has been performed.";
 
 }
 
 function resetApp(){
 
- picker.value = "";
+ selectedFile=null;
+ appData={};
+ manifestData={};
 
- status("Waiting for JAR file...");
+ picker.value="";
 
- output("Java application information will appear here.");
+ fileInfo.innerHTML="No file selected.";
+
+ setStatus("Waiting for application...");
+
+ resultBox.innerHTML="Application information will appear here.";
+
+ document.getElementById("compatibility").innerHTML="Not checked.";
+
+ document.getElementById("installStatus").innerHTML="Installation not started.";
 
 }
 
 </script>
 
 </body>
-  </html>
+ </html>
