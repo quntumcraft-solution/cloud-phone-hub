@@ -767,7 +767,7 @@ function moveChannel(direction){
 }
 
 
-/* PLAY */
+/* FAST PLAY - OPTIMIZED */
 
 function playChannel(){
 
@@ -775,30 +775,59 @@ function playChannel(){
 
  var ch=filtered[focusIndex];
 
+ if(!ch || !ch.url) return;
+
  playingUrl=ch.url;
  nowName.textContent=ch.name;
 
- say("Starting selected channel...");
+ say("Connecting...");
 
  render();
 
  try{
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
- }catch(e){}
 
- video.autoplay=false;
- video.src=ch.url;
- video.load();
+  /* Same channel: do not reload */
 
- var p=video.play();
+  if(video.src===ch.url){
 
- if(p && p.catch){
-  p.catch(function(){
-   say("Channel not supported or unavailable");
-  });
+   var samePlay=video.play();
+
+   if(samePlay && samePlay.catch){
+    samePlay.catch(function(){
+     say("Stream unavailable or unsupported");
+    });
+   }
+
+   return;
+  }
+
+  /*
+   New channel:
+   Directly change source.
+   Avoid unnecessary pause(), removeAttribute()
+   and load() calls.
+  */
+
+  video.src=ch.url;
+
+  var p=video.play();
+
+  if(p && p.catch){
+
+   p.catch(function(){
+
+    say("Stream unavailable or unsupported");
+
+   });
+
+  }
+
+ }catch(e){
+
+  say("Unable to start channel");
+
  }
+
 }
 
 
