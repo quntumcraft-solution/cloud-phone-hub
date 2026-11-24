@@ -6,270 +6,196 @@
 <title>RUTIK LIVE TV</title>
 
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+
+html,body{
+margin:0;padding:0;width:100%;height:100%;
+background:#080e18;color:white;
+font-family:Arial,sans-serif;font-size:11px;
+overflow:hidden;
 }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: #080e18;
-    color: white;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    overflow: hidden;
+#app{
+width:100%;height:100%;display:flex;
+flex-direction:column;background:#101b2a;
 }
 
-#app {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #101b2a;
+#header{
+height:25px;min-height:25px;
+background:#07111f;border-bottom:1px solid #00c8ff;
+display:flex;align-items:center;
+justify-content:space-between;padding:0 6px;
+font-size:12px;font-weight:bold;color:#00d9ff;
 }
 
-#header {
-    height: 25px;
-    min-height: 25px;
-    background: #07111f;
-    border-bottom: 1px solid #00c8ff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 6px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #00d9ff;
+#liveStatus{color:#00ff77;font-size:9px}
+
+#pageTitle{
+height:20px;min-height:20px;
+background:#14283e;padding:4px 7px;
+font-weight:bold;overflow:hidden;
+white-space:nowrap;
 }
 
-#liveStatus {
-    color: #00ff77;
-    font-size: 9px;
+#content{
+flex:1;overflow:hidden;position:relative;padding:5px;
 }
 
-#pageTitle {
-    height: 20px;
-    min-height: 20px;
-    background: #14283e;
-    padding: 4px 7px;
-    font-weight: bold;
+.hidden{display:none!important}
+
+.welcome{
+text-align:center;padding:8px 0;margin-bottom:7px;
+border-bottom:1px solid #28435e;
 }
 
-#content {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    padding: 5px;
+.tvIcon{font-size:23px;margin-bottom:3px}
+.welcomeTitle{color:#00d9ff;font-size:14px;font-weight:bold}
+.welcomeText{color:#aabbd0;font-size:9px;margin-top:3px}
+
+.menuItem,.categoryItem{
+height:28px;margin-bottom:4px;padding:7px 6px;
+background:#1b3048;border:1px solid #304c69;
+font-size:10px;font-weight:bold;
 }
 
-.hidden {
-    display: none !important;
+.menuItem.selected,.categoryItem.selected,
+.channelItem.selected,.moreItem.selected{
+background:#006b9e;border:1px solid #00e1ff;
 }
 
-.welcome {
-    text-align: center;
-    padding: 10px 0;
-    margin-bottom: 8px;
-    border-bottom: 1px solid #28435e;
+.smallInfo{
+margin-top:8px;text-align:center;
+color:#91a7bd;font-size:9px;
 }
 
-.tvIcon {
-    font-size: 24px;
-    margin-bottom: 4px;
+.toolbar{
+height:25px;display:flex;align-items:center;
+gap:5px;margin-bottom:4px;
 }
 
-.welcomeTitle {
-    color: #00d9ff;
-    font-size: 14px;
-    font-weight: bold;
+.toolbar button,.playerToolbar button{
+border:1px solid #00c8ff;background:#12334b;
+color:white;padding:4px 6px;font-size:9px;
 }
 
-.welcomeText {
-    color: #aabbd0;
-    font-size: 9px;
-    margin-top: 3px;
+#categoryName,#channelHeading{
+font-weight:bold;color:#00d9ff;
+overflow:hidden;white-space:nowrap;
 }
 
-.menuItem {
-    height: 29px;
-    margin-bottom: 5px;
-    padding: 8px 6px;
-    background: #1b3048;
-    border: 1px solid #304c69;
-    font-size: 11px;
-    font-weight: bold;
+#searchInput{
+width:100%;height:24px;
+border:1px solid #49627c;background:#071421;
+color:white;padding:4px 6px;font-size:11px;
+margin-bottom:4px;
 }
 
-.menuItem.selected,
-.channelItem.selected {
-    background: #006b9e;
-    border: 1px solid #00e1ff;
+#categoryCount,#channelCount{
+height:16px;color:#00d9ff;font-size:9px;
 }
 
-.smallInfo {
-    margin-top: 10px;
-    text-align: center;
-    color: #91a7bd;
-    font-size: 9px;
+#categoryList,#channelList{
+height:calc(100% - 70px);
+overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;
 }
 
-.toolbar {
-    height: 25px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 5px;
+.categoryItem{
+display:flex;justify-content:space-between;
+align-items:center;height:29px;
 }
 
-.toolbar button,
-.playerToolbar button {
-    border: 1px solid #00c8ff;
-    background: #12334b;
-    color: white;
-    padding: 4px 7px;
-    font-size: 10px;
+.categoryCount{color:#00d9ff;font-size:9px}
+
+.channelItem{
+height:34px;padding:3px;margin-bottom:3px;
+background:#192c40;border:1px solid #30445a;
+display:flex;align-items:center;overflow:hidden;
 }
 
-#categoryName {
-    font-weight: bold;
-    color: #00d9ff;
+.channelLogo{
+width:25px;height:25px;min-width:25px;
+margin-right:5px;background:white;
 }
 
-#searchInput {
-    width: 100%;
-    height: 25px;
-    border: 1px solid #49627c;
-    background: #071421;
-    color: white;
-    padding: 4px 6px;
-    font-size: 11px;
-    margin-bottom: 5px;
+.logoFallback{
+width:25px;height:25px;min-width:25px;
+margin-right:5px;background:#07577b;
+text-align:center;padding-top:7px;
+font-size:10px;
 }
 
-#channelCount {
-    height: 17px;
-    color: #00d9ff;
-    font-size: 9px;
+.channelName{
+flex:1;font-size:10px;overflow:hidden;
+white-space:nowrap;text-overflow:ellipsis;
 }
 
-#channelList {
-    height: calc(100% - 72px);
-    overflow-y: auto;
+.favMark{
+width:17px;min-width:17px;text-align:center;
+color:#ffdf48;font-size:14px;
 }
 
-.channelItem {
-    min-height: 34px;
-    padding: 4px;
-    margin-bottom: 3px;
-    background: #192c40;
-    border: 1px solid #30445a;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
+.moreItem{
+height:27px;padding:7px;text-align:center;
+background:#12334b;border:1px solid #00c8ff;
+margin-bottom:4px;
 }
 
-.channelLogo {
-    width: 25px;
-    height: 25px;
-    min-width: 25px;
-    object-fit: contain;
-    margin-right: 7px;
-    background: white;
+.playerToolbar{
+height:27px;display:flex;align-items:center;gap:5px;
 }
 
-.channelName {
-    font-size: 10px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+#playingName{
+color:#00d9ff;font-weight:bold;
+overflow:hidden;white-space:nowrap;
+text-overflow:ellipsis;flex:1;
 }
 
-.playerToolbar {
-    height: 28px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+#videoPlayer{
+width:100%;height:95px;margin-top:8px;
+background:black;
 }
 
-#playingName {
-    color: #00d9ff;
-    font-weight: bold;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+#playerMessage{
+text-align:center;color:#ffcf4a;
+margin:7px 0;font-size:10px;
 }
 
-#videoPlayer {
-    width: 100%;
-    height: 95px;
-    margin-top: 10px;
-    background: black;
-    object-fit: contain;
+.playerButtons{display:flex;gap:5px}
+
+.playerButtons button{
+flex:1;height:25px;background:#07577b;
+color:white;border:1px solid #00c8ff;
+font-size:10px;
 }
 
-#playerMessage {
-    text-align: center;
-    color: #ffcf4a;
-    margin: 8px 0;
-    font-size: 10px;
+#loading{
+position:absolute;z-index:10;top:45%;left:0;
+width:100%;text-align:center;color:#00e1ff;
+background:#101b2a;padding:10px;
 }
 
-.playerButtons {
-    display: flex;
-    gap: 5px;
+#errorBox{
+color:#ff7777;padding:5px;
+font-size:10px;word-wrap:break-word;
 }
 
-.playerButtons button {
-    flex: 1;
-    height: 25px;
-    background: #07577b;
-    color: white;
-    border: 1px solid #00c8ff;
-    font-size: 10px;
-}
-
-#loading {
-    position: absolute;
-    z-index: 10;
-    top: 45%;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    color: #00e1ff;
-    background: #101b2a;
-    padding: 10px;
-}
-
-#errorBox {
-    color: #ff7777;
-    padding: 5px;
-    font-size: 10px;
-}
-
-footer {
-    height: 19px;
-    min-height: 19px;
-    background: #07111f;
-    border-top: 1px solid #28435e;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 7px;
-    color: #00d9ff;
-    font-size: 9px;
+footer{
+height:19px;min-height:19px;
+background:#07111f;border-top:1px solid #28435e;
+display:flex;align-items:center;
+justify-content:space-between;padding:0 7px;
+color:#00d9ff;font-size:9px;
 }
 </style>
 </head>
 
 <body>
-
 <div id="app">
 
 <header id="header">
-    <span>RUTIK LIVE TV</span>
-    <span id="liveStatus">LIVE</span>
+<span>RUTIK LIVE TV</span>
+<span id="liveStatus">LIVE</span>
 </header>
 
 <div id="pageTitle">HOME</div>
@@ -280,642 +206,820 @@ footer {
 <main id="content">
 
 <section id="homePage">
+<div class="welcome">
+<div class="tvIcon">TV</div>
+<div class="welcomeTitle">RUTIK LIVE TV</div>
+<div class="welcomeText">INDIAN TELEVISION</div>
+</div>
 
-    <div class="welcome">
-        <div class="tvIcon">TV</div>
-        <div class="welcomeTitle">RUTIK LIVE TV</div>
-        <div class="welcomeText">INDIAN TELEVISION</div>
-    </div>
+<div class="menuItem selected" data-action="categories">TV CATEGORIES</div>
+<div class="menuItem" data-action="favorites">MY FAVOURITES</div>
+<div class="menuItem" data-action="search">SEARCH ALL CHANNELS</div>
 
-    <div class="menuItem selected" data-action="indian">
-        INDIAN TV
-    </div>
+<div class="smallInfo">2 UP | 8 DOWN | OK SELECT</div>
+</section>
 
-    <div class="menuItem" data-action="sports">
-        SPORTS
-    </div>
-
-    <div class="menuItem" data-action="search">
-        SEARCH CHANNEL
-    </div>
-
-    <div class="smallInfo">SELECT CATEGORY</div>
-
+<section id="categoryPage" class="hidden">
+<div class="toolbar">
+<button id="categoryBack">BACK</button>
+<span id="categoryName">CATEGORIES</span>
+</div>
+<div id="categoryCount">CATEGORIES</div>
+<div id="categoryList"></div>
 </section>
 
 <section id="channelPage" class="hidden">
+<div class="toolbar">
+<button id="channelBack">BACK</button>
+<span id="channelHeading">CHANNELS</span>
+</div>
 
-    <div class="toolbar">
-        <button id="backButton">BACK</button>
-        <span id="categoryName">CHANNELS</span>
-    </div>
+<input type="text" id="searchInput"
+placeholder="Search channel..."
+autocomplete="off">
 
-    <input type="text"
-        id="searchInput"
-        placeholder="Search channel..."
-        autocomplete="off">
-
-    <div id="channelCount">Loading channels...</div>
-
-    <div id="channelList"></div>
-
+<div id="channelCount">CHANNELS</div>
+<div id="channelList"></div>
 </section>
 
 <section id="playerPage" class="hidden">
+<div class="playerToolbar">
+<button id="playerBack">BACK</button>
+<span id="playingName">CHANNEL</span>
+</div>
 
-    <div class="playerToolbar">
-        <button id="playerBack">BACK</button>
-        <span id="playingName">CHANNEL</span>
-    </div>
+<video id="videoPlayer" controls autoplay
+playsinline webkit-playsinline></video>
 
-    <video id="videoPlayer"
-        controls
-        autoplay
-        playsinline
-        webkit-playsinline>
-    </video>
+<div id="playerMessage">SELECT CHANNEL</div>
 
-    <div id="playerMessage">SELECT CHANNEL</div>
-
-    <div class="playerButtons">
-        <button id="playButton">PLAY</button>
-        <button id="stopButton">STOP</button>
-    </div>
-
+<div class="playerButtons">
+<button id="playButton">PLAY</button>
+<button id="stopButton">STOP</button>
+<button id="favButton">☆ FAV</button>
+</div>
 </section>
 
 </main>
 
 <footer>
-    <span id="leftKey">SELECT</span>
-    <span id="rightKey">BACK</span>
+<span>2 UP / 8 DOWN</span>
+<span>4 BACK | OK SELECT</span>
 </footer>
-
 </div>
 
 <script>
 
-/* RUTIK LIVE TV MASTER JAVASCRIPT */
+/* RUTIK LIVE TV - LIGHT ENGINE */
 
-var appState = "home";
-var channels = [];
-var filteredChannels = [];
-var selectedIndex = 0;
-var currentChannel = null;
-var menuIndex = 0;
+var appState="home";
+var allChannels=[];
+var channels=[];
+var filteredChannels=[];
+var categories=[];
+var favs=[];
 
-var sources = [
-    {
-        name: "INDIAN TV",
-        url: "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/in.m3u"
-    },
-    {
-        name: "SPORTS",
-        url: "https://iptv-org.github.io/iptv/categories/sports.m3u"
-    }
+var selectedIndex=0;
+var menuIndex=0;
+var categoryIndex=0;
+var pageStart=0;
+var pageSize=15;
+
+var currentChannel=null;
+var currentCategory="";
+var categoryMode="";
+
+var loadingCount=0;
+var loadFinished=false;
+
+var categoryData=[
+{name:"Marathi",url:"https://iptv-org.github.io/iptv/languages/mar.m3u"},
+{name:"Hindi",url:"https://iptv-org.github.io/iptv/languages/hin.m3u"},
+{name:"Music",url:"https://iptv-org.github.io/iptv/categories/music.m3u"},
+{name:"News",url:"https://iptv-org.github.io/iptv/categories/news.m3u"},
+{name:"Sports",url:"https://iptv-org.github.io/iptv/categories/sports.m3u"},
+{name:"Movies",url:"https://iptv-org.github.io/iptv/categories/movies.m3u"},
+{name:"Entertainment",url:"https://iptv-org.github.io/iptv/categories/entertainment.m3u"},
+{name:"Education",url:"https://iptv-org.github.io/iptv/categories/education.m3u"},
+{name:"Documentary",url:"https://iptv-org.github.io/iptv/categories/documentary.m3u"}
 ];
 
-function byId(id) {
-    return document.getElementById(id);
+function byId(id){
+return document.getElementById(id);
 }
 
-function show(id) {
-    byId(id).className =
-        byId(id).className.replace(/\bhidden\b/g, "");
+function show(id){
+var el=byId(id);
+if(el)el.className=el.className.replace(/\bhidden\b/g,"");
 }
 
-function hide(id) {
-    if (byId(id).className.indexOf("hidden") < 0) {
-        byId(id).className += " hidden";
-    }
+function hide(id){
+var el=byId(id);
+if(el && el.className.indexOf("hidden")<0){
+el.className+=" hidden";
+}
 }
 
-function setLoading(value) {
-    if (value) {
-        show("loading");
-    } else {
-        hide("loading");
-    }
+function setLoading(v){
+if(v)show("loading");
+else hide("loading");
 }
 
-function showError(message) {
-    byId("errorBox").innerHTML = message;
-    show("errorBox");
+function showError(msg){
+byId("errorBox").innerHTML=msg;
+show("errorBox");
 }
 
-function clearError() {
-    byId("errorBox").innerHTML = "";
-    hide("errorBox");
+function clearError(){
+byId("errorBox").innerHTML="";
+hide("errorBox");
 }
 
-function requestURL(url, callback) {
-
-    var xhr = new XMLHttpRequest();
-    var completed = false;
-
-    function finish(error, data) {
-        if (completed) {
-            return;
-        }
-
-        completed = true;
-        callback(error, data);
-    }
-
-    xhr.onreadystatechange = function() {
-
-        if (xhr.readyState == 4) {
-
-            if (xhr.status == 200 || xhr.status == 0) {
-                finish(null, xhr.responseText);
-            } else {
-                finish("HTTP ERROR " + xhr.status);
-            }
-        }
-    };
-
-    xhr.onerror = function() {
-        finish("NETWORK ERROR");
-    };
-
-    try {
-        xhr.open("GET", url, true);
-        xhr.send(null);
-    } catch(e) {
-        finish("REQUEST ERROR: " + e.message);
-    }
+function escapeHTML(text){
+return String(text)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;");
 }
 
-function openHome() {
+/* FAVOURITES */
 
-    stopPlayer();
-
-    appState = "home";
-
-    hide("channelPage");
-    hide("playerPage");
-    show("homePage");
-
-    clearError();
-
-    byId("pageTitle").innerHTML = "HOME";
-    byId("leftKey").innerHTML = "SELECT";
-    byId("rightKey").innerHTML = "BACK";
-
-    menuIndex = 0;
-    updateHomeSelection();
+function loadFavorites(){
+try{
+var saved=localStorage.getItem("rutik_tv_favorites");
+if(saved)favs=JSON.parse(saved);
+}catch(e){favs=[];}
 }
 
-function updateHomeSelection() {
-
-    var items = document.getElementsByClassName("menuItem");
-
-    for (var i = 0; i < items.length; i++) {
-
-        items[i].className = "menuItem";
-
-        if (i == menuIndex) {
-            items[i].className += " selected";
-        }
-    }
+function saveFavorites(){
+try{
+localStorage.setItem("rutik_tv_favorites",JSON.stringify(favs));
+}catch(e){
+showError("FAVOURITES STORAGE NOT AVAILABLE");
+}
 }
 
-function loadCategory(index) {
-
-    if (!sources[index]) {
-        return;
-    }
-
-    stopPlayer();
-
-    appState = "channels";
-
-    channels = [];
-    filteredChannels = [];
-    selectedIndex = 0;
-
-    hide("homePage");
-    hide("playerPage");
-    show("channelPage");
-
-    clearError();
-
-    byId("pageTitle").innerHTML = sources[index].name;
-    byId("categoryName").innerHTML = sources[index].name;
-    byId("channelList").innerHTML = "";
-    byId("channelCount").innerHTML = "LOADING CHANNELS...";
-    byId("searchInput").value = "";
-
-    setLoading(true);
-
-    requestURL(sources[index].url, function(error, data) {
-
-        setLoading(false);
-
-        if (error) {
-            byId("channelCount").innerHTML = "LOAD FAILED";
-            showError(error);
-            return;
-        }
-
-        parseM3U(data);
-
-        filteredChannels = channels.slice(0);
-
-        byId("channelCount").innerHTML =
-            "CHANNELS: " + channels.length;
-
-        renderChannels();
-    });
+function isFavorite(channel){
+if(!channel)return false;
+for(var i=0;i<favs.length;i++){
+if(favs[i].url==channel.url)return true;
+}
+return false;
 }
 
-function parseM3U(data) {
+function toggleFavorite(channel){
+if(!channel)return;
 
-    channels = [];
-
-    var lines = data.split(/\r?\n/);
-    var currentName = "";
-    var currentLogo = "";
-    var currentGroup = "";
-
-    for (var i = 0; i < lines.length; i++) {
-
-        var line = lines[i].replace(/^\s+|\s+$/g, "");
-
-        if (line.indexOf("#EXTINF:") === 0) {
-
-            currentName = line.substring(line.lastIndexOf(",") + 1);
-
-            var logoMatch = line.match(/tvg-logo="([^"]*)"/i);
-
-            currentLogo = logoMatch ? logoMatch[1] : "";
-
-            var groupMatch = line.match(/group-title="([^"]*)"/i);
-
-            currentGroup = groupMatch ? groupMatch[1] : "";
-
-        } else if (
-            line !== "" &&
-            line.charAt(0) !== "#" &&
-            currentName !== ""
-        ) {
-
-            channels.push({
-                name: currentName,
-                logo: currentLogo,
-                group: currentGroup,
-                url: line
-            });
-
-            currentName = "";
-            currentLogo = "";
-            currentGroup = "";
-        }
-    }
+var found=-1;
+for(var i=0;i<favs.length;i++){
+if(favs[i].url==channel.url){
+found=i;
+break;
+}
 }
 
-function escapeHTML(text) {
+if(found>=0)favs.splice(found,1);
+else favs.push(channel);
 
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+saveFavorites();
+
+if(appState=="channels")renderChannels();
+if(appState=="player")updateFavButton();
 }
 
-function renderChannels() {
-
-    var list = byId("channelList");
-
-    list.innerHTML = "";
-
-    if (filteredChannels.length === 0) {
-        list.innerHTML =
-            "<div class='smallInfo'>NO CHANNELS FOUND</div>";
-        return;
-    }
-
-    if (selectedIndex >= filteredChannels.length) {
-        selectedIndex = filteredChannels.length - 1;
-    }
-
-    if (selectedIndex < 0) {
-        selectedIndex = 0;
-    }
-
-    for (var i = 0; i < filteredChannels.length; i++) {
-
-        var channel = filteredChannels[i];
-
-        var item = document.createElement("div");
-
-        item.className = "channelItem";
-
-        if (i == selectedIndex) {
-            item.className += " selected";
-        }
-
-        var logo = document.createElement("img");
-
-        logo.className = "channelLogo";
-        logo.src = channel.logo || "";
-
-        logo.onerror = function() {
-            this.style.display = "none";
-        };
-
-        var name = document.createElement("div");
-
-        name.className = "channelName";
-        name.innerHTML = escapeHTML(channel.name);
-
-        item.appendChild(logo);
-        item.appendChild(name);
-
-        item.setAttribute("data-index", i);
-
-        item.onclick = function() {
-
-            selectedIndex = parseInt(
-                this.getAttribute("data-index"), 10
-            );
-
-            playSelectedChannel();
-        };
-
-        list.appendChild(item);
-    }
-
-    var selected = list.getElementsByClassName("selected")[0];
-
-    if (selected && selected.scrollIntoView) {
-        selected.scrollIntoView(false);
-    }
-
-    byId("channelCount").innerHTML =
-        "CHANNELS: " + filteredChannels.length;
+function updateFavButton(){
+if(!currentChannel)return;
+byId("favButton").innerHTML=
+isFavorite(currentChannel)?"★ FAV":"☆ FAV";
 }
 
-function searchChannels() {
+/* NETWORK */
 
-    var query = byId("searchInput").value.toLowerCase();
+function requestURL(url,callback){
+var xhr=new XMLHttpRequest();
+var done=false;
 
-    filteredChannels = [];
-
-    for (var i = 0; i < channels.length; i++) {
-
-        if (channels[i].name.toLowerCase().indexOf(query) >= 0) {
-            filteredChannels.push(channels[i]);
-        }
-    }
-
-    selectedIndex = 0;
-
-    renderChannels();
+function finish(err,data){
+if(done)return;
+done=true;
+callback(err,data);
 }
 
-function playSelectedChannel() {
+try{
+xhr.open("GET",url,true);
 
-    if (!filteredChannels[selectedIndex]) {
-        return;
-    }
-
-    currentChannel = filteredChannels[selectedIndex];
-
-    appState = "player";
-
-    hide("homePage");
-    hide("channelPage");
-    show("playerPage");
-
-    byId("pageTitle").innerHTML = "NOW PLAYING";
-    byId("playingName").innerHTML = currentChannel.name;
-    byId("playerMessage").innerHTML = "CONNECTING...";
-
-    var video = byId("videoPlayer");
-
-    try {
-
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
-
-        video.src = currentChannel.url;
-        video.load();
-
-        var result = video.play();
-
-        if (result && result.catch) {
-            result.catch(function(error) {
-                byId("playerMessage").innerHTML =
-                    "PLAY ERROR: " + error.message;
-            });
-        }
-
-    } catch(e) {
-
-        byId("playerMessage").innerHTML =
-            "ERROR: " + e.message;
-    }
-
-    video.onplaying = function() {
-        byId("playerMessage").innerHTML = "LIVE PLAYING";
-    };
-
-    video.onerror = function() {
-        byId("playerMessage").innerHTML =
-            "STREAM NOT SUPPORTED OR UNAVAILABLE";
-    };
+xhr.onreadystatechange=function(){
+if(xhr.readyState==4){
+if(xhr.status==200 || xhr.status==0){
+finish(null,xhr.responseText);
+}else{
+finish("HTTP "+xhr.status);
 }
-
-function stopPlayer() {
-
-    var video = byId("videoPlayer");
-
-    if (!video) {
-        return;
-    }
-
-    try {
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
-    } catch(e) {}
 }
-
-function backAction() {
-
-    if (appState == "player") {
-
-        stopPlayer();
-
-        appState = "channels";
-
-        hide("playerPage");
-        show("channelPage");
-
-        byId("pageTitle").innerHTML = "CHANNELS";
-
-    } else if (appState == "channels") {
-
-        openHome();
-
-    } else {
-
-        openHome();
-    }
-}
-
-function selectHomeItem() {
-
-    if (menuIndex == 0) {
-        loadCategory(0);
-
-    } else if (menuIndex == 1) {
-        loadCategory(1);
-
-    } else if (menuIndex == 2) {
-
-        loadCategory(0);
-
-        byId("searchInput").focus();
-    }
-}
-
-function moveSelection(direction) {
-
-    if (appState == "home") {
-
-        var items = document.getElementsByClassName("menuItem");
-
-        menuIndex += direction;
-
-        if (menuIndex < 0) {
-            menuIndex = items.length - 1;
-        }
-
-        if (menuIndex >= items.length) {
-            menuIndex = 0;
-        }
-
-        updateHomeSelection();
-
-    } else if (appState == "channels") {
-
-        if (filteredChannels.length === 0) {
-            return;
-        }
-
-        selectedIndex += direction;
-
-        if (selectedIndex < 0) {
-            selectedIndex = 0;
-        }
-
-        if (selectedIndex >= filteredChannels.length) {
-            selectedIndex = filteredChannels.length - 1;
-        }
-
-        renderChannels();
-    }
-}
-
-document.onkeydown = function(e) {
-
-    e = e || window.event;
-
-    var key = e.keyCode;
-
-    if (key == 38) {
-        moveSelection(-1);
-        return false;
-    }
-
-    if (key == 40) {
-        moveSelection(1);
-        return false;
-    }
-
-    if (key == 13) {
-
-        if (appState == "home") {
-            selectHomeItem();
-
-        } else if (appState == "channels") {
-            playSelectedChannel();
-        }
-
-        return false;
-    }
-
-    if (key == 8 || key == 27 || key == 461) {
-
-        backAction();
-        return false;
-    }
-
-    return true;
 };
 
-byId("backButton").onclick = function() {
-    openHome();
-};
+xhr.onerror=function(){finish("NETWORK ERROR");};
 
-byId("playerBack").onclick = function() {
-    backAction();
-};
+xhr.send(null);
 
-byId("playButton").onclick = function() {
-
-    try {
-        byId("videoPlayer").play();
-    } catch(e) {}
-};
-
-byId("stopButton").onclick = function() {
-    stopPlayer();
-    byId("playerMessage").innerHTML = "STOPPED";
-};
-
-byId("searchInput").onkeyup = function() {
-    searchChannels();
-};
-
-var menuItems = document.getElementsByClassName("menuItem");
-
-for (var m = 0; m < menuItems.length; m++) {
-
-    menuItems[m].onclick = function() {
-
-        var action = this.getAttribute("data-action");
-
-        if (action == "indian") {
-            loadCategory(0);
-
-        } else if (action == "sports") {
-            loadCategory(1);
-
-        } else if (action == "search") {
-            selectHomeItem();
-        }
-    };
+}catch(e){
+finish("REQUEST ERROR: "+e.message);
+}
 }
 
-window.onerror = function(message, url, line, column) {
+/* M3U PARSER */
 
-    setLoading(false);
+function parseM3U(data,groupName){
+var result=[];
+var lines=data.split(/\r?\n/);
+var name="";
+var logo="";
 
-    showError(
-        "ERROR: " + message +
-        "<br>LINE: " + line
-    );
+for(var i=0;i<lines.length;i++){
+var line=lines[i].replace(/^\s+|\s+$/g,"");
 
-    return false;
+if(line.indexOf("#EXTINF:")===0){
+
+var comma=line.lastIndexOf(",");
+name=comma>=0?line.substring(comma+1):"UNKNOWN";
+
+var lm=line.match(/tvg-logo="([^"]*)"/i);
+logo=lm?lm[1]:"";
+
+}else if(line!=="" && line.charAt(0)!="#" && name!==""){
+
+var exists=false;
+for(var j=0;j<allChannels.length;j++){
+if(allChannels[j].url==line){
+exists=true;
+break;
+}
+}
+
+if(!exists){
+result.push({
+name:name,
+logo:logo,
+group:groupName,
+url:line
+});
+}
+
+name="";
+logo="";
+}
+}
+return result;
+}
+
+/* LOAD PLAYLISTS ONE BY ONE */
+
+function loadPlaylist(index){
+if(index>=categoryData.length){
+
+loadFinished=true;
+setLoading(false);
+buildCategories();
+
+if(appState=="categories")renderCategories();
+return;
+}
+
+var item=categoryData[index];
+
+byId("loading").innerHTML=
+"LOADING "+item.name.toUpperCase()+"...";
+
+requestURL(item.url,function(error,data){
+
+if(!error && data){
+var parsed=parseM3U(data,item.name);
+
+for(var i=0;i<parsed.length;i++){
+allChannels.push(parsed[i]);
+}
+}
+
+loadPlaylist(index+1);
+
+});
+}
+
+function loadAllChannels(){
+if(loadingCount>0)return;
+
+loadingCount=1;
+loadFinished=false;
+setLoading(true);
+clearError();
+
+loadPlaylist(0);
+}
+
+/* CATEGORY LIST */
+
+function buildCategories(){
+categories=[];
+for(var i=0;i<categoryData.length;i++){
+categories.push(categoryData[i].name);
+}
+}
+
+function openCategories(){
+appState="categories";
+categoryMode="normal";
+
+hide("homePage");
+hide("channelPage");
+hide("playerPage");
+show("categoryPage");
+
+byId("pageTitle").innerHTML="TV CATEGORIES";
+byId("categoryName").innerHTML="SELECT CATEGORY";
+
+categoryIndex=0;
+
+if(!loadFinished){
+renderCategories();
+loadAllChannels();
+}else{
+renderCategories();
+}
+}
+
+function renderCategories(){
+var list=byId("categoryList");
+list.innerHTML="";
+
+var favItem=document.createElement("div");
+favItem.className="categoryItem";
+favItem.innerHTML="<span>MY FAVOURITES</span><span class='categoryCount'>"+favs.length+"</span>";
+favItem.onclick=function(){openFavorites();};
+list.appendChild(favItem);
+
+for(var i=0;i<categories.length;i++){
+var count=0;
+
+for(var j=0;j<allChannels.length;j++){
+if(allChannels[j].group==categories[i])count++;
+}
+
+var item=document.createElement("div");
+item.className="categoryItem";
+item.innerHTML="<span>"+categories[i]+"</span><span class='categoryCount'>"+count+"</span>";
+item.setAttribute("data-index",i);
+
+item.onclick=function(){
+categoryIndex=parseInt(this.getAttribute("data-index"),10);
+openGroupCategory(categories[categoryIndex]);
 };
 
+list.appendChild(item);
+}
+
+updateCategorySelection();
+
+byId("categoryCount").innerHTML=
+"TOTAL: "+categories.length+" CATEGORIES";
+}
+
+function updateCategorySelection(){
+var items=byId("categoryList").getElementsByClassName("categoryItem");
+
+for(var i=0;i<items.length;i++){
+items[i].className="categoryItem";
+if(i==categoryIndex)items[i].className+=" selected";
+}
+
+scrollSelected("categoryList",items[categoryIndex]);
+}
+
+/* CHANNELS */
+
+function openGroupCategory(group){
+if(!loadFinished){
+showError("PLEASE WAIT. PLAYLISTS LOADING");
+return;
+}
+
+currentCategory=group;
+categoryMode="group";
+channels=[];
+
+for(var i=0;i<allChannels.length;i++){
+if(allChannels[i].group==group)channels.push(allChannels[i]);
+}
+
+openChannelList(group,channels);
+}
+
+function openFavorites(){
+currentCategory="MY FAVOURITES";
+categoryMode="favorites";
+channels=favs.slice(0);
+openChannelList("MY FAVOURITES",channels);
+}
+
+function openSearch(){
+if(!loadFinished){
+if(allChannels.length==0)loadAllChannels();
+showError("PLEASE WAIT. CHANNELS LOADING");
+return;
+}
+
+currentCategory="SEARCH ALL";
+categoryMode="search";
+channels=allChannels.slice(0);
+openChannelList("SEARCH ALL CHANNELS",channels);
+
+try{byId("searchInput").focus();}catch(e){}
+}
+
+function openChannelList(title,data){
+appState="channels";
+
+hide("homePage");
+hide("categoryPage");
+hide("playerPage");
+show("channelPage");
+
+byId("pageTitle").innerHTML=title;
+byId("channelHeading").innerHTML=title;
+byId("searchInput").value="";
+
+filteredChannels=data.slice(0);
+selectedIndex=0;
+pageStart=0;
+
+renderChannels();
+}
+
+function scrollSelected(listId,item){
+if(!item)return;
+
+var list=byId(listId);
+var top=item.offsetTop-list.offsetTop;
+
+if(top<list.scrollTop){
+list.scrollTop=top;
+}else if(top+item.offsetHeight>list.scrollTop+list.clientHeight){
+list.scrollTop=top+item.offsetHeight-list.clientHeight;
+}
+}
+
+/* LIGHT CHANNEL RENDERING */
+
+function renderChannels(){
+var list=byId("channelList");
+list.innerHTML="";
+
+if(filteredChannels.length==0){
+list.innerHTML="<div class='smallInfo'>NO CHANNELS FOUND</div>";
+byId("channelCount").innerHTML="0 CHANNELS";
+return;
+}
+
+if(selectedIndex<0)selectedIndex=0;
+if(selectedIndex>=filteredChannels.length){
+selectedIndex=filteredChannels.length-1;
+}
+
+pageStart=Math.floor(selectedIndex/pageSize)*pageSize;
+
+var end=pageStart+pageSize;
+if(end>filteredChannels.length)end=filteredChannels.length;
+
+for(var i=pageStart;i<end;i++){
+var channel=filteredChannels[i];
+
+var item=document.createElement("div");
+item.className="channelItem";
+
+if(i==selectedIndex)item.className+=" selected";
+
+var logo;
+
+if(channel.logo){
+logo=document.createElement("img");
+logo.className="channelLogo";
+logo.src=channel.logo;
+
+logo.onerror=function(){
+this.style.display="none";
+};
+}else{
+logo=document.createElement("div");
+logo.className="logoFallback";
+logo.innerHTML="TV";
+}
+
+var name=document.createElement("div");
+name.className="channelName";
+name.innerHTML=escapeHTML(channel.name);
+
+var fav=document.createElement("div");
+fav.className="favMark";
+fav.innerHTML=isFavorite(channel)?"★":"";
+
+item.appendChild(logo);
+item.appendChild(name);
+item.appendChild(fav);
+
+item.setAttribute("data-index",i);
+
+item.onclick=function(){
+selectedIndex=parseInt(this.getAttribute("data-index"),10);
+playSelectedChannel();
+};
+
+list.appendChild(item);
+}
+
+if(end<filteredChannels.length){
+var more=document.createElement("div");
+more.className="moreItem";
+more.innerHTML="MORE CHANNELS";
+more.onclick=function(){
+selectedIndex=end;
+renderChannels();
+};
+list.appendChild(more);
+}
+
+var selected=list.getElementsByClassName("selected")[0];
+if(selected)scrollSelected("channelList",selected);
+
+byId("channelCount").innerHTML=
+"CHANNELS: "+filteredChannels.length+
+" | "+(selectedIndex+1)+"/"+filteredChannels.length;
+}
+
+/* SEARCH */
+
+function searchChannels(){
+var query=byId("searchInput").value.toLowerCase();
+filteredChannels=[];
+
+for(var i=0;i<channels.length;i++){
+if(channels[i].name.toLowerCase().indexOf(query)>=0){
+filteredChannels.push(channels[i]);
+}
+}
+
+selectedIndex=0;
+pageStart=0;
+byId("channelList").scrollTop=0;
+renderChannels();
+}
+
+/* PLAYER */
+
+function playSelectedChannel(){
+if(!filteredChannels[selectedIndex])return;
+
+currentChannel=filteredChannels[selectedIndex];
+appState="player";
+
+hide("homePage");
+hide("categoryPage");
+hide("channelPage");
+show("playerPage");
+
+byId("pageTitle").innerHTML="NOW PLAYING";
+byId("playingName").innerHTML=currentChannel.name;
+byId("playerMessage").innerHTML="CONNECTING...";
+
+updateFavButton();
+
+var video=byId("videoPlayer");
+
+try{
+video.pause();
+video.removeAttribute("src");
+video.src=currentChannel.url;
+video.load();
+}catch(e){
+byId("playerMessage").innerHTML="PLAYER ERROR";
+}
+
+video.onplaying=function(){
+byId("playerMessage").innerHTML="LIVE PLAYING";
+};
+
+video.onerror=function(){
+byId("playerMessage").innerHTML="STREAM UNAVAILABLE";
+};
+}
+
+function stopPlayer(){
+var video=byId("videoPlayer");
+if(!video)return;
+
+try{
+video.pause();
+video.removeAttribute("src");
+video.load();
+}catch(e){}
+}
+
+/* BACK */
+
+function backAction(){
+if(appState=="player"){
+stopPlayer();
+appState="channels";
+hide("playerPage");
+show("channelPage");
+byId("pageTitle").innerHTML=currentCategory;
+}else if(appState=="channels"){
+if(categoryMode=="group" || categoryMode=="favorites"){
+openCategories();
+}else{
 openHome();
+}
+}else if(appState=="categories"){
+openHome();
+}else{
+openHome();
+}
+}
 
-</script>
+/* HOME */
 
-</body>
-    </html>
+function openHome(){
+stopPlayer();
+
+appState="home";
+hide("categoryPage");
+hide("channelPage");
+hide("playerPage");
+show("homePage");
+
+clearError();
+
+byId("pageTitle").innerHTML="HOME";
+menuIndex=0;
+updateHomeSelection();
+}
+
+function updateHomeSelection(){
+var items=document.getElementsByClassName("menuItem");
+
+for(var i=0;i<items.length;i++){
+items[i].className="menuItem";
+if(i==menuIndex)items[i].className+=" selected";
+}
+}
+
+function selectHomeItem(){
+if(menuIndex==0)openCategories();
+else if(menuIndex==1)openFavorites();
+else if(menuIndex==2)openSearch();
+}
+
+/* NAVIGATION */
+
+function moveSelection(direction){
+
+if(appState=="home"){
+var items=document.getElementsByClassName("menuItem");
+menuIndex+=direction;
+
+if(menuIndex<0)menuIndex=items.length-1;
+if(menuIndex>=items.length)menuIndex=0;
+
+updateHomeSelection();
+
+}else if(appState=="categories"){
+
+var total=categories.length+1;
+categoryIndex+=direction;
+
+if(categoryIndex<0)categoryIndex=total-1;
+if(categoryIndex>=total)categoryIndex=0;
+
+updateCategorySelection();
+
+}else if(appState=="channels"){
+
+if(filteredChannels.length==0)return;
+
+selectedIndex+=direction;
+
+if(selectedIndex<0)selectedIndex=0;
+if(selectedIndex>=filteredChannels.length){
+selectedIndex=filteredChannels.length-1;
+}
+
+renderChannels();
+}
+}
+
+function selectCurrent(){
+if(appState=="home"){
+selectHomeItem();
+}else if(appState=="categories"){
+if(categoryIndex==0){
+openFavorites();
+}else{
+openGroupCategory(categories[categoryIndex-1]);
+}
+}else if(appState=="channels"){
+playSelectedChannel();
+}
+}
+
+/* KEYPAD */
+
+document.onkeydown=function(e){
+e=e||window.event;
+var key=e.keyCode;
+
+var inputFocused=(document.activeElement==byId("searchInput"));
+
+if(inputFocused){
+if(key==13){
+byId("searchInput").blur();
+return false;
+}
+if(key==8)return true;
+
+if(key==38||key==40){
+byId("searchInput").blur();
+}else if(key==50||key==56||key==48){
+return true;
+}
+}
+
+if(key==50||key==38){
+moveSelection(-1);
+return false;
+}
+
+if(key==56||key==40){
+moveSelection(1);
+return false;
+}
+
+if(key==53){
+if(appState=="channels"){
+toggleFavorite(filteredChannels[selectedIndex]);
+}else if(appState=="player"){
+toggleFavorite(currentChannel);
+}
+return false;
+}
+
+if(key==48 && appState=="channels"){
+byId("searchInput").focus();
+return false;
+}
+
+if(key==52){
+backAction();
+return false;
+}
+
+if(key==54 && appState=="categories"){
+selectCurrent();
+return false;
+}
+
+if(key==13){
+selectCurrent();
+return false;
+}
+
+if(key==8||key==27||key==461){
+backAction();
+return false;
+}
+
+return true;
+};
+
+/* BUTTON EVENTS */
+
+byId("searchInput").onkeyup=function(){
+searchChannels();
+};
+
+byId("categoryBack").onclick=function(){openHome();};
+byId("channelBack").onclick=function(){backAction();};
+byId("playerBack").onclick=function(){backAction();};
+
+byId("playButton").onclick=function(){
+try{byId("videoPlayer").play();}catch(e){}
+};
+
+byId("stopButton").onclick=function(){
+stopPlayer();
+byId("playerMessage").innerHTML="STOPPED";
+};
+
+byId("favButton").onclick=function(){
+toggleFavorite(currentChannel);
+};
+
+var homeItems
