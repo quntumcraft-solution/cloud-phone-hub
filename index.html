@@ -341,33 +341,11 @@ button:focus,input:focus{
 
 var PLAYLISTS = [
 
- "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india-active.m3u",
- "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india.m3u",
- "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india-geo.m3u",
+ // INDIAN TV
+ "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/in.m3u",
 
- "https://iptv-org.github.io/iptv/countries/in.m3u",
-
- "https://iptv-org.github.io/iptv/subdivisions/in-ap.m3u",
- "https://iptv-org.github.io/iptv/subdivisions/in-dl.m3u",
- "https://iptv-org.github.io/iptv/subdivisions/in-ka.m3u",
- "https://iptv-org.github.io/iptv/subdivisions/in-kl.m3u",
- "https://iptv-org.github.io/iptv/subdivisions/in-mh.m3u",
- "https://iptv-org.github.io/iptv/subdivisions/in-tn.m3u",
-
- "https://iptv-org.github.io/iptv/languages/asm.m3u",
- "https://iptv-org.github.io/iptv/languages/ben.m3u",
- "https://iptv-org.github.io/iptv/languages/bho.m3u",
- "https://iptv-org.github.io/iptv/languages/guj.m3u",
- "https://iptv-org.github.io/iptv/languages/hin.m3u",
- "https://iptv-org.github.io/iptv/languages/kan.m3u",
- "https://iptv-org.github.io/iptv/languages/mal.m3u",
- "https://iptv-org.github.io/iptv/languages/mar.m3u",
- "https://iptv-org.github.io/iptv/languages/nep.m3u",
- "https://iptv-org.github.io/iptv/languages/ori.m3u",
- "https://iptv-org.github.io/iptv/languages/pan.m3u",
- "https://iptv-org.github.io/iptv/languages/tam.m3u",
- "https://iptv-org.github.io/iptv/languages/tel.m3u",
- "https://iptv-org.github.io/iptv/languages/urd.m3u"
+ // SPORTS
+ "https://iptv-org.github.io/iptv/categories/sports.m3u"
 
 ];
 
@@ -690,19 +668,10 @@ function render(){
 
  if(focusIndex<0) focusIndex=0;
 
- var start=Math.max(0,focusIndex-1);
-
- var end=Math.min(
-  filtered.length,
-  start+filtered.length
- );
-
- /* Render a small moving window */
-
  var visible=4;
 
- start=Math.max(0,focusIndex-1);
- end=Math.min(filtered.length,start+visible);
+ var start=Math.max(0,focusIndex-1);
+ var end=Math.min(filtered.length,start+visible);
 
  if(focusIndex>=end){
   start=focusIndex-visible+1;
@@ -1216,4 +1185,4 @@ loadPlaylist(0);
 </script>
 
 </body>
-    </html>
+ </html>
