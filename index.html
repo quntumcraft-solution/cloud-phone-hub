@@ -2,976 +2,1218 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=128, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>RUTIK LIVE TV</title>
 
 <style>
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+ box-sizing:border-box;
 }
 
 html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#07142f;
-    color:#fff;
-    font-family:Arial,sans-serif;
-    font-size:11px;
+ margin:0;
+ padding:0;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ background:#070b14;
+ color:white;
+ font-family:Arial,sans-serif;
+ font-size:10px;
 }
 
-#app{
-    width:100%;
-    height:100%;
-    max-width:128px;
-    margin:auto;
-    display:flex;
-    flex-direction:column;
-    background:#07142f;
-    overflow:hidden;
+.top{
+ height:16px;
+ min-height:16px;
+ padding:2px 4px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:#101a2b;
+ border-bottom:1px solid #29384d;
 }
 
-.header{
-    height:23px;
-    min-height:23px;
-    background:#073d9b;
-    border-bottom:1px solid #16c9ff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-    font-weight:bold;
-    color:#fff;
+.logo{
+ font-size:9px;
+ font-weight:bold;
+ color:#44e0c0;
 }
 
-.header span{
-    color:#00f0ff;
-    margin-left:4px;
+#count{
+ font-size:7px;
+ color:#a9bbd0;
 }
 
-#screen{
-    flex:1;
-    min-height:0;
-    overflow:hidden;
-    padding:3px;
-    display:flex;
-    flex-direction:column;
+main{
+ width:100%;
+ height:calc(100% - 16px);
+ padding:2px;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
 }
 
-.footer{
-    height:17px;
-    min-height:17px;
-    background:#101d38;
-    border-top:1px solid #168aff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 6px;
-    color:#00eaff;
-    font-weight:bold;
-    font-size:10px;
-}
+/* PLAYER */
 
-.title{
-    height:20px;
-    min-height:20px;
-    background:#06469e;
-    border-bottom:1px solid #00d9ff;
-    padding:4px;
-    font-weight:bold;
-    font-size:11px;
-}
-
-.menuItem{
-    height:25px;
-    min-height:25px;
-    margin:2px 0;
-    padding:6px;
-    border:1px solid #2459a5;
-    background:#102957;
-    font-size:11px;
-}
-
-.selected{
-    background:#0879dc !important;
-    border:1px solid #00efff !important;
-    color:#fff;
-}
-
-.info{
-    color:#00eaff;
-    font-weight:bold;
-    padding:4px 1px;
-    font-size:10px;
-}
-
-.row{
-    height:24px;
-    min-height:24px;
-    margin:1px 0;
-    padding:5px 4px;
-    background:#102957;
-    border:1px solid #254f91;
-    overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
-    font-size:11px;
-}
-
-.row.selected{
-    background:#0879dc;
-    border:1px solid #00efff;
-}
-
-.smallButton{
-    display:inline-block;
-    padding:5px 10px;
-    border:1px solid #00eaff;
-    background:#123b78;
-    margin:2px;
-    font-weight:bold;
-}
-
-input{
-    width:100%;
-    height:27px;
-    background:#101f43;
-    border:1px solid #00cfff;
-    color:white;
-    padding:4px;
-    font-size:11px;
-    outline:none;
-}
-
-#listArea{
-    flex:1;
-    min-height:0;
-    overflow:hidden;
-}
-
-#videoBox{
-    flex:1;
-    min-height:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    background:#000;
+.player{
+ position:relative;
+ width:100%;
+ height:30px;
+ min-height:30px;
+ background:black;
+ overflow:hidden;
+ border:1px solid #263d57;
 }
 
 video{
-    width:100%;
-    max-height:100%;
-    background:#000;
+ width:100%;
+ height:100%;
+ display:block;
+ object-fit:contain;
+ background:black;
 }
 
-#message{
-    color:#00eaff;
-    padding:5px;
-    text-align:center;
+.player-info{
+ position:absolute;
+ left:2px;
+ bottom:1px;
+ right:2px;
+ padding:1px 2px;
+ background:rgba(0,0,0,.75);
+ pointer-events:none;
+}
+
+#nowName{
+ font-size:8px;
+ font-weight:bold;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+#playMessage{
+ font-size:6px;
+ color:#b8d0e4;
+ white-space:nowrap;
+ overflow:hidden;
+}
+
+/* SEARCH */
+
+.search-row{
+ display:flex;
+ width:100%;
+ height:18px;
+ min-height:18px;
+ gap:2px;
+ margin-top:2px;
+}
+
+#search{
+ flex:1;
+ min-width:0;
+ width:100%;
+ padding:2px 4px;
+ color:white;
+ background:#14243a;
+ border:1px solid #354b66;
+ border-radius:2px;
+ font-size:8px;
+}
+
+#clear{
+ width:18px;
+ padding:0;
+ color:white;
+ background:#8b2635;
+ border:0;
+ font-size:9px;
+}
+
+/* CATEGORIES */
+
+.categories{
+ width:100%;
+ height:20px;
+ min-height:20px;
+ display:flex;
+ gap:3px;
+ overflow-x:auto;
+ overflow-y:hidden;
+ white-space:nowrap;
+ padding:2px 1px;
+ background:#0d1726;
+}
+
+.categories::-webkit-scrollbar{
+ display:none;
+}
+
+.cat{
+ flex:none;
+ height:15px;
+ padding:1px 6px;
+ color:#d8e3ef;
+ background:#18283d;
+ border:1px solid #354b66;
+ border-radius:8px;
+ font-size:7px;
+}
+
+.cat.selected{
+ color:white;
+ background:#087d70;
+ border-color:#24c9b2;
+}
+
+.cat.key-focused{
+ outline:1px solid #43ddc0;
+ background:#24506a;
+}
+
+/* LIST TITLE */
+
+.list-head{
+ height:12px;
+ min-height:12px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:1px 3px;
+ color:#9eb1c8;
+ font-size:7px;
+ font-weight:bold;
+}
+
+/* CHANNEL LIST */
+
+.channels{
+ flex:1;
+ min-height:0;
+ width:100%;
+ overflow-y:auto;
+ overflow-x:hidden;
+ padding:2px;
+ background:#0d1726;
+ border:1px solid #263d57;
+}
+
+.channel{
+ display:block;
+ width:100%;
+ min-height:20px;
+ margin-bottom:2px;
+ padding:2px 3px;
+ color:white;
+ text-align:left;
+ background:#14243a;
+ border:1px solid #2c425e;
+ border-radius:2px;
+ overflow:hidden;
+}
+
+.channel.focused{
+ background:#1c3850;
+ border:2px solid #43ddc0;
+}
+
+.channel.playing{
+ border-color:#e64d5b;
+}
+
+.channel strong{
+ display:block;
+ font-size:8px;
+ line-height:1.2;
+ overflow-wrap:anywhere;
+}
+
+.channel small{
+ display:block;
+ font-size:6px;
+ color:#9fb4cc;
+}
+
+.fav{
+ float:right;
+ margin-left:3px;
+ padding:0;
+ color:#ffd45a;
+ background:transparent;
+ border:0;
+ font-size:11px;
+}
+
+.remove-channel{
+ float:right;
+ width:15px;
+ height:14px;
+ margin-left:3px;
+ padding:0;
+ color:white;
+ background:#702331;
+ border:1px solid #e34b5b;
+ border-radius:2px;
+ font-size:10px;
+}
+
+.hint{
+ padding:4px;
+ color:#aebed0;
+ font-size:8px;
+}
+
+.controls{
+ height:10px;
+ min-height:10px;
+ padding-top:2px;
+ text-align:center;
+ color:#8298b2;
+ font-size:6px;
+}
+
+button:focus,input:focus{
+ outline:1px solid #43ddc0;
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<header class="top">
+ <div class="logo">RUTIK LIVE TV</div>
+ <div id="count">Loading...</div>
+</header>
 
-    <div class="header">
-        RUTIK LIVE TV <span>● LIVE</span>
-    </div>
+<main>
 
-    <div id="screen"></div>
+ <section class="player">
 
-    <div class="footer">
-        <span id="leftKey">SELECT</span>
-        <span id="rightKey">BACK</span>
-    </div>
+  <video id="video" controls playsinline preload="none"></video>
 
-</div>
+  <div class="player-info">
+   <div id="nowName">No channel playing</div>
+   <div id="playMessage">Select channel and press OK</div>
+  </div>
+
+ </section>
+
+ <div class="search-row">
+  <input id="search" type="text" placeholder="Search channel">
+  <button id="clear" type="button">X</button>
+ </div>
+
+ <nav id="categories" class="categories">
+
+  <button class="cat selected" data-cat="all">ALL</button>
+  <button class="cat" data-cat="Marathi">MAR</button>
+  <button class="cat" data-cat="Hindi">HIN</button>
+  <button class="cat" data-cat="News">NEWS</button>
+  <button class="cat" data-cat="Entertainment">ENT</button>
+  <button class="cat" data-cat="Movies">MOV</button>
+  <button class="cat" data-cat="Sports">SPORT</button>
+  <button class="cat" data-cat="Documentary & Lifestyle">DOC</button>
+  <button class="cat" data-cat="Favourites">FAV</button>
+
+ </nav>
+
+ <div class="list-head">
+  <span id="categoryTitle">ALL CHANNELS</span>
+  <span id="shown"></span>
+ </div>
+
+ <div id="channels" class="channels">
+  <div class="hint">Loading channels...</div>
+ </div>
+
+ <div class="controls">
+  UP/DOWN: CHANNEL | LEFT/RIGHT: CATEGORY | OK: PLAY
+ </div>
+
+</main>
 
 <script>
+(function(){
 
-/* =========================
-   RUTIK LIVE TV MASTER
-========================= */
+"use strict";
 
-var screen=document.getElementById("screen");
+/* PLAYLISTS */
 
-var page="home";
-var menuIndex=0;
-var selectedIndex=0;
-var categoryIndex=0;
-var categoryStart=0;
-var channelStart=0;
+var PLAYLISTS = [
 
-var channels=[];
-var filteredChannels=[];
-var favorites=[];
+ "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india-active.m3u",
+ "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india.m3u",
+ "https://raw.githubusercontent.com/gnaidu05/Iptv/main/playlists/india-geo.m3u",
 
-var currentChannel=null;
-var currentSource="";
-var previousPage="channels";
+ "https://iptv-org.github.io/iptv/countries/in.m3u",
 
-var xhr=null;
+ "https://iptv-org.github.io/iptv/subdivisions/in-ap.m3u",
+ "https://iptv-org.github.io/iptv/subdivisions/in-dl.m3u",
+ "https://iptv-org.github.io/iptv/subdivisions/in-ka.m3u",
+ "https://iptv-org.github.io/iptv/subdivisions/in-kl.m3u",
+ "https://iptv-org.github.io/iptv/subdivisions/in-mh.m3u",
+ "https://iptv-org.github.io/iptv/subdivisions/in-tn.m3u",
 
-var categories=[
- ["Marathi","https://iptv-org.github.io/iptv/languages/mar.m3u"],
- ["Hindi","https://iptv-org.github.io/iptv/languages/hin.m3u"],
- ["Music","https://iptv-org.github.io/iptv/categories/music.m3u"],
- ["News","https://iptv-org.github.io/iptv/categories/news.m3u"],
- ["Sports","https://iptv-org.github.io/iptv/categories/sports.m3u"],
- ["Movies","https://iptv-org.github.io/iptv/categories/movies.m3u"],
- ["Entertainment","https://iptv-org.github.io/iptv/categories/entertainment.m3u"],
- ["Education","https://iptv-org.github.io/iptv/categories/education.m3u"],
- ["Documentary","https://iptv-org.github.io/iptv/categories/documentary.m3u"]
+ "https://iptv-org.github.io/iptv/languages/asm.m3u",
+ "https://iptv-org.github.io/iptv/languages/ben.m3u",
+ "https://iptv-org.github.io/iptv/languages/bho.m3u",
+ "https://iptv-org.github.io/iptv/languages/guj.m3u",
+ "https://iptv-org.github.io/iptv/languages/hin.m3u",
+ "https://iptv-org.github.io/iptv/languages/kan.m3u",
+ "https://iptv-org.github.io/iptv/languages/mal.m3u",
+ "https://iptv-org.github.io/iptv/languages/mar.m3u",
+ "https://iptv-org.github.io/iptv/languages/nep.m3u",
+ "https://iptv-org.github.io/iptv/languages/ori.m3u",
+ "https://iptv-org.github.io/iptv/languages/pan.m3u",
+ "https://iptv-org.github.io/iptv/languages/tam.m3u",
+ "https://iptv-org.github.io/iptv/languages/tel.m3u",
+ "https://iptv-org.github.io/iptv/languages/urd.m3u"
+
 ];
 
-var homeItems=[
- "Indian TV",
- "Sports",
- "All Categories",
- "My Favourites",
- "Search Channel"
-];
+
+/* ELEMENTS */
+
+var video=document.getElementById("video");
+var box=document.getElementById("channels");
+var search=document.getElementById("search");
+var count=document.getElementById("count");
+var shown=document.getElementById("shown");
+var nowName=document.getElementById("nowName");
+var msg=document.getElementById("playMessage");
+var categoriesEl=document.getElementById("categories");
+
+var buttons=Array.prototype.slice.call(
+ categoriesEl.querySelectorAll(".cat")
+);
+
+
+/* VARIABLES */
+
+var all=[];
+var filtered=[];
+var seenUrls={};
+
+var activeCat="all";
+var focusIndex=0;
+var categoryFocus=0;
+var navMode="channels";
+var playingUrl="";
+
+var favs={};
+var removed={};
 
 try{
-    favorites=JSON.parse(localStorage.getItem("rutik_tv_favorites")||"[]");
-}catch(e){
-    favorites=[];
+ favs=JSON.parse(
+  localStorage.getItem("rutik_tv_favs")||"{}"
+ )||{};
+}catch(e){}
+
+try{
+ removed=JSON.parse(
+  localStorage.getItem("rutik_tv_removed")||"{}"
+ )||{};
+}catch(e){}
+
+
+/* PLAYER INITIALIZATION */
+
+video.autoplay=false;
+video.removeAttribute("autoplay");
+video.preload="none";
+
+try{
+ video.pause();
+ video.removeAttribute("src");
+ video.load();
+}catch(e){}
+
+
+/* MESSAGE */
+
+function say(t){
+ msg.textContent=t;
 }
 
-function saveFavorites(){
-    try{
-        localStorage.setItem(
-            "rutik_tv_favorites",
-            JSON.stringify(favorites)
-        );
-    }catch(e){}
+
+/* ATTRIBUTE */
+
+function attr(line,key){
+
+ var re=new RegExp(
+  key+'="([^"]*)"',"i"
+ );
+
+ return (line.match(re)||[])[1]||"";
 }
 
-function footer(a,b){
-    document.getElementById("leftKey").innerHTML=a;
-    document.getElementById("rightKey").innerHTML=b;
+
+/* PARSER */
+
+function parseM3U(text){
+
+ var result=[];
+ var meta=null;
+
+ var lines=String(text)
+  .replace(/\r/g,"")
+  .split("\n");
+
+ for(var i=0;i<lines.length;i++){
+
+  var line=lines[i].trim();
+
+  if(!line) continue;
+
+  if(line.indexOf("#EXTINF:")===0){
+
+   var comma=line.lastIndexOf(",");
+
+   meta={
+    name:comma>=0?
+     line.substring(comma+1).trim():
+     "TV Channel",
+
+    group:attr(line,"group-title"),
+    lang:attr(line,"tvg-language"),
+    raw:line
+   };
+
+  }else if(line.charAt(0)!=="#" && meta){
+
+   meta.url=line;
+   result.push(meta);
+   meta=null;
+
+  }
+ }
+
+ return result;
 }
 
-/* =========================
-   HOME
-========================= */
 
-function openHome(){
-    page="home";
-    menuIndex=0;
+/* CATEGORY DETECTION */
 
-    screen.innerHTML=
-    '<div class="title">MAIN MENU</div>'+
-    '<div id="homeList"></div>';
+function classify(ch){
 
-    renderHome();
-    footer("SELECT","MENU");
+ var s=(
+  ch.name+" "+
+  ch.group+" "+
+  ch.lang+" "+
+  ch.raw
+ ).toLowerCase();
+
+ var cats=[];
+
+ if(/\b(marathi|mar|मराठी)\b/.test(s)){
+  cats.push("Marathi");
+ }
+
+ if(/\b(hindi|hin|हिंदी)\b/.test(s)){
+  cats.push("Hindi");
+ }
+
+ if(/\b(news|न्यूज|बातम्या)\b/.test(s)){
+  cats.push("News");
+ }
+
+ if(/\b(movie|movies|cinema|film|films)\b/.test(s)){
+  cats.push("Movies");
+ }
+
+ if(/\b(sport|sports|cricket|football|tennis|badminton)\b/.test(s)){
+  cats.push("Sports");
+ }
+
+ if(/\b(documentary|lifestyle|travel|food|nature|wildlife)\b/.test(s)){
+  cats.push("Documentary & Lifestyle");
+ }
+
+ if(/\b(entertainment|serial|drama)\b/.test(s)){
+  cats.push("Entertainment");
+ }
+
+ if(cats.length===0){
+  cats.push("Entertainment");
+ }
+
+ return cats;
 }
 
-function renderHome(){
-    var box=document.getElementById("homeList");
-    var html="";
 
-    for(var i=0;i<homeItems.length;i++){
-        html+='<div class="menuItem '+(i===menuIndex?'selected':'')+'">'+
-        homeItems[i]+'</div>';
-    }
+/* PREPARE */
 
-    box.innerHTML=html;
+function prepare(text){
+
+ var parsed=parseM3U(text);
+
+ for(var i=0;i<parsed.length;i++){
+
+  var ch=parsed[i];
+
+  if(!ch.url) continue;
+  if(removed[ch.url]) continue;
+  if(seenUrls[ch.url]) continue;
+
+  seenUrls[ch.url]=true;
+  ch.cats=classify(ch);
+
+  all.push(ch);
+ }
 }
 
-function selectHome(){
-    if(menuIndex===0){
-        loadPlaylist(
-            "Indian TV",
-            "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/in.m3u",
-            "INDIA"
-        );
-    }
-    else if(menuIndex===1){
-        loadPlaylist(
-            "Sports",
-            "https://iptv-org.github.io/iptv/categories/sports.m3u",
-            "SPORTS"
-        );
-    }
-    else if(menuIndex===2){
-        openCategories();
-    }
-    else if(menuIndex===3){
-        openFavorites();
-    }
-    else if(menuIndex===4){
-        openSearch();
-    }
+
+/* FILTER */
+
+function currentRows(){
+
+ var q=(search.value||"").toLowerCase().trim();
+
+ return all.filter(function(ch){
+
+  var catOK=
+   activeCat==="all" ||
+
+   (
+    activeCat==="Favourites"
+     ? !!favs[ch.url]
+     : ch.cats.indexOf(activeCat)>=0
+   );
+
+  return catOK &&
+   ch.name.toLowerCase().indexOf(q)>=0;
+
+ });
 }
 
-/* =========================
-   CATEGORIES
-========================= */
 
-function openCategories(){
-    page="categories";
-    categoryIndex=0;
-    categoryStart=0;
+/* SAVE */
 
-    renderCategories();
-    footer("SELECT","BACK");
+function saveData(){
+
+ try{
+  localStorage.setItem(
+   "rutik_tv_favs",
+   JSON.stringify(favs)
+  );
+
+  localStorage.setItem(
+   "rutik_tv_removed",
+   JSON.stringify(removed)
+  );
+ }catch(e){}
 }
 
-function renderCategories(){
 
-    var html='<div class="title">ALL CATEGORIES</div>';
-    html+='<div class="info">SELECT CATEGORY</div>';
-    html+='<div id="listArea">';
+/* REMOVE CHANNEL */
 
-    var end=categoryStart+4;
-    if(end>categories.length) end=categories.length;
+function removeChannel(ch){
 
-    for(var i=categoryStart;i<end;i++){
-        html+='<div class="row '+(i===categoryIndex?'selected':'')+'">'+
-        categories[i][0]+'</div>';
-    }
+ if(!ch) return;
 
-    html+='</div>';
+ var ok=true;
 
-    html+='<div class="info">'+
-    (categoryIndex+1)+' / '+categories.length+
-    '  ▲▼</div>';
+ try{
+  ok=confirm("Remove this channel?");
+ }catch(e){}
 
-    screen.innerHTML=html;
+ if(!ok) return;
+
+ removed[ch.url]=true;
+ delete favs[ch.url];
+
+ saveData();
+
+ if(playingUrl===ch.url){
+  stopPlayback();
+ }
+
+ filtered=currentRows();
+
+ focusIndex=Math.min(
+  focusIndex,
+  filtered.length-1
+ );
+
+ if(focusIndex<0) focusIndex=0;
+
+ render();
+ say("Channel removed");
 }
 
-function selectCategory(){
-    var c=categories[categoryIndex];
 
-    loadPlaylist(c[0],c[1],"CATEGORY");
+/* FAVOURITE */
+
+function toggleFav(ch){
+
+ if(!ch) return;
+
+ if(favs[ch.url]){
+  delete favs[ch.url];
+ }else{
+  favs[ch.url]=true;
+ }
+
+ saveData();
+
+ filtered=currentRows();
+ render();
+
+ say("Favourite updated");
 }
 
-/* =========================
-   LOAD PLAYLIST
-========================= */
 
-function loadPlaylist(name,url,source){
+/* RENDER */
 
-    if(xhr){
-        try{xhr.abort();}catch(e){}
-    }
+function render(){
 
-    page="loading";
-    currentSource=source;
-    selectedIndex=0;
-    channelStart=0;
-    channels=[];
-    filteredChannels=[];
+ filtered=currentRows();
+ box.innerHTML="";
 
-    screen.innerHTML=
-    '<div class="title">'+name+'</div>'+
-    '<div id="message">Loading channels...</div>';
+ document.getElementById("categoryTitle").textContent=
+  activeCat==="all"?
+   "ALL CHANNELS":
+   activeCat.toUpperCase();
 
-    footer("WAIT","BACK");
+ if(focusIndex>=filtered.length){
+  focusIndex=filtered.length-1;
+ }
 
-    xhr=new XMLHttpRequest();
+ if(filtered.length===0){
 
-    xhr.onreadystatechange=function(){
+  box.innerHTML=
+   '<div class="hint">No channels found</div>';
 
-        if(xhr.readyState===4){
+  shown.textContent="0";
+  return;
+ }
 
-            if(xhr.status===200){
+ if(focusIndex<0) focusIndex=0;
 
-                channels=parseM3U(xhr.responseText);
-                filteredChannels=channels.slice(0);
+ var start=Math.max(0,focusIndex-1);
 
-                if(source==="CATEGORY"){
-                    previousPage="categories";
-                }else{
-                    previousPage="home";
-                }
+ var end=Math.min(
+  filtered.length,
+  start+filtered.length
+ );
 
-                page="channels";
-                renderChannels();
+ /* Render a small moving window */
 
-            }else{
+ var visible=4;
 
-                screen.innerHTML=
-                '<div class="title">'+name+'</div>'+
-                '<div id="message">Playlist loading failed.</div>';
+ start=Math.max(0,focusIndex-1);
+ end=Math.min(filtered.length,start+visible);
 
-                footer("RETRY","BACK");
-                page="error";
-            }
-        }
-    };
+ if(focusIndex>=end){
+  start=focusIndex-visible+1;
+  end=focusIndex+1;
+ }
 
-    xhr.open("GET",url,true);
-    xhr.send();
+ for(var i=start;i<end;i++){
+
+  (function(index){
+
+   var ch=filtered[index];
+
+   var row=document.createElement("div");
+
+   row.className="channel";
+
+   if(index===focusIndex){
+    row.className+=" focused";
+   }
+
+   if(ch.url===playingUrl){
+    row.className+=" playing";
+   }
+
+   var removeBtn=document.createElement("button");
+   removeBtn.className="remove-channel";
+   removeBtn.type="button";
+   removeBtn.textContent="X";
+
+   removeBtn.onclick=function(e){
+    e.stopPropagation();
+    removeChannel(ch);
+   };
+
+   var fav=document.createElement("button");
+   fav.className="fav";
+   fav.type="button";
+   fav.textContent=favs[ch.url]?"★":"☆";
+
+   fav.onclick=function(e){
+    e.stopPropagation();
+    toggleFav(ch);
+   };
+
+   var name=document.createElement("strong");
+   name.textContent=(index+1)+". "+ch.name;
+
+   var small=document.createElement("small");
+   small.textContent=ch.cats.join(" / ");
+
+   row.appendChild(removeBtn);
+   row.appendChild(fav);
+   row.appendChild(name);
+   row.appendChild(small);
+
+   row.onclick=function(){
+    focusIndex=index;
+    navMode="channels";
+    render();
+    say("Selected: "+ch.name+" - Press OK");
+   };
+
+   box.appendChild(row);
+
+  })(i);
+ }
+
+ shown.textContent=(focusIndex+1)+"/"+filtered.length;
+
 }
 
-/* =========================
-   M3U PARSER
-========================= */
 
-function parseM3U(data){
+/* MOVE CHANNEL */
 
-    var lines=data.split(/\r?\n/);
-    var result=[];
-    var name="";
-    var logo="";
+function moveChannel(direction){
 
-    for(var i=0;i<lines.length;i++){
+ if(!filtered.length) return;
 
-        var line=lines[i];
+ focusIndex+=direction;
 
-        if(line.indexOf("#EXTINF")===0){
+ if(focusIndex<0){
+  focusIndex=filtered.length-1;
+ }
 
-            var comma=line.lastIndexOf(",");
-            name=comma>=0?line.substring(comma+1).trim():"Unknown";
+ if(focusIndex>=filtered.length){
+  focusIndex=0;
+ }
 
-            var match=line.match(/tvg-logo="([^"]*)"/);
-            logo=match?match[1]:"";
+ navMode="channels";
+ render();
 
-        }
-        else if(line.indexOf("http")===0){
-
-            result.push({
-                name:name||"Unknown Channel",
-                url:line.trim(),
-                logo:logo
-            });
-
-            name="";
-            logo="";
-        }
-    }
-
-    return result;
+ say("Selected: "+filtered[focusIndex].name);
 }
 
-/* =========================
-   CHANNEL LIST
-========================= */
 
-function renderChannels(){
+/* PLAY */
 
-    page="channels";
+function playChannel(){
 
-    var total=filteredChannels.length;
+ if(!filtered.length || focusIndex<0) return;
 
-    if(selectedIndex>=total){
-        selectedIndex=total-1;
-    }
+ var ch=filtered[focusIndex];
 
-    if(selectedIndex<0){
-        selectedIndex=0;
-    }
+ playingUrl=ch.url;
+ nowName.textContent=ch.name;
 
-    if(selectedIndex<channelStart){
-        channelStart=selectedIndex;
-    }
+ say("Starting selected channel...");
 
-    if(selectedIndex>=channelStart+4){
-        channelStart=selectedIndex-3;
-    }
+ render();
 
-    var html='<div class="title">'+currentSourceName()+'</div>';
+ try{
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+ }catch(e){}
 
-    html+='<div class="smallButton" onclick="backAction()">BACK</div>';
+ video.autoplay=false;
+ video.src=ch.url;
+ video.load();
 
-    html+='<div class="info">CHANNELS: '+total+
-    ' | '+(total?selectedIndex+1:0)+'/'+total+'</div>';
+ var p=video.play();
 
-    html+='<div id="listArea">';
-
-    var end=channelStart+4;
-    if(end>total) end=total;
-
-    for(var i=channelStart;i<end;i++){
-
-        html+='<div class="row '+(i===selectedIndex?'selected':'')+'">'+
-        escapeHTML(filteredChannels[i].name)+
-        '</div>';
-    }
-
-    html+='</div>';
-
-    screen.innerHTML=html;
-
-    footer("SELECT","BACK");
+ if(p && p.catch){
+  p.catch(function(){
+   say("Channel not supported or unavailable");
+  });
+ }
 }
 
-function currentSourceName(){
 
-    if(currentSource==="CATEGORY"){
-        return categories[categoryIndex][0];
-    }
+/* STOP */
 
-    if(currentSource==="FAVOURITES"){
-        return "MY FAVOURITES";
-    }
+function stopPlayback(){
 
-    if(currentSource==="SEARCH"){
-        return "SEARCH RESULTS";
-    }
+ try{
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+ }catch(e){}
 
-    return currentSource;
+ playingUrl="";
+ nowName.textContent="No channel playing";
+
+ say("Playback stopped");
+ render();
 }
 
-function escapeHTML(s){
-    return String(s).replace(/[&<>"']/g,function(c){
-        return {
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#39;"
-        }[c];
-    });
+
+/* CATEGORY PAINT */
+
+function paintCategory(){
+
+ buttons.forEach(function(b,i){
+
+  if(navMode==="categories" && i===categoryFocus){
+   b.classList.add("key-focused");
+  }else{
+   b.classList.remove("key-focused");
+  }
+
+ });
+
+ var selected=buttons[categoryFocus];
+
+ if(selected && selected.scrollIntoView){
+  try{
+   selected.scrollIntoView({
+    block:"nearest",
+    inline:"nearest"
+   });
+  }catch(e){
+   selected.scrollIntoView(false);
+  }
+ }
 }
 
-/* =========================
-   PLAY CHANNEL
-========================= */
 
-function playSelected(){
+/* ACTIVATE CATEGORY */
 
-    if(!filteredChannels.length) return;
+function activateCategory(index){
 
-    currentChannel=filteredChannels[selectedIndex];
+ if(index<0 || index>=buttons.length) return;
 
-    playChannel(currentChannel);
+ categoryFocus=index;
+
+ activeCat=buttons[index].getAttribute("data-cat");
+
+ buttons.forEach(function(b,i){
+
+  if(i===index){
+   b.classList.add("selected");
+  }else{
+   b.classList.remove("selected");
+  }
+
+ });
+
+ focusIndex=0;
+ navMode="channels";
+
+ render();
+ paintCategory();
+
+ say("Category: "+activeCat);
 }
 
-function playChannel(channel){
 
-    page="player";
+/* CATEGORY CLICK */
 
-    screen.innerHTML=
-    '<div class="title">'+escapeHTML(channel.name)+'</div>'+
-    '<div id="videoBox">'+
-    '<video id="tvVideo" controls autoplay></video>'+
-    '<div id="message">Connecting...</div>'+
-    '</div>'+
-    '<div class="smallButton" onclick="toggleFavorite()">☆ FAV</div>';
+categoriesEl.addEventListener("click",function(e){
 
-    var video=document.getElementById("tvVideo");
+ var node=e.target;
 
-    video.src=channel.url;
+ while(
+  node &&
+  node!==categoriesEl &&
+  !(node.classList &&
+    node.classList.contains("cat"))
+ ){
+  node=node.parentNode;
+ }
 
-    video.onerror=function(){
-        document.getElementById("message").innerHTML=
-        "This channel may not be supported.";
-    };
+ if(!node || node===categoriesEl) return;
 
-    video.onplaying=function(){
-        document.getElementById("message").innerHTML="";
-    };
+ activateCategory(buttons.indexOf(node));
+});
 
-    footer("FAV","BACK");
-}
 
-function stopPlayer(){
-    var video=document.getElementById("tvVideo");
+/* SEARCH */
 
-    if(video){
-        try{
-            video.pause();
-            video.removeAttribute("src");
-            video.load();
-        }catch(e){}
-    }
-}
-
-/* =========================
-   FAVOURITES
-========================= */
-
-function isFavorite(channel){
-
-    for(var i=0;i<favorites.length;i++){
-        if(favorites[i].url===channel.url) return true;
-    }
-
-    return false;
-}
-
-function toggleFavorite(){
-
-    if(!currentChannel) return;
-
-    var found=-1;
-
-    for(var i=0;i<favorites.length;i++){
-        if(favorites[i].url===currentChannel.url){
-            found=i;
-            break;
-        }
-    }
-
-    if(found>=0){
-        favorites.splice(found,1);
-    }else{
-        favorites.push(currentChannel);
-    }
-
-    saveFavorites();
-
-    if(page==="player"){
-        footer("SAVED","BACK");
-    }
-
-    if(page==="channels" && currentSource==="FAVOURITES"){
-        filteredChannels=favorites.slice(0);
-        channels=filteredChannels.slice(0);
-        renderChannels();
-    }
-}
-
-function openFavorites(){
-
-    page="channels";
-    currentSource="FAVOURITES";
-    channels=favorites.slice(0);
-    filteredChannels=channels.slice(0);
-    selectedIndex=0;
-    channelStart=0;
-
-    renderChannels();
-}
-
-/* =========================
-   SEARCH
-========================= */
-
-function openSearch(){
-
-    page="search";
-
-    screen.innerHTML=
-    '<div class="title">SEARCH CHANNEL</div>'+
-    '<input id="searchInput" type="text" placeholder="Search channel...">'+
-    '<div class="info">Enter channel name</div>'+
-    '<div class="row" onclick="searchAll()">SEARCH ALL CHANNELS</div>';
-
-    footer("SEARCH","BACK");
-
-    var input=document.getElementById("searchInput");
-
-    input.onkeydown=function(e){
-        if(e.keyCode===13){
-            searchChannels(input.value);
-        }
-    };
-}
-
-function searchChannels(q){
-
-    q=q.toLowerCase();
-
-    if(!q) return;
-
-    filteredChannels=channels.filter(function(c){
-        return c.name.toLowerCase().indexOf(q)>=0;
-    });
-
-    currentSource="SEARCH";
-    selectedIndex=0;
-    channelStart=0;
-
-    renderChannels();
-}
-
-function searchAll(){
-
-    page="searchloading";
-
-    screen.innerHTML=
-    '<div class="title">SEARCH</div>'+
-    '<div id="message">Loading playlists...</div>';
-
-    var all=[];
-    var count=0;
-
-    function next(){
-
-        if(count>=categories.length){
-
-            channels=all;
-            filteredChannels=all.slice(0);
-
-            page="search";
-            screen.innerHTML=
-            '<div class="title">SEARCH ALL</div>'+
-            '<input id="searchInput" placeholder="Search channel...">'+
-            '<div class="row" onclick="searchChannels(document.getElementById(\'searchInput\').value)">SEARCH</div>';
-
-            footer("SEARCH","BACK");
-            return;
-        }
-
-        var u=categories[count][1];
-        count++;
-
-        var x=new XMLHttpRequest();
-
-        x.onreadystatechange=function(){
-
-            if(x.readyState===4){
-
-                if(x.status===200){
-
-                    var list=parseM3U(x.responseText);
-
-                    for(var j=0;j<list.length;j++){
-
-                        var exists=false;
-
-                        for(var k=0;k<all.length;k++){
-                            if(all[k].url===list[j].url){
-                                exists=true;
-                                break;
-                            }
-                        }
-
-                        if(!exists) all.push(list[j]);
-                    }
-                }
-
-                next();
-            }
-        };
-
-        x.open("GET",u,true);
-        x.send();
-    }
-
-    next();
-}
-
-/* =========================
-   NAVIGATION
-========================= */
-
-function moveUp(){
-
-    if(page==="home"){
-        menuIndex--;
-        if(menuIndex<0) menuIndex=homeItems.length-1;
-        renderHome();
-    }
-
-    else if(page==="categories"){
-
-        categoryIndex--;
-
-        if(categoryIndex<0){
-            categoryIndex=categories.length-1;
-        }
-
-        if(categoryIndex<categoryStart){
-            categoryStart=categoryIndex;
-        }
-
-        if(categoryIndex>=categoryStart+4){
-            categoryStart=categoryIndex-3;
-        }
-
-        renderCategories();
-    }
-
-    else if(page==="channels"){
-
-        selectedIndex--;
-
-        if(selectedIndex<0){
-            selectedIndex=filteredChannels.length-1;
-        }
-
-        renderChannels();
-    }
-}
-
-function moveDown(){
-
-    if(page==="home"){
-        menuIndex++;
-        if(menuIndex>=homeItems.length) menuIndex=0;
-        renderHome();
-    }
-
-    else if(page==="categories"){
-
-        categoryIndex++;
-
-        if(categoryIndex>=categories.length){
-            categoryIndex=0;
-        }
-
-        if(categoryIndex<categoryStart){
-            categoryStart=categoryIndex;
-        }
-
-        if(categoryIndex>=categoryStart+4){
-            categoryStart=categoryIndex-3;
-        }
-
-        renderCategories();
-    }
-
-    else if(page==="channels"){
-
-        selectedIndex++;
-
-        if(selectedIndex>=filteredChannels.length){
-            selectedIndex=0;
-        }
-
-        renderChannels();
-    }
-}
-
-/* =========================
-   SELECT
-========================= */
-
-function selectAction(){
-
-    if(page==="home"){
-        selectHome();
-    }
-
-    else if(page==="categories"){
-        selectCategory();
-    }
-
-    else if(page==="channels"){
-        playSelected();
-    }
-
-    else if(page==="player"){
-        toggleFavorite();
-    }
-
-    else if(page==="error"){
-        openHome();
-    }
-}
-
-/* =========================
-   BACK
-========================= */
-
-function backAction(){
-
-    if(page==="player"){
-
-        stopPlayer();
-        page="channels";
-        renderChannels();
-
-    }
-
-    else if(page==="channels"){
-
-        if(currentSource==="CATEGORY"){
-            openCategories();
-        }
-        else{
-            openHome();
-        }
-    }
-
-    else if(page==="categories"){
-        openHome();
-    }
-
-    else if(page==="search"){
-        openHome();
-    }
-
-    else if(page==="loading" || page==="searchloading"){
-
-        if(xhr){
-            try{xhr.abort();}catch(e){}
-        }
-
-        openHome();
-    }
-
-    else{
-        openHome();
-    }
-}
-
-/* =========================
-   KEYPAD
-========================= */
-
-document.onkeydown=function(e){
-
-    e=e||window.event;
-
-    var k=e.keyCode;
-
-    /* UP */
-    if(k===38 || k===50 || k===98){
-        moveUp();
-        e.preventDefault();
-        return false;
-    }
-
-    /* DOWN */
-    if(k===40 || k===56 || k===104){
-        moveDown();
-        e.preventDefault();
-        return false;
-    }
-
-    /* OK / ENTER */
-    if(k===13){
-        selectAction();
-        e.preventDefault();
-        return false;
-    }
-
-    /* BACK / LEFT / 4 */
-    if(k===8 || k===27 || k===461 ||
-       k===37 || k===52 || k===100){
-
-        backAction();
-        e.preventDefault();
-        return false;
-    }
-
-    /* 6 / RIGHT DISABLED */
-    if(k===39 || k===54 || k===102){
-        e.preventDefault();
-        return false;
-    }
-
-    /* FAVOURITE - 5 */
-    if(k===53 || k===101){
-        if(page==="player") toggleFavorite();
-        e.preventDefault();
-        return false;
-    }
+search.onfocus=function(){
+ navMode="search";
 };
 
-/* =========================
-   START APP
-========================= */
-
-openHome();
-
-window.onerror=function(){
-    return true;
+search.oninput=function(){
+ focusIndex=0;
+ render();
 };
 
+search.onkeydown=function(e){
+
+ var k=e.keyCode||0;
+
+ if(k===13){
+
+  search.blur();
+  navMode="channels";
+  focusIndex=0;
+  render();
+ }
+};
+
+
+/* CLEAR */
+
+document.getElementById("clear").onclick=function(){
+
+ search.value="";
+ focusIndex=0;
+ navMode="channels";
+ render();
+
+};
+
+
+/* KEYPAD */
+
+document.addEventListener("keydown",function(e){
+
+ var key=e.key||"";
+ var code=e.keyCode||0;
+
+ var tag=(
+  document.activeElement &&
+  document.activeElement.tagName||""
+ ).toLowerCase();
+
+ if(tag==="input"){
+
+  if(key==="Escape" || code===27){
+   search.blur();
+   navMode="channels";
+  }
+
+  return;
+ }
+
+
+ /* UP */
+
+ if(
+  key==="ArrowUp" ||
+  code===38 ||
+  key==="8" ||
+  code===56
+ ){
+
+  e.preventDefault();
+  moveChannel(-1);
+  return;
+ }
+
+
+ /* DOWN */
+
+ if(
+  key==="ArrowDown" ||
+  code===40 ||
+  key==="2" ||
+  code===50
+ ){
+
+  e.preventDefault();
+  moveChannel(1);
+  return;
+ }
+
+
+ /* LEFT */
+
+ if(
+  key==="ArrowLeft" ||
+  code===37 ||
+  key==="4" ||
+  code===52
+ ){
+
+  e.preventDefault();
+
+  navMode="categories";
+
+  categoryFocus=Math.max(
+   0,
+   categoryFocus-1
+  );
+
+  paintCategory();
+  return;
+ }
+
+
+ /* RIGHT */
+
+ if(
+  key==="ArrowRight" ||
+  code===39 ||
+  key==="6" ||
+  code===54
+ ){
+
+  e.preventDefault();
+
+  navMode="categories";
+
+  categoryFocus=Math.min(
+   buttons.length-1,
+   categoryFocus+1
+  );
+
+  paintCategory();
+  return;
+ }
+
+
+ /* OK */
+
+ if(
+  key==="Enter" ||
+  code===13
+ ){
+
+  e.preventDefault();
+
+  if(navMode==="categories"){
+   activateCategory(categoryFocus);
+  }else{
+   playChannel();
+  }
+
+  return;
+ }
+
+
+ /* SEARCH */
+
+ if(key==="0" || code===48){
+
+  e.preventDefault();
+  search.focus();
+  return;
+ }
+
+
+ /* FAVOURITE */
+
+ if(
+  key==="5" ||
+  code===53
+ ){
+
+  e.preventDefault();
+
+  toggleFav(filtered[focusIndex]);
+  return;
+ }
+
+
+ /* STOP */
+
+ if(key==="Escape" || code===27){
+
+  stopPlayback();
+  return;
+ }
+
+});
+
+
+/* VIDEO EVENTS */
+
+video.addEventListener("playing",function(){
+ say("LIVE: "+nowName.textContent);
+});
+
+video.addEventListener("waiting",function(){
+ say("Buffering...");
+});
+
+video.addEventListener("error",function(){
+ say("Stream unavailable");
+});
+
+
+/* LOAD PLAYLISTS */
+
+function loadPlaylist(index){
+
+ if(index>=PLAYLISTS.length){
+
+  filtered=currentRows();
+  focusIndex=0;
+
+  count.textContent=all.length+" CH";
+
+  render();
+
+  say("All playlists loaded");
+  return;
+ }
+
+ if(typeof fetch!=="function"){
+
+  count.textContent="Fetch unsupported";
+
+  box.innerHTML=
+   '<div class="hint">Browser does not support playlist loading</div>';
+
+  return;
+ }
+
+ count.textContent=
+  all.length+" CH | Loading "+(index+1)+"/"+PLAYLISTS.length;
+
+ fetch(PLAYLISTS[index])
+
+ .then(function(response){
+
+  if(!response.ok){
+   throw new Error("Playlist error");
+  }
+
+  return response.text();
+
+ })
+
+ .then(function(text){
+
+  if(text.indexOf("#EXTM3U")<0){
+   throw new Error("Invalid playlist");
+  }
+
+  prepare(text);
+
+  filtered=currentRows();
+  render();
+
+  count.textContent=all.length+" CH";
+
+ })
+
+ .catch(function(){
+
+  /* Continue even if one playlist fails */
+
+ })
+
+ .then(function(){
+
+  loadPlaylist(index+1);
+
+ });
+
+}
+
+
+/* START */
+
+loadPlaylist(0);
+
+})();
 </script>
 
 </body>
-  </html>
+    </html>
