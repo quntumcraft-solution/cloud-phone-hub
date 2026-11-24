@@ -1,180 +1,921 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TEST 8.12</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>RUTIK LIVE TV</title>
 
 <style>
-body {
-    background: #101010;
-    color: #00ff80;
-    font-family: Arial;
-    font-size: 12px;
-    padding: 7px;
+* {
+    box-sizing: border-box;
 }
-h3 {
-    color: yellow;
-    text-align: center;
-}
-.box {
-    border: 1px solid #00ff80;
-    padding: 7px;
-    margin-bottom: 7px;
-    word-wrap: break-word;
-}
-button {
+
+html, body {
+    margin: 0;
+    padding: 0;
     width: 100%;
-    padding: 10px;
-    background: #008844;
+    height: 100%;
+    background: #080e18;
     color: white;
-    border: 0;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    overflow: hidden;
 }
-#error {
-    color: red;
-    white-space: pre-wrap;
+
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #101b2a;
+}
+
+#header {
+    height: 25px;
+    min-height: 25px;
+    background: #07111f;
+    border-bottom: 1px solid #00c8ff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #00d9ff;
+}
+
+#liveStatus {
+    color: #00ff77;
+    font-size: 9px;
+}
+
+#pageTitle {
+    height: 20px;
+    min-height: 20px;
+    background: #14283e;
+    padding: 4px 7px;
+    font-weight: bold;
+}
+
+#content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    padding: 5px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.welcome {
+    text-align: center;
+    padding: 10px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #28435e;
+}
+
+.tvIcon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.welcomeTitle {
+    color: #00d9ff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.welcomeText {
+    color: #aabbd0;
+    font-size: 9px;
+    margin-top: 3px;
+}
+
+.menuItem {
+    height: 29px;
+    margin-bottom: 5px;
+    padding: 8px 6px;
+    background: #1b3048;
+    border: 1px solid #304c69;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.menuItem.selected,
+.channelItem.selected {
+    background: #006b9e;
+    border: 1px solid #00e1ff;
+}
+
+.smallInfo {
+    margin-top: 10px;
+    text-align: center;
+    color: #91a7bd;
+    font-size: 9px;
+}
+
+.toolbar {
+    height: 25px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 5px;
+}
+
+.toolbar button,
+.playerToolbar button {
+    border: 1px solid #00c8ff;
+    background: #12334b;
+    color: white;
+    padding: 4px 7px;
+    font-size: 10px;
+}
+
+#categoryName {
+    font-weight: bold;
+    color: #00d9ff;
+}
+
+#searchInput {
+    width: 100%;
+    height: 25px;
+    border: 1px solid #49627c;
+    background: #071421;
+    color: white;
+    padding: 4px 6px;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+#channelCount {
+    height: 17px;
+    color: #00d9ff;
+    font-size: 9px;
+}
+
+#channelList {
+    height: calc(100% - 72px);
+    overflow-y: auto;
+}
+
+.channelItem {
+    min-height: 34px;
+    padding: 4px;
+    margin-bottom: 3px;
+    background: #192c40;
+    border: 1px solid #30445a;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.channelLogo {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    object-fit: contain;
+    margin-right: 7px;
+    background: white;
+}
+
+.channelName {
+    font-size: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.playerToolbar {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#playingName {
+    color: #00d9ff;
+    font-weight: bold;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#videoPlayer {
+    width: 100%;
+    height: 95px;
+    margin-top: 10px;
+    background: black;
+    object-fit: contain;
+}
+
+#playerMessage {
+    text-align: center;
+    color: #ffcf4a;
+    margin: 8px 0;
+    font-size: 10px;
+}
+
+.playerButtons {
+    display: flex;
+    gap: 5px;
+}
+
+.playerButtons button {
+    flex: 1;
+    height: 25px;
+    background: #07577b;
+    color: white;
+    border: 1px solid #00c8ff;
+    font-size: 10px;
+}
+
+#loading {
+    position: absolute;
+    z-index: 10;
+    top: 45%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #00e1ff;
+    background: #101b2a;
+    padding: 10px;
+}
+
+#errorBox {
+    color: #ff7777;
+    padding: 5px;
+    font-size: 10px;
+}
+
+footer {
+    height: 19px;
+    min-height: 19px;
+    background: #07111f;
+    border-top: 1px solid #28435e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 7px;
+    color: #00d9ff;
+    font-size: 9px;
 }
 </style>
 </head>
 
 <body>
 
-<h3>TEST 8.12</h3>
+<div id="app">
 
-<div class="box" id="status">STATUS: STARTING</div>
-<div class="box" id="midlet">MIDlet API: CHECKING</div>
-<div class="box" id="java">JAVA API: CHECKING</div>
-<div class="box" id="installer">INSTALLER API: CHECKING</div>
-<div class="box" id="filesystem">DEVICE FILESYSTEM: CHECKING</div>
-<div class="box" id="cloud">CLOUD PHONE API: CHECKING</div>
-<div class="box" id="other">OTHER INSTALL APIs: CHECKING</div>
-<div class="box" id="result">RESULT: WAITING</div>
+<header id="header">
+    <span>RUTIK LIVE TV</span>
+    <span id="liveStatus">LIVE</span>
+</header>
 
-<div class="box">
-ERROR DETAILS:
-<div id="error">NONE</div>
+<div id="pageTitle">HOME</div>
+
+<div id="loading" class="hidden">LOADING...</div>
+<div id="errorBox" class="hidden"></div>
+
+<main id="content">
+
+<section id="homePage">
+
+    <div class="welcome">
+        <div class="tvIcon">TV</div>
+        <div class="welcomeTitle">RUTIK LIVE TV</div>
+        <div class="welcomeText">INDIAN TELEVISION</div>
+    </div>
+
+    <div class="menuItem selected" data-action="indian">
+        INDIAN TV
+    </div>
+
+    <div class="menuItem" data-action="sports">
+        SPORTS
+    </div>
+
+    <div class="menuItem" data-action="search">
+        SEARCH CHANNEL
+    </div>
+
+    <div class="smallInfo">SELECT CATEGORY</div>
+
+</section>
+
+<section id="channelPage" class="hidden">
+
+    <div class="toolbar">
+        <button id="backButton">BACK</button>
+        <span id="categoryName">CHANNELS</span>
+    </div>
+
+    <input type="text"
+        id="searchInput"
+        placeholder="Search channel..."
+        autocomplete="off">
+
+    <div id="channelCount">Loading channels...</div>
+
+    <div id="channelList"></div>
+
+</section>
+
+<section id="playerPage" class="hidden">
+
+    <div class="playerToolbar">
+        <button id="playerBack">BACK</button>
+        <span id="playingName">CHANNEL</span>
+    </div>
+
+    <video id="videoPlayer"
+        controls
+        autoplay
+        playsinline
+        webkit-playsinline>
+    </video>
+
+    <div id="playerMessage">SELECT CHANNEL</div>
+
+    <div class="playerButtons">
+        <button id="playButton">PLAY</button>
+        <button id="stopButton">STOP</button>
+    </div>
+
+</section>
+
+</main>
+
+<footer>
+    <span id="leftKey">SELECT</span>
+    <span id="rightKey">BACK</span>
+</footer>
+
 </div>
-
-<button onclick="runTest()">RUN TEST AGAIN</button>
 
 <script>
 
-var currentStep = "INITIALIZATION";
+/* RUTIK LIVE TV MASTER JAVASCRIPT */
 
-window.onerror = function(msg, url, line, column) {
-    document.getElementById("status").innerHTML =
-        "STATUS: ERROR";
+var appState = "home";
+var channels = [];
+var filteredChannels = [];
+var selectedIndex = 0;
+var currentChannel = null;
+var menuIndex = 0;
 
-    document.getElementById("error").innerHTML =
-        "STEP: " + currentStep +
-        "\nMESSAGE: " + msg +
-        "\nLINE: " + line +
-        "\nCOLUMN: " + column;
+var sources = [
+    {
+        name: "INDIAN TV",
+        url: "https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/in.m3u"
+    },
+    {
+        name: "SPORTS",
+        url: "https://iptv-org.github.io/iptv/categories/sports.m3u"
+    }
+];
+
+function byId(id) {
+    return document.getElementById(id);
+}
+
+function show(id) {
+    byId(id).className =
+        byId(id).className.replace(/\bhidden\b/g, "");
+}
+
+function hide(id) {
+    if (byId(id).className.indexOf("hidden") < 0) {
+        byId(id).className += " hidden";
+    }
+}
+
+function setLoading(value) {
+    if (value) {
+        show("loading");
+    } else {
+        hide("loading");
+    }
+}
+
+function showError(message) {
+    byId("errorBox").innerHTML = message;
+    show("errorBox");
+}
+
+function clearError() {
+    byId("errorBox").innerHTML = "";
+    hide("errorBox");
+}
+
+function requestURL(url, callback) {
+
+    var xhr = new XMLHttpRequest();
+    var completed = false;
+
+    function finish(error, data) {
+        if (completed) {
+            return;
+        }
+
+        completed = true;
+        callback(error, data);
+    }
+
+    xhr.onreadystatechange = function() {
+
+        if (xhr.readyState == 4) {
+
+            if (xhr.status == 200 || xhr.status == 0) {
+                finish(null, xhr.responseText);
+            } else {
+                finish("HTTP ERROR " + xhr.status);
+            }
+        }
+    };
+
+    xhr.onerror = function() {
+        finish("NETWORK ERROR");
+    };
+
+    try {
+        xhr.open("GET", url, true);
+        xhr.send(null);
+    } catch(e) {
+        finish("REQUEST ERROR: " + e.message);
+    }
+}
+
+function openHome() {
+
+    stopPlayer();
+
+    appState = "home";
+
+    hide("channelPage");
+    hide("playerPage");
+    show("homePage");
+
+    clearError();
+
+    byId("pageTitle").innerHTML = "HOME";
+    byId("leftKey").innerHTML = "SELECT";
+    byId("rightKey").innerHTML = "BACK";
+
+    menuIndex = 0;
+    updateHomeSelection();
+}
+
+function updateHomeSelection() {
+
+    var items = document.getElementsByClassName("menuItem");
+
+    for (var i = 0; i < items.length; i++) {
+
+        items[i].className = "menuItem";
+
+        if (i == menuIndex) {
+            items[i].className += " selected";
+        }
+    }
+}
+
+function loadCategory(index) {
+
+    if (!sources[index]) {
+        return;
+    }
+
+    stopPlayer();
+
+    appState = "channels";
+
+    channels = [];
+    filteredChannels = [];
+    selectedIndex = 0;
+
+    hide("homePage");
+    hide("playerPage");
+    show("channelPage");
+
+    clearError();
+
+    byId("pageTitle").innerHTML = sources[index].name;
+    byId("categoryName").innerHTML = sources[index].name;
+    byId("channelList").innerHTML = "";
+    byId("channelCount").innerHTML = "LOADING CHANNELS...";
+    byId("searchInput").value = "";
+
+    setLoading(true);
+
+    requestURL(sources[index].url, function(error, data) {
+
+        setLoading(false);
+
+        if (error) {
+            byId("channelCount").innerHTML = "LOAD FAILED";
+            showError(error);
+            return;
+        }
+
+        parseM3U(data);
+
+        filteredChannels = channels.slice(0);
+
+        byId("channelCount").innerHTML =
+            "CHANNELS: " + channels.length;
+
+        renderChannels();
+    });
+}
+
+function parseM3U(data) {
+
+    channels = [];
+
+    var lines = data.split(/\r?\n/);
+    var currentName = "";
+    var currentLogo = "";
+    var currentGroup = "";
+
+    for (var i = 0; i < lines.length; i++) {
+
+        var line = lines[i].replace(/^\s+|\s+$/g, "");
+
+        if (line.indexOf("#EXTINF:") === 0) {
+
+            currentName = line.substring(line.lastIndexOf(",") + 1);
+
+            var logoMatch = line.match(/tvg-logo="([^"]*)"/i);
+
+            currentLogo = logoMatch ? logoMatch[1] : "";
+
+            var groupMatch = line.match(/group-title="([^"]*)"/i);
+
+            currentGroup = groupMatch ? groupMatch[1] : "";
+
+        } else if (
+            line !== "" &&
+            line.charAt(0) !== "#" &&
+            currentName !== ""
+        ) {
+
+            channels.push({
+                name: currentName,
+                logo: currentLogo,
+                group: currentGroup,
+                url: line
+            });
+
+            currentName = "";
+            currentLogo = "";
+            currentGroup = "";
+        }
+    }
+}
+
+function escapeHTML(text) {
+
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function renderChannels() {
+
+    var list = byId("channelList");
+
+    list.innerHTML = "";
+
+    if (filteredChannels.length === 0) {
+        list.innerHTML =
+            "<div class='smallInfo'>NO CHANNELS FOUND</div>";
+        return;
+    }
+
+    if (selectedIndex >= filteredChannels.length) {
+        selectedIndex = filteredChannels.length - 1;
+    }
+
+    if (selectedIndex < 0) {
+        selectedIndex = 0;
+    }
+
+    for (var i = 0; i < filteredChannels.length; i++) {
+
+        var channel = filteredChannels[i];
+
+        var item = document.createElement("div");
+
+        item.className = "channelItem";
+
+        if (i == selectedIndex) {
+            item.className += " selected";
+        }
+
+        var logo = document.createElement("img");
+
+        logo.className = "channelLogo";
+        logo.src = channel.logo || "";
+
+        logo.onerror = function() {
+            this.style.display = "none";
+        };
+
+        var name = document.createElement("div");
+
+        name.className = "channelName";
+        name.innerHTML = escapeHTML(channel.name);
+
+        item.appendChild(logo);
+        item.appendChild(name);
+
+        item.setAttribute("data-index", i);
+
+        item.onclick = function() {
+
+            selectedIndex = parseInt(
+                this.getAttribute("data-index"), 10
+            );
+
+            playSelectedChannel();
+        };
+
+        list.appendChild(item);
+    }
+
+    var selected = list.getElementsByClassName("selected")[0];
+
+    if (selected && selected.scrollIntoView) {
+        selected.scrollIntoView(false);
+    }
+
+    byId("channelCount").innerHTML =
+        "CHANNELS: " + filteredChannels.length;
+}
+
+function searchChannels() {
+
+    var query = byId("searchInput").value.toLowerCase();
+
+    filteredChannels = [];
+
+    for (var i = 0; i < channels.length; i++) {
+
+        if (channels[i].name.toLowerCase().indexOf(query) >= 0) {
+            filteredChannels.push(channels[i]);
+        }
+    }
+
+    selectedIndex = 0;
+
+    renderChannels();
+}
+
+function playSelectedChannel() {
+
+    if (!filteredChannels[selectedIndex]) {
+        return;
+    }
+
+    currentChannel = filteredChannels[selectedIndex];
+
+    appState = "player";
+
+    hide("homePage");
+    hide("channelPage");
+    show("playerPage");
+
+    byId("pageTitle").innerHTML = "NOW PLAYING";
+    byId("playingName").innerHTML = currentChannel.name;
+    byId("playerMessage").innerHTML = "CONNECTING...";
+
+    var video = byId("videoPlayer");
+
+    try {
+
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+
+        video.src = currentChannel.url;
+        video.load();
+
+        var result = video.play();
+
+        if (result && result.catch) {
+            result.catch(function(error) {
+                byId("playerMessage").innerHTML =
+                    "PLAY ERROR: " + error.message;
+            });
+        }
+
+    } catch(e) {
+
+        byId("playerMessage").innerHTML =
+            "ERROR: " + e.message;
+    }
+
+    video.onplaying = function() {
+        byId("playerMessage").innerHTML = "LIVE PLAYING";
+    };
+
+    video.onerror = function() {
+        byId("playerMessage").innerHTML =
+            "STREAM NOT SUPPORTED OR UNAVAILABLE";
+    };
+}
+
+function stopPlayer() {
+
+    var video = byId("videoPlayer");
+
+    if (!video) {
+        return;
+    }
+
+    try {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+    } catch(e) {}
+}
+
+function backAction() {
+
+    if (appState == "player") {
+
+        stopPlayer();
+
+        appState = "channels";
+
+        hide("playerPage");
+        show("channelPage");
+
+        byId("pageTitle").innerHTML = "CHANNELS";
+
+    } else if (appState == "channels") {
+
+        openHome();
+
+    } else {
+
+        openHome();
+    }
+}
+
+function selectHomeItem() {
+
+    if (menuIndex == 0) {
+        loadCategory(0);
+
+    } else if (menuIndex == 1) {
+        loadCategory(1);
+
+    } else if (menuIndex == 2) {
+
+        loadCategory(0);
+
+        byId("searchInput").focus();
+    }
+}
+
+function moveSelection(direction) {
+
+    if (appState == "home") {
+
+        var items = document.getElementsByClassName("menuItem");
+
+        menuIndex += direction;
+
+        if (menuIndex < 0) {
+            menuIndex = items.length - 1;
+        }
+
+        if (menuIndex >= items.length) {
+            menuIndex = 0;
+        }
+
+        updateHomeSelection();
+
+    } else if (appState == "channels") {
+
+        if (filteredChannels.length === 0) {
+            return;
+        }
+
+        selectedIndex += direction;
+
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+
+        if (selectedIndex >= filteredChannels.length) {
+            selectedIndex = filteredChannels.length - 1;
+        }
+
+        renderChannels();
+    }
+}
+
+document.onkeydown = function(e) {
+
+    e = e || window.event;
+
+    var key = e.keyCode;
+
+    if (key == 38) {
+        moveSelection(-1);
+        return false;
+    }
+
+    if (key == 40) {
+        moveSelection(1);
+        return false;
+    }
+
+    if (key == 13) {
+
+        if (appState == "home") {
+            selectHomeItem();
+
+        } else if (appState == "channels") {
+            playSelectedChannel();
+        }
+
+        return false;
+    }
+
+    if (key == 8 || key == 27 || key == 461) {
+
+        backAction();
+        return false;
+    }
 
     return true;
 };
 
-function exists(obj, name) {
+byId("backButton").onclick = function() {
+    openHome();
+};
+
+byId("playerBack").onclick = function() {
+    backAction();
+};
+
+byId("playButton").onclick = function() {
+
     try {
-        return typeof obj[name] != "undefined";
-    } catch(e) {
-        return false;
-    }
+        byId("videoPlayer").play();
+    } catch(e) {}
+};
+
+byId("stopButton").onclick = function() {
+    stopPlayer();
+    byId("playerMessage").innerHTML = "STOPPED";
+};
+
+byId("searchInput").onkeyup = function() {
+    searchChannels();
+};
+
+var menuItems = document.getElementsByClassName("menuItem");
+
+for (var m = 0; m < menuItems.length; m++) {
+
+    menuItems[m].onclick = function() {
+
+        var action = this.getAttribute("data-action");
+
+        if (action == "indian") {
+            loadCategory(0);
+
+        } else if (action == "sports") {
+            loadCategory(1);
+
+        } else if (action == "search") {
+            selectHomeItem();
+        }
+    };
 }
 
-function runTest() {
+window.onerror = function(message, url, line, column) {
 
-    try {
+    setLoading(false);
 
-        currentStep = "MIDLET API";
+    showError(
+        "ERROR: " + message +
+        "<br>LINE: " + line
+    );
 
-        var midletFound =
-            exists(window, "MIDlet") ||
-            exists(navigator, "MIDlet");
+    return false;
+};
 
-        document.getElementById("midlet").innerHTML =
-            "MIDlet API: " +
-            (midletFound ? "FOUND" : "NOT DETECTED");
-
-        currentStep = "JAVA API";
-
-        var javaFound =
-            exists(window, "Java") ||
-            exists(navigator, "javaEnabled");
-
-        document.getElementById("java").innerHTML =
-            "JAVA API: " +
-            (javaFound ? "FOUND" : "NOT DETECTED");
-
-        currentStep = "INSTALLER API";
-
-        var installerFound =
-            exists(navigator, "mozApps") ||
-            exists(window, "InstallTrigger") ||
-            exists(window, "MIDletInstaller");
-
-        document.getElementById("installer").innerHTML =
-            "INSTALLER API: " +
-            (installerFound ? "POSSIBLE API FOUND" : "NOT DETECTED");
-
-        currentStep = "DEVICE FILESYSTEM";
-
-        var fsFound =
-            exists(window, "requestFileSystem") ||
-            exists(window, "webkitRequestFileSystem");
-
-        document.getElementById("filesystem").innerHTML =
-            "DEVICE FILESYSTEM API: " +
-            (fsFound ? "API FOUND" : "NOT DETECTED");
-
-        currentStep = "CLOUD PHONE API";
-
-        var cloudFound =
-            exists(navigator, "hasFeature") ||
-            exists(navigator, "volumeManager");
-
-        document.getElementById("cloud").innerHTML =
-            "CLOUD PHONE API: " +
-            (cloudFound ? "FOUND" : "NOT DETECTED");
-
-        currentStep = "OTHER INSTALL APIs";
-
-        var otherFound =
-            exists(navigator, "getInstalledRelatedApps") ||
-            exists(navigator, "registerProtocolHandler");
-
-        document.getElementById("other").innerHTML =
-            "OTHER WEB APIs: " +
-            (otherFound ? "SOME APIs FOUND" : "NOT DETECTED");
-
-        currentStep = "FINAL RESULT";
-
-        document.getElementById("result").innerHTML =
-            "RESULT: TEST COMPLETED\n\n" +
-            "MIDlet API: " + (midletFound ? "FOUND" : "NOT DETECTED") +
-            "\nJava API: " + (javaFound ? "FOUND" : "NOT DETECTED") +
-            "\nInstaller API: " + (installerFound ? "FOUND" : "NOT DETECTED") +
-            "\nFilesystem API: " + (fsFound ? "FOUND" : "NOT DETECTED") +
-            "\n\nNOTE: Browser API detection cannot prove native installation support.";
-
-        document.getElementById("status").innerHTML =
-            "STATUS: TEST COMPLETED";
-
-        document.getElementById("error").innerHTML = "NONE";
-
-    } catch(e) {
-
-        document.getElementById("status").innerHTML =
-            "STATUS: TEST FAILED";
-
-        document.getElementById("error").innerHTML =
-            "STEP: " + currentStep +
-            "\nERROR NAME: " + e.name +
-            "\nERROR MESSAGE: " + e.message;
-    }
-}
-
-runTest();
+openHome();
 
 </script>
+
 </body>
-</html>
+    </html>
